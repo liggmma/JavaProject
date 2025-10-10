@@ -1,0 +1,21 @@
+┌────────────────┬────────────────┬───────────────────────────┬────────────┬────────────┬────────┬────────────────────────────────────────────┐
+│ Username       │ Password       │ Email                     │ Expected   │ Actual     │ Result │ Log Message                              │
+├────────────────┼────────────────┼───────────────────────────┼────────────┼────────────┼────────┼────────────────────────────────────────────┤
+│ john123        │ Pass123$       │ john@example.com          │ true       │ true       │ PASS   │ Đăng ký thành công!                      │
+│ carol          │ Password9!     │ carol@domain.com          │ true       │ true       │ PASS   │ Đăng ký thành công!                      │
+│ null           │ Pass123$       │ emptyuser@example.com     │ false      │ false      │ PASS   │ Thiếu thông tin bắt buộc (username, password hoặc email). │
+│ abc            │ Pass123$       │ abc@example.com           │ false      │ false      │ PASS   │ Username phải có nhiều hơn 3 ký tự.      │
+│ noPass         │ null           │ user@mail.com             │ false      │ false      │ PASS   │ Thiếu thông tin bắt buộc (username, password hoặc email). │
+│ shorty         │ Pass1$         │ shorty@mail.com           │ false      │ false      │ PASS   │ Password phải dài hơn 6 ký tự, chứa ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt. │
+│ mark           │ pass123$       │ mark@mail.com             │ false      │ false      │ PASS   │ Password phải dài hơn 6 ký tự, chứa ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt. │
+│ linda          │ Password$      │ linda@mail.com            │ false      │ false      │ PASS   │ Password phải dài hơn 6 ký tự, chứa ít nhất 1 chữ hoa, 1 số và 1 ký tự đặc biệt. │
+│ tom            │ Password1      │ tom@mail.com              │ false      │ false      │ PASS   │ Username phải có nhiều hơn 3 ký tự.      │
+│ invalidEmail1  │ Pass123$       │ invalidmail.com           │ false      │ false      │ PASS   │ Email không hợp lệ.                      │
+│ invalidEmail2  │ Pass123$       │ user@                     │ false      │ false      │ PASS   │ Email không hợp lệ.                      │
+│ whitespace     │ Pass123$       │ white@  .com              │ false      │ false      │ PASS   │ Email không hợp lệ.                      │
+│ goodUser       │ Pass123$       │ badmail@com               │ false      │ false      │ PASS   │ Email không hợp lệ.                      │
+│ john123        │ Pass123$       │ john@example.com          │ false      │ false      │ PASS   │ Username đã tồn tại.                     │
+│ strongUser     │ SuperStrong1!  │ user@strong.com           │ true       │ true       │ PASS   │ Đăng ký thành công!                      │
+│ longEmailUser  │ Pass123$       │ hello@company.co.id       │ true       │ true       │ PASS   │ Đăng ký thành công!                      │
+│ noemail1       │ Pass123$       │ null                      │ false      │ false      │ PASS   │ Thiếu thông tin bắt buộc (username, password hoặc email). │
+└────────────────┴────────────────┴───────────────────────────┴────────────┴────────────┴────────┴────────────────────────────────────────────┘

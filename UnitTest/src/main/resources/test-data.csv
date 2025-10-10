@@ -1,0 +1,18 @@
+username,password,email,expected
+john123,Pass123$,john@example.com,true
+carol,Password9!,carol@domain.com,true
+,Pass123$,emptyuser@example.com,false
+abc,Pass123$,abc@example.com,false
+noPass,,user@mail.com,false
+shorty,Pass1$,shorty@mail.com,false
+mark,pass123$,mark@mail.com,false
+linda,Password$,linda@mail.com,false
+tom,Password1,tom@mail.com,false
+invalidEmail1,Pass123$,invalidmail.com,false
+invalidEmail2,Pass123$,user@,false
+whitespace,Pass123$,white@  .com,false
+goodUser,Pass123$,badmail@com,false
+john123,Pass123$,john@example.com,false
+strongUser,SuperStrong1!,user@strong.com,true
+longEmailUser,Pass123$,hello@company.co.id,true
+noemail1,Pass123$, ,false
