@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.demofx.EditBookController"
+      alignment="CENTER"
+      spacing="20"
+      style="-fx-background-color: #2b2b2b;">
+
+    <padding>
+        <Insets top="30" right="30" bottom="30" left="30"/>
+    </padding>
+
+    <!-- Tiêu đề -->
+    <Text text="Edit Book"
+          style="-fx-fill: white;">
+        <font>
+            <Font name="Arial Bold" size="24"/>
+        </font>
+    </Text>
+
+    <!-- Bố cục form -->
+    <GridPane hgap="15" vgap="15">
+        <padding>
+            <Insets top="20" right="20" bottom="20" left="20"/>
+        </padding>
+
+        <Label text="Title:" GridPane.rowIndex="0" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
+        <TextField fx:id="txtTitle" GridPane.rowIndex="0" GridPane.columnIndex="1" promptText="Enter book title"/>
+
+        <Label text="Author:" GridPane.rowIndex="1" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
+        <TextField fx:id="txtAuthor" GridPane.rowIndex="1" GridPane.columnIndex="1" promptText="Enter author name"/>
+
+        <Label text="Price:" GridPane.rowIndex="3" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
+        <TextField fx:id="txtPrice" GridPane.rowIndex="3" GridPane.columnIndex="1" promptText="Enter price"/>
+
+        <Label text="Genre:" GridPane.rowIndex="4" GridPane.columnIndex="0" style="-fx-text-fill: white;"/>
+        <ComboBox fx:id="cbGenre" GridPane.rowIndex="4" GridPane.columnIndex="1" promptText="Select genre"/>
+    </GridPane>
+
+    <!-- Các nút -->
+    <HBox alignment="CENTER" spacing="15">
+        <Button text="Save"
+                fx:id="btnSave"
+                onAction="#handleSave"
+                style="-fx-background-color: #4CAF50; -fx-text-fill: white; -fx-font-weight: bold;"/>
+
+        <Button text="Cancel"
+                fx:id="btnCancel"
+                onAction="#handleCancel"
+                style="-fx-background-color: #f44336; -fx-text-fill: white; -fx-font-weight: bold;"/>
+    </HBox>
+</VBox>

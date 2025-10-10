@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.se05fx.TicTacToeController">
+    <top>
+        <Label fx:id="statusLabel" text="Player X's turn" BorderPane.alignment="CENTER" style="-fx-font-size: 16px; -fx-padding: 10;"/>
+    </top>
+    <center>
+        <GridPane fx:id="board" hgap="5" vgap="5" alignment="CENTER" style="-fx-padding: 20;">
+            <columnConstraints>
+                <ColumnConstraints percentWidth="33"/>
+                <ColumnConstraints percentWidth="33"/>
+                <ColumnConstraints percentWidth="33"/>
+            </columnConstraints>
+            <rowConstraints>
+                <RowConstraints percentHeight="33"/>
+                <RowConstraints percentHeight="33"/>
+                <RowConstraints percentHeight="33"/>
+            </rowConstraints>
+
+            <!-- 9 buttons -->
+            <Button fx:id="b00" GridPane.rowIndex="0" GridPane.columnIndex="0" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b01" GridPane.rowIndex="0" GridPane.columnIndex="1" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b02" GridPane.rowIndex="0" GridPane.columnIndex="2" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+
+            <Button fx:id="b10" GridPane.rowIndex="1" GridPane.columnIndex="0" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b11" GridPane.rowIndex="1" GridPane.columnIndex="1" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b12" GridPane.rowIndex="1" GridPane.columnIndex="2" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+
+            <Button fx:id="b20" GridPane.rowIndex="2" GridPane.columnIndex="0" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b21" GridPane.rowIndex="2" GridPane.columnIndex="1" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+            <Button fx:id="b22" GridPane.rowIndex="2" GridPane.columnIndex="2" onAction="#handleMove" style="-fx-font-size: 24px; -fx-pref-width: 100; -fx-pref-height: 100;"/>
+        </GridPane>
+    </center>
+    <bottom>
+        <Button text="Restart" BorderPane.alignment="CENTER" onAction="#restartGame" style="-fx-font-size: 14px; -fx-padding: 10;"/>
+    </bottom>
+</BorderPane>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx/17"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="org.example.demofx.VerifyBookController"
+      spacing="10" alignment="CENTER" prefWidth="350" prefHeight="350">
+
+    <Label text="Please verify book information:" style="-fx-font-weight: bold;"/>
+
+    <!-- Hiển thị ảnh bìa -->
+    <ImageView fx:id="imgCover" fitWidth="300" fitHeight="200" preserveRatio="true" pickOnBounds="true"/>
+
+    <!-- Thông tin sách -->
+    <Label fx:id="lblTitle"/>
+    <Label fx:id="lblAuthor"/>
+    <Label fx:id="lblGenre"/>
+    <Label fx:id="lblPrice"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Confirm" onAction="#confirm"/>
+        <Button text="Cancel" onAction="#cancel"/>
+    </HBox>
+</VBox>

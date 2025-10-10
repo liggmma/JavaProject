@@ -1,0 +1,278 @@
+/* Biến màu & thông số chủ đề tối (áp dụng ở root Scene) */
+.root {
+    /* Bảng màu */
+    -fx-color-bg-dark: #1e1e2f;
+    -fx-color-bg-light: #2b2b3c;
+    -fx-color-text-light: #e0e0e0;
+    -fx-color-primary: #4caf50;
+    -fx-color-primary-hover: #45a049;
+    -fx-color-primary-pressed: #3e8e41;
+    -fx-color-secondary: #555555;
+    -fx-color-secondary-hover: #666666;
+    -fx-color-secondary-pressed: #4a4a4a;
+    -fx-color-input-bg: #3c3c4c;
+    -fx-color-error: #ff4d4d;
+    -fx-color-border: #444444;
+    -fx-color-accent: #6fbf73;
+
+    /* Typography mặc định */
+    -fx-font-family: "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif;
+    -fx-font-size: 13px;
+
+    /* Thông số giao diện chung */
+    -fx-radius-sm: 4;
+    -fx-radius-md: 6;
+    -fx-spacing-sm: 8px;
+    -fx-spacing-md: 15px;
+    -fx-spacing-lg: 20px;
+}
+
+/* Bố cục chính */
+.main-container {
+    -fx-background-color: -fx-color-bg-dark;
+}
+
+/* Panel nhập liệu bên trái */
+.input-panel {
+    -fx-background-color: -fx-color-bg-light;
+    -fx-border-color: -fx-color-border;
+    -fx-border-width: 0 1 0 0;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+/* Panel bảng bên phải */
+.table-panel {
+    -fx-background-color: transparent;
+    -fx-padding: 20px;
+    -fx-spacing: 15px;
+}
+
+/* Tiêu đề phân vùng */
+.section-header {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -fx-color-primary;
+    -fx-padding: 0 0 10 0;
+    -fx-border-color: -fx-color-border;
+    -fx-border-width: 0 0 2 0;
+}
+
+/* Label và Input */
+.form-label {
+    -fx-text-fill: -fx-color-text-light;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.form-input {
+    -fx-background-color: -fx-color-input-bg;
+    -fx-text-fill: -fx-color-text-light;
+    -fx-border-color: -fx-color-border;
+    -fx-border-radius: -fx-radius-md;
+    -fx-background-radius: -fx-radius-md;
+    -fx-padding: 8 12;
+    -fx-font-size: 13px;
+}
+
+.form-input:focused {
+    -fx-border-color: -fx-color-primary;
+    -fx-faint-focus-color: transparent;
+}
+
+.form-input:disabled {
+    -fx-opacity: 0.7;
+}
+
+/* Label lỗi */
+.error-label {
+    -fx-text-fill: -fx-color-error;
+    -fx-font-size: 12px;
+    -fx-padding: 2 0 0 0;
+}
+
+/* Label trạng thái */
+.status-label {
+    -fx-text-fill: -fx-color-accent;
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-padding: 10 0 0 0;
+}
+
+/* Nút bấm */
+.button-row {
+    -fx-spacing: 10px;
+    -fx-padding: 10 0 0 0;
+}
+
+.primary-btn, .secondary-btn {
+    -fx-padding: 10 15;
+    -fx-border-radius: -fx-radius-md;
+    -fx-background-radius: -fx-radius-md;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.primary-btn {
+    -fx-background-color: -fx-color-primary;
+    -fx-text-fill: #ffffff;
+}
+
+.primary-btn:hover {
+    -fx-background-color: -fx-color-primary-hover;
+}
+
+.primary-btn:pressed {
+    -fx-background-color: -fx-color-primary-pressed;
+}
+
+.primary-btn:disabled {
+    -fx-opacity: 0.7;
+}
+.add-btn {
+    -fx-background-color: -fx-color-secondary;
+    -fx-text-fill: #ffffff;
+    -fx-pref-width: 30px;
+    -fx-pref-height: 30px;
+    -fx-background-radius: 50%;
+}
+.secondary-btn {
+    -fx-background-color: -fx-color-secondary;
+    -fx-text-fill: #ffffff;
+}
+
+.secondary-btn:hover {
+    -fx-background-color: -fx-color-secondary-hover;
+}
+
+.secondary-btn:pressed {
+    -fx-background-color: -fx-color-secondary-pressed;
+}
+
+.secondary-btn:disabled {
+    -fx-opacity: 0.7;
+}
+
+/* TableView */
+.table-view-custom {
+    -fx-background-color: -fx-color-bg-dark;
+    -fx-border-color: -fx-color-border;
+    -fx-table-cell-border-color: -fx-color-border;
+    -fx-padding: 5;
+}
+
+/* Header bảng */
+.table-view-custom .column-header-background {
+    -fx-background-color: -fx-color-bg-light;
+}
+
+.table-view-custom .column-header .label {
+    -fx-text-fill: -fx-color-bg-dark;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+/* Dòng và ô */
+.table-row-cell {
+    -fx-background-color: -fx-color-bg-dark;
+    -fx-background-insets: 0, 0 0 1 0;
+    -fx-padding: 0;
+}
+
+.table-row-cell:odd {
+    -fx-background-color: #262637;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: -fx-color-primary-hover;
+}
+
+.table-row-cell:hover {
+    -fx-background-color: #383850;
+}
+
+.table-cell {
+    -fx-text-fill: -fx-color-text-light;
+    -fx-border-color: transparent -fx-color-border transparent transparent;
+    -fx-padding: 10px;
+    -fx-font-size: 13px;
+}
+
+.table-row-cell:selected .table-cell {
+    -fx-text-fill: #ffffff;
+}
+
+.table-row-cell:selected {
+    -fx-border-color: #6fbf73;
+    -fx-border-width: 0 0 0 2;
+}
+
+
+/* Phân trang */
+.page-btn {
+    -fx-background-color: -fx-color-secondary;
+    -fx-text-fill: -fx-color-text-light;
+    -fx-border-color: -fx-color-border;
+    -fx-border-radius: -fx-radius-sm;
+    -fx-background-radius: -fx-radius-sm;
+    -fx-padding: 6 10;
+}
+
+.page-btn:hover {
+    -fx-background-color: -fx-color-primary-hover;
+}
+
+.page-info {
+    -fx-text-fill: -fx-color-text-light;
+    -fx-font-size: 12px;
+}
+
+/* Verify page */
+.verify-root {
+    -fx-background-color: #2b2b2b;
+    -fx-padding: 20;
+    -fx-spacing: 15;
+    -fx-border-color: #444;
+    -fx-border-radius: 10;
+    -fx-background-radius: 10;
+}
+
+.verify-title {
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #ffffff;
+}
+
+.verify-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #dddddd;
+}
+
+.primary-btn {
+    -fx-background-color: #4CAF50;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-pref-width: 100;
+    -fx-pref-height: 35;
+}
+
+.primary-btn:hover {
+    -fx-background-color: #45a049;
+}
+
+.secondary-btn {
+    -fx-background-color: #555;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+    -fx-pref-width: 100;
+    -fx-pref-height: 35;
+}
+
+.secondary-btn:hover {
+    -fx-background-color: #666;
+}
+

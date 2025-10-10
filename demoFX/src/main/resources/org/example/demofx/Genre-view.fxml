@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns:fx="http://javafx.com/fxml" fx:controller="org.example.demofx.GenreController"
+      spacing="10" alignment="CENTER" prefWidth="300" prefHeight="200" style="-fx-padding:20;">
+
+    <Label text="Add New Genre" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <TextField fx:id="txtGenreName" promptText="Genre Name"/>
+
+    <Label fx:id="lblStatus" text="" style="-fx-text-fill: red;"/>
+
+    <HBox spacing="10" alignment="CENTER">
+        <Button text="Save" onAction="#saveGenre"/>
+        <Button text="Cancel" onAction="#closeWindow"/>
+    </HBox>
+</VBox>
