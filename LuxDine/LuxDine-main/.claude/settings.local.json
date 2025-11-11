@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tree:*)",
+      "Bash(mvn clean compile:*)",
+      "Bash(mvn compile:*)",
+      "Bash(mvn clean package:*)",
+      "Bash(dir /s /b *.png *.jpg *.svg 2)",
+      "Bash(nul)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

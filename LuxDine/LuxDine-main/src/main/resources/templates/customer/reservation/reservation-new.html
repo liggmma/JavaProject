@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <title>Đặt bàn — LuxDine</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect"/>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --brand: #0a0a23;
+            --accent: #f97316;
+            --muted: #6b7280;
+            --line: #e5e7eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            background: #fafafa;
+            color: #0a0a23
+        }
+
+        main.container {
+            display: flex;
+            justify-content: center;
+            padding: 80px 16px 60px
+        }
+
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .05);
+            padding: 40px;
+            width: 100%;
+            max-width: 880px
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 0 32px
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap: 20px
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns:1fr
+            }
+        }
+
+        .field, .select {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+            background: #f9fafb;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            padding: 10px 12px;
+            font: inherit;
+            color: #111827;
+            transition: border-color .2s, box-shadow .2s
+        }
+
+        .select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right .5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem
+        }
+
+        .field:focus, .select:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, .12)
+        }
+
+        textarea.field {
+            resize: vertical
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 32px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none
+        }
+
+        .btn--primary {
+            background: var(--brand);
+            color: #fff
+        }
+
+        .btn--primary:hover {
+            background: #1a1a40
+        }
+
+        .btn--secondary {
+            background: #fff;
+            color: var(--accent);
+            border-color: var(--accent)
+        }
+
+        .btn--secondary:hover {
+            background: #fff7ed
+        }
+
+        /* Alerts */
+        .alert {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #fca5a5;
+            font-weight: 500
+        }
+
+        /* Helper */
+        small.muted {
+            color: var(--muted);
+            display: block;
+            margin-top: 4px;
+            font-size: .875em
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        /* ===== Preorder section ===== */
+        .preorder {
+            margin-top: 20px;
+            border-top: 1px solid var(--line);
+            padding-top: 16px
+        }
+
+        .preorder-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px
+        }
+
+        .preorder-summary {
+            min-height: 24px;
+            color: #374151
+        }
+
+        .preorder-summary--muted {
+            color: var(--muted)
+        }
+
+        .chip {
+            display: inline-block;
+            background: #f3f4f6;
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            padding: 6px 10px;
+            margin: 6px 6px 0 0;
+            font-size: 14px
+        }
+
+        /* Modal */
+        .backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50
+        }
+
+        .modal {
+            background: #fff;
+            width: min(1000px, 92vw);
+            border-radius: 16px;
+            border: 1px solid var(--line);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .15);
+            overflow: hidden
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #f9fafb;
+            border-bottom: 1px solid var(--line)
+        }
+
+        .modal-title {
+            font-weight: 700
+        }
+
+        .modal-body {
+            padding: 16px 20px
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--line);
+            background: #fafafa
+        }
+
+        .searchbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #f9fafb;
+            padding: 8px 12px;
+            margin-bottom: 12px
+        }
+
+        .searchbar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            font: inherit
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .table th, .table td {
+            border-bottom: 1px solid var(--line);
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 14px
+        }
+
+        .table thead th {
+            background: #e5e7eb;
+            color: #111827;
+            font-weight: 700
+        }
+
+        .qty {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            overflow: hidden
+        }
+
+        .qty button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f3f4f6;
+            cursor: pointer
+        }
+
+        .qty input {
+            width: 44px;
+            border: none;
+            text-align: center;
+            outline: none;
+            background: #fff
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer
+        }
+
+        .hide {
+            display: none !important
+        }
+
+        .select option:disabled {
+            color: #9ca3af;
+            cursor: not-allowed
+        }
+
+        /* Image Viewer */
+        .viewer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 60
+        }
+
+        .viewer {
+            position: relative;
+            background: #000;
+            border-radius: 12px;
+            padding: 8px;
+            max-width: 92vw;
+            max-height: 92vh;
+            box-shadow: 0 12px 48px rgba(0, 0, 0, .4)
+        }
+
+        .viewer img {
+            display: block;
+            max-width: 90vw;
+            max-height: 85vh;
+            border-radius: 8px
+        }
+
+        .viewer .close {
+            position: absolute;
+            top: 8px;
+            right: 8px
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main class="container">
+    <div class="card">
+        <h1>Đặt bàn</h1>
+
+        <!-- Server error -->
+        <div class="alert" th:if="${errorMessage}">
+            <strong>⚠️ Lỗi:</strong> <span th:text="${errorMessage}">Error</span>
+        </div>
+
+        <div id="clientErrors"></div>
+
+        <form id="reservationForm" method="post" th:action="@{/payment/customer/checkout}">
+            <div class="grid">
+                <!-- Ngày -->
+                <div>
+                    <label for="date">Ngày</label>
+                    <input class="field" id="date" name="date" required th:min="${minDate}" type="date"/>
+                </div>
+
+                <!-- Giờ đến -->
+                <div>
+                    <label for="timeHour">Giờ đến</label>
+                    <div style="display:flex; gap:8px">
+                        <select class="select" id="timeHour" name="timeHour" required style="flex:1">
+                            <option value="">Giờ</option>
+                            <option th:each="h : ${hours}" th:text="${h}" th:value="${h}"></option>
+                        </select>
+                        <select class="select" id="timeMinute" name="timeMinute" required style="flex:1">
+                            <option value="">Phút</option>
+                            <option th:each="m : ${minutes}" th:text="${m}" th:value="${m}"></option>
+                        </select>
+                    </div>
+                    <small class="muted">Nhà hàng mở cửa từ 09:00 đến 22:00</small>
+                </div>
+
+                <!-- Giờ trả bàn -->
+                <div>
+                    <label for="departureTimeHour">Giờ trả bàn</label>
+                    <div style="display:flex; gap:8px">
+                        <select class="select" id="departureTimeHour" name="departureTimeHour" required style="flex:1">
+                            <option value="">Giờ</option>
+                            <option th:each="h : ${hours}" th:text="${h}" th:value="${h}"></option>
+                        </select>
+                        <select class="select" id="departureTimeMinute" name="departureTimeMinute" required
+                                style="flex:1">
+                            <option value="">Phút</option>
+                            <option th:each="m : ${minutes}" th:text="${m}" th:value="${m}"></option>
+                        </select>
+                    </div>
+                    <small class="muted">Thời gian dự kiến rời bàn</small>
+                    <div class="muted" id="timeError" style="color:#ef4444; display:none; margin-top:4px"></div>
+                </div>
+
+                <!-- Hidden fields mapped to DTO -->
+                <input id="reservationDate" name="reservationDate" type="hidden"/>
+                <input id="reservationDepartureTime" name="reservationDepartureTime" type="hidden"/>
+
+                <!-- Số khách -->
+                <div>
+                    <label for="numberOfGuests">Số khách</label>
+                    <select class="select" id="numberOfGuests" name="numberOfGuests" required>
+                        <option value="">Chọn số khách</option>
+                        <option th:each="n : ${#numbers.sequence(1,10)}" th:text="${n}" th:value="${n}"></option>
+                    </select>
+                </div>
+
+                <!-- Bàn được chọn -->
+                <div style="grid-column:1 / -1">
+                    <label>Bàn</label>
+                    <div id="selectedTableInfo"
+                         style="display:none; background:#f0fdf4; border:1px solid #86efac; border-radius:8px; padding:12px">
+                        <div style="display:flex; align-items:center; justify-content:space-between">
+                            <div>
+                                <strong id="selectedTableName">-</strong>
+                                <span class="muted" id="selectedTableDetails"
+                                      style="margin-left:8px; font-size:.9em">-</span>
+                            </div>
+                            <button class="btn btn--secondary" id="btnClearTable" style="padding:6px 12px; font-size:14px" title="Chọn bàn khác"
+                                    type="button">Đổi bàn
+                            </button>
+                        </div>
+                    </div>
+                    <div id="noTableSelected"
+                         style="text-align:center; padding:20px; background:#f9fafb; border:1px solid var(--line); border-radius:8px; color:var(--muted)">
+                        Chưa chọn bàn. Vui lòng bấm nút "Tìm bàn" phía dưới để chọn bàn.
+                    </div>
+                    <input id="tableId" name="tableId" type="hidden"/>
+                </div>
+
+                <!-- Ghi chú -->
+                <div style="grid-column:1 / -1">
+                    <label for="notes">Ghi chú</label>
+                    <textarea class="field" id="notes" name="notes" placeholder="Yêu cầu đặc biệt (nếu có)"
+                              rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- ===== Preorder (Món đặt trước) ===== -->
+            <section class="preorder">
+                <div class="preorder-header">
+                    <label style="margin:0">Món đặt trước</label>
+                    <button class="btn btn--secondary" id="btnOpenPreorder" type="button">Đặt món</button>
+                </div>
+                <div class="preorder-summary preorder-summary--muted" id="preorderSummary">Chưa có món nào.</div>
+                <div id="preorderHiddenInputs"></div>
+
+                <!-- Seed từ server (nếu có) -->
+                <ul hidden id="serverItemsSeed" th:if="${reservation != null and reservation.items != null}">
+                    <li th:data-id="${it.itemId}" th:data-qty="${it.quantity}" th:each="it : ${reservation.items}"></li>
+                </ul>
+            </section>
+
+            <div class="actions">
+                <button class="btn btn--primary" id="btnMainAction" type="button">Tìm bàn</button>
+                <a class="btn btn--secondary" th:href="@{/reservations}">Danh sách đặt bàn</a>
+            </div>
+
+            <!-- CSRF -->
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+        </form>
+    </div>
+</main>
+
+<!-- ===== Modal: Thêm món ===== -->
+<div aria-hidden="true" class="backdrop" id="preorderModal">
+    <div aria-labelledby="preorderModalTitle" aria-modal="true" class="modal" role="dialog">
+        <div class="modal-header">
+            <div class="modal-title" id="preorderModalTitle">Thêm món cho bàn đặt</div>
+            <button aria-label="Đóng" class="icon-btn" id="btnCloseModal" type="button">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="searchbar">🔎 <input id="menuSearch" placeholder="Tìm hàng hóa theo mã hoặc tên" type="text"/>
+            </div>
+            <div style="overflow:auto; max-height:48vh; border:1px solid var(--line); border-radius:12px">
+                <table class="table" id="menuTable">
+                    <thead>
+                    <tr>
+                        <th style="width:120px">Ảnh</th>
+                        <th style="width:120px">Mã món ăn</th>
+                        <th>Tên món ăn</th>
+                        <th class="text-right" style="width:120px">Giá bán</th>
+                        <th style="width:160px">Số lượng</th>
+                        <th style="width:80px">Xóa</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:data-id="${m.id}" th:data-name="${m.name}" th:data-price="${m.price}"
+                        th:each="m : ${menuItems}">
+                        <td>
+                            <button class="btn btn--secondary btn--ghost btn-view-image" th:attr="data-img=${m.imageUrl != null ? m.imageUrl : 'https://via.placeholder.com/1000x750?text=No+Image'}"
+                                    type="button">
+                                Xem ảnh
+                            </button>
+                        </td>
+                        <td th:text="${'SP' + #numbers.formatInteger(m.id,6)}">SP000001</td>
+                        <td th:text="${m.name}">Tên món</td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(m.price,0,'COMMA',0,'POINT')}">
+                            120,000
+                        </td>
+                        <td>
+                            <div class="qty">
+                                <button class="btn-qty-dec" type="button">−</button>
+                                <input class="qty-input" inputmode="numeric" type="text" value="0"/>
+                                <button class="btn-qty-inc" type="button">＋</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="icon-btn btn-row-remove" title="Xóa dòng" type="button">🗑</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <small class="muted" style="display:block; margin-top:8px">Món đặt trước sẽ tự động thêm vào đơn khi nhận
+                khách.</small>
+        </div>
+        <div class="modal-footer">
+            <button class="btn" id="btnCancelModal" type="button">Bỏ qua</button>
+            <button class="btn btn--primary" id="btnSavePreorder" type="button">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<!-- ===== Image Viewer Popup ===== -->
+<div aria-hidden="true" class="viewer-backdrop" id="imgViewer">
+    <div aria-label="Xem ảnh món" aria-modal="true" class="viewer" role="dialog">
+        <button aria-label="Đóng" class="icon-btn close" id="btnCloseImg" type="button">✕</button>
+        <img alt="Ảnh món" id="imgViewerImg" src=""/>
+    </div>
+</div>
+
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<!-- Server variables -->
+<script th:inline="javascript">
+    const preselectedTableId = /*[[${preselectedTableId}]]*/ null;
+</script>
+
+<script>
+    (function () {
+        const $ = (id) => document.getElementById(id);
+
+        // ====== Time helpers ======
+        function buildOffsetISO(dateStr, hourStr, minStr) {
+            if (!dateStr || !hourStr || !minStr) return "";
+            const pad = (n) => String(n).padStart(2, "0");
+            const y = +dateStr.slice(0, 4), m = +dateStr.slice(5, 7), d = +dateStr.slice(8, 10);
+            const hh = +hourStr, mm = +minStr;
+            const dt = new Date(y, m - 1, d, hh, mm, 0, 0);
+            const offMin = -dt.getTimezoneOffset();
+            const sign = offMin >= 0 ? "+" : "-";
+            const abs = Math.abs(offMin);
+            const offH = pad(Math.floor(abs / 60));
+            const offM = pad(abs % 60);
+            return `${y}-${pad(m)}-${pad(d)}T${pad(hh)}:${pad(mm)}:00${sign}${offH}:${offM}`;
+        }
+
+        function inOpeningHours(hh, mm) {
+            const start = 9 * 60, end = 22 * 60;
+            const cur = (+hh) * 60 + (+mm);
+            return cur >= start && cur <= end;
+        }
+
+        function isToday(dateStr) {
+            return dateStr === new Date().toISOString().split('T')[0];
+        }
+
+        // ====== UI: Opening-hours / past-time constraints ======
+        function updateTimeConstraints() {
+            const date = $('date').value;
+            const h1 = $('timeHour'), m1 = $('timeMinute');
+            const h2 = $('departureTimeHour'), m2 = $('departureTimeMinute');
+            if (!(date && h1 && m1 && h2 && m2)) return;
+
+            const now = new Date();
+            const curH = now.getHours();
+            const curM = now.getMinutes();
+            const today = isToday(date);
+
+            const toggle = (opt, disabled) => {
+                if (opt) opt.disabled = !!disabled;
+            };
+
+            // reset all
+            [h1, m1, h2, m2].forEach(s => Array.from(s.options).forEach(o => toggle(o, false)));
+
+            if (today) {
+                Array.from(h1.options).forEach(o => {
+                    if (o.value) toggle(o, +o.value < curH);
+                });
+                const selH1 = h1.value ? +h1.value : null;
+                Array.from(m1.options).forEach(o => {
+                    if (!o.value) return;
+                    const v = +o.value;
+                    const dis = (selH1 === curH && v < curM) || (selH1 && selH1 < curH);
+                    toggle(o, dis);
+                });
+                Array.from(h2.options).forEach(o => {
+                    if (o.value) toggle(o, +o.value < curH);
+                });
+                const selH2 = h2.value ? +h2.value : null;
+                Array.from(m2.options).forEach(o => {
+                    if (!o.value) return;
+                    const v = +o.value;
+                    toggle(o, (selH2 === curH && v < curM));
+                });
+            }
+
+            // clear invalid selections
+            [h1, m1, h2, m2].forEach(s => {
+                if (s.options[s.selectedIndex]?.disabled) s.value = '';
+            });
+        }
+
+        function validateNotInPast() {
+            const date = $('date').value;
+            const h1 = $('timeHour').value, m1 = $('timeMinute').value;
+            if (!(date && h1 && m1)) return true;
+            if (!isToday(date)) return true;
+            const now = new Date();
+            const a = new Date(`${date}T${String(h1).padStart(2, '0')}:${String(m1).padStart(2, '0')}:00`);
+            return a.getTime() >= new Date(now.getFullYear(), now.getMonth(), now.getDate(), now.getHours(), now.getMinutes(), 0, 0).getTime();
+        }
+
+        function validateOpeningAndOrder() {
+            const dateOnly = $('date').value;
+            const h1 = $('timeHour').value, m1 = $('timeMinute').value;
+            const h2 = $('departureTimeHour').value, m2 = $('departureTimeMinute').value;
+            const err = $('timeError');
+            err.style.display = 'none';
+            err.textContent = '';
+
+            if (!(dateOnly && h1 && m1 && h2 && m2)) return true; // let required handle empties
+
+            if (!inOpeningHours(h1, m1) || !inOpeningHours(h2, m2)) {
+                err.textContent = 'Giờ đặt/giờ trả phải trong khung 09:00–22:00.';
+                err.style.display = 'block';
+                return false;
+            }
+            const a = new Date(`${dateOnly}T${String(h1).padStart(2, '0')}:${String(m1).padStart(2, '0')}:00`);
+            const b = new Date(`${dateOnly}T${String(h2).padStart(2, '0')}:${String(m2).padStart(2, '0')}:00`);
+            if (!(b > a)) {
+                err.textContent = 'Giờ trả bàn phải lớn hơn giờ đến.';
+                err.style.display = 'block';
+                return false;
+            }
+            if (!validateNotInPast()) {
+                err.textContent = 'Không thể chọn giờ trong quá khứ.';
+                err.style.display = 'block';
+                return false;
+            }
+            return true;
+        }
+
+        // ====== Preload from URL ======
+        function preloadFromUrl() {
+            const p = new URLSearchParams(window.location.search);
+            const d = p.get('date');
+            const t = p.get('time');
+            const dt = p.get('departureTime');
+            const g = p.get('numberOfGuests');
+            const urlTableId = p.get('tableId') || p.get('selectedTableId') || p.get('preselectedTableId');
+
+            if (d) $('date').value = d;
+            if (t) {
+                const [h, m] = t.split(':');
+                $('timeHour').value = h || '';
+                $('timeMinute').value = m || '';
+            }
+            if (dt) {
+                const [h, m] = dt.split(':');
+                $('departureTimeHour').value = h || '';
+                $('departureTimeMinute').value = m || '';
+            }
+            if (g) $('numberOfGuests').value = g;
+
+            updateTimeConstraints();
+
+            // If a table id comes back via querystring, preload it and update UI
+            if (urlTableId) {
+                $('tableId').value = urlTableId;
+                fetch(`/api/public/tables/${urlTableId}`)
+                    .then(r => r.ok ? r.json() : null)
+                    .then(data => {
+                        if (data) selectTable(data);
+                    })
+                    .catch(() => {
+                    });
+            }
+        }
+
+        // ====== Table selection ======
+        function selectTable(table) {
+            $('tableId').value = table.id;
+            $('selectedTableName').textContent = table.tableName;
+            $('selectedTableDetails').textContent = `${table.areaName} - Tầng ${table.floor}`;
+            $('selectedTableInfo').style.display = 'block';
+            $('noTableSelected').style.display = 'none';
+            $('btnMainAction').textContent = 'Tiếp tục thanh toán';
+        }
+
+        window.selectTable = selectTable; // used by external page after redirect
+
+        async function preloadTable() {
+            if (!window.preselectedTableId) return;
+            try {
+                const r = await fetch(`/api/public/tables/${window.preselectedTableId}`);
+                if (r.ok) {
+                    const t = await r.json();
+                    selectTable(t);
+                }
+            } catch (err) {
+                console.error('preload table error', err);
+            }
+        }
+
+        function openTableSelection() {
+            const date = $('date').value;
+            const time = getTimeString();
+            const dep = getDepartureTimeString();
+            const guests = $('numberOfGuests').value;
+            if (!(date && time && dep && guests)) {
+                alert('Vui lòng điền đầy đủ thông tin đặt bàn trước khi chọn bàn.');
+                return;
+            }
+            window.location.href = `/reservations/select-table?date=${date}&time=${time}&departureTime=${dep}&numberOfGuests=${guests}`;
+        }
+
+        function getTimeString() {
+            const h = $('timeHour').value, m = $('timeMinute').value;
+            return (h && m) ? `${h}:${m}` : '';
+        }
+
+        function getDepartureTimeString() {
+            const h = $('departureTimeHour').value, m = $('departureTimeMinute').value;
+            return (h && m) ? `${h}:${m}` : '';
+        }
+
+        // ====== Preorder ======
+        const modal = $('preorderModal');
+        const btnOpen = $('btnOpenPreorder');
+        const btnClose = $('btnCloseModal');
+        const btnCancel = $('btnCancelModal');
+        const btnSave = $('btnSavePreorder');
+        const searchInput = $('menuSearch');
+        const summary = $('preorderSummary');
+        const hiddenInputs = $('preorderHiddenInputs');
+        const tableBody = document.querySelector('#menuTable tbody');
+
+        /** selected: itemId -> {id, name, price, qty} */
+        let selected = new Map();
+        let draft = new Map();
+
+        function seedFromServer() {
+            const nodes = document.querySelectorAll('#serverItemsSeed li');
+            if (!nodes.length) return;
+            nodes.forEach(li => {
+                const id = Number(li.dataset.id), qty = Number(li.dataset.qty || 0);
+                const row = [...tableBody.querySelectorAll('tr')].find(tr => Number(tr.dataset.id) === id);
+                if (row && qty > 0) {
+                    selected.set(id, {id, name: row.dataset.name, price: Number(row.dataset.price), qty});
+                }
+            });
+            renderSummary();
+            rebuildHiddenInputs();
+        }
+
+        function openModal() {
+            draft = new Map(JSON.parse(JSON.stringify(Array.from(selected))));
+            tableBody.querySelectorAll('tr').forEach(tr => {
+                const id = Number(tr.dataset.id);
+                const d = draft.get(id);
+                tr.querySelector('.qty-input').value = d ? d.qty : 0;
+            });
+            modal.style.display = 'flex';
+            modal.setAttribute('aria-hidden', 'false');
+            searchInput.value = '';
+            filterRows('');
+        }
+
+        function closeModal() {
+            modal.style.display = 'none';
+            modal.setAttribute('aria-hidden', 'true');
+        }
+
+        function renderSummary() {
+            summary.innerHTML = '';
+            if (selected.size === 0) {
+                summary.classList.add('preorder-summary--muted');
+                summary.textContent = 'Chưa có món nào.';
+                return;
+            }
+            summary.classList.remove('preorder-summary--muted');
+            selected.forEach(v => {
+                const chip = document.createElement('span');
+                chip.className = 'chip';
+                chip.textContent = `${v.name} x ${v.qty}`;
+                summary.appendChild(chip);
+            });
+        }
+
+        function rebuildHiddenInputs() {
+            hiddenInputs.innerHTML = '';
+            let i = 0;
+            selected.forEach(v => {
+                const id = document.createElement('input');
+                id.type = 'hidden';
+                id.name = `items[${i}].itemId`;
+                id.value = String(v.id);
+                const q = document.createElement('input');
+                q.type = 'hidden';
+                q.name = `items[${i}].quantity`;
+                q.value = String(v.qty);
+                const nm = document.createElement('input');
+                nm.type = 'hidden';
+                nm.name = `items[${i}].itemName`;
+                nm.value = v.name || '';
+                hiddenInputs.append(id, q, nm);
+                i++;
+            });
+        }
+
+        function commitDraft() {
+            selected = new Map();
+            draft.forEach((v, k) => {
+                if (v.qty > 0) selected.set(k, v);
+            });
+            renderSummary();
+            rebuildHiddenInputs();
+            closeModal();
+        }
+
+        function filterRows(q) {
+            const kw = q.trim().toLowerCase();
+            tableBody.querySelectorAll('tr').forEach(tr => {
+                const code = ('SP' + String(tr.dataset.id).padStart(6, '0')).toLowerCase();
+                const name = (tr.dataset.name || '').toLowerCase();
+                tr.classList.toggle('hide', !(code.includes(kw) || name.includes(kw)));
+            });
+        }
+
+        function hookRowEvents() {
+            if (!tableBody) return;
+            tableBody.addEventListener('click', e => {
+                const tr = e.target.closest('tr');
+                if (!tr) return;
+                const id = Number(tr.dataset.id), name = tr.dataset.name, price = Number(tr.dataset.price);
+                const qtyInput = tr.querySelector('.qty-input');
+                if (e.target.classList.contains('btn-view-image')) {
+                    const url = e.target.getAttribute('data-img');
+                    openImageViewer(url);
+                    return;
+                }
+                if (e.target.classList.contains('btn-qty-inc')) {
+                    const next = Math.min(999, Number(qtyInput.value || 0) + 1);
+                    qtyInput.value = next;
+                    draft.set(id, {id, name, price, qty: next});
+                }
+                if (e.target.classList.contains('btn-qty-dec')) {
+                    const next = Math.max(0, Number(qtyInput.value || 0) - 1);
+                    qtyInput.value = next;
+                    if (next === 0) draft.delete(id); else draft.set(id, {id, name, price, qty: next});
+                }
+                if (e.target.classList.contains('btn-row-remove')) {
+                    qtyInput.value = 0;
+                    draft.delete(id);
+                }
+            });
+            tableBody.addEventListener('input', e => {
+                if (!e.target.classList.contains('qty-input')) return;
+                const tr = e.target.closest('tr');
+                const id = Number(tr.dataset.id), name = tr.dataset.name, price = Number(tr.dataset.price);
+                let v = parseInt(e.target.value.replace(/\D/g, ''), 10);
+                if (isNaN(v)) v = 0;
+                v = Math.max(0, Math.min(999, v));
+                e.target.value = v;
+                if (v === 0) draft.delete(id); else draft.set(id, {id, name, price, qty: v});
+            });
+        }
+
+        // ====== Image viewer ======
+        const viewer = $('imgViewer'), viewerImg = $('imgViewerImg');
+
+        function openImageViewer(url) {
+            viewerImg.src = url || 'https://via.placeholder.com/1000x750?text=No+Image';
+            viewer.style.display = 'flex';
+            viewer.setAttribute('aria-hidden', 'false');
+        }
+
+        function closeImageViewer() {
+            viewer.style.display = 'none';
+            viewer.setAttribute('aria-hidden', 'true');
+            viewerImg.src = '';
+        }
+
+        // ====== Main button ======
+        function onMainAction() {
+            if (!validateOpeningAndOrder()) return;
+            const tableId = $('tableId').value;
+            if (!tableId) {
+                openTableSelection();
+                return;
+            }
+            // Submit: build hidden fields first via submit handler (requestSubmit triggers it)
+            $('reservationForm').requestSubmit();
+        }
+
+        // ====== Form submit (build OffsetDateTime) ======
+        function onSubmit(e) {
+            if (!validateOpeningAndOrder()) {
+                e.preventDefault();
+                return;
+            }
+            const dateOnly = $('date').value;
+            const h1 = $('timeHour').value, m1 = $('timeMinute').value;
+            const h2 = $('departureTimeHour').value, m2 = $('departureTimeMinute').value;
+            $('reservationDate').value = buildOffsetISO(dateOnly, h1, m1);
+            $('reservationDepartureTime').value = buildOffsetISO(dateOnly, h2, m2);
+        }
+
+        // ====== Init ======
+        document.addEventListener('DOMContentLoaded', async function () {
+            preloadFromUrl();
+            await preloadTable();
+
+            // Events: time constraints
+            ['date', 'timeHour', 'timeMinute', 'departureTimeHour', 'departureTimeMinute'].forEach(id => {
+                const el = $(id);
+                if (el) el.addEventListener('change', updateTimeConstraints);
+            });
+
+            // Main button & clear table
+            $('btnMainAction').addEventListener('click', onMainAction);
+            const btnClear = $('btnClearTable');
+            if (btnClear) {
+                btnClear.addEventListener('click', () => {
+                    const date = $('date').value, time = getTimeString(), dep = getDepartureTimeString(),
+                        g = $('numberOfGuests').value;
+                    if (!(date && time && dep && g)) {
+                        $('tableId').value = '';
+                        $('selectedTableInfo').style.display = 'none';
+                        $('noTableSelected').style.display = 'block';
+                        $('btnMainAction').textContent = 'Tìm bàn';
+                        return;
+                    }
+                    window.location.href = `/reservations/select-table?date=${date}&time=${time}&departureTime=${dep}&numberOfGuests=${g}`;
+                });
+            }
+
+            // Preorder modal hooks
+            if (btnOpen) btnOpen.addEventListener('click', openModal);
+            if (btnClose) btnClose.addEventListener('click', closeModal);
+            if (btnCancel) btnCancel.addEventListener('click', closeModal);
+            if (btnSave) btnSave.addEventListener('click', commitDraft);
+            if (searchInput) searchInput.addEventListener('input', (e) => filterRows(e.target.value));
+            if (modal) modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // Image viewer hooks
+            $('btnCloseImg').addEventListener('click', closeImageViewer);
+            $('imgViewer').addEventListener('click', (e) => {
+                if (e.target === $('imgViewer')) closeImageViewer();
+            });
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && viewer.style.display === 'flex') closeImageViewer();
+            });
+
+            // Table row interactions
+            hookRowEvents();
+            seedFromServer();
+
+            // Form submit
+            $('reservationForm').addEventListener('submit', onSubmit);
+        });
+    })();
+</script>
+
+<!-- AI Chatbot Widget -->
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+</body>
+</html>

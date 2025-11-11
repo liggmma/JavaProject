@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title>Duyệt thực đơn | LuxDine</title>
+
+    <!-- Design tokens từ fragments -->
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .browse-page {
+            font-family: var(--font, Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial);
+            background: var(--color-bg, #F9FAFB);
+            color: var(--color-text, #111827);
+        }
+
+        /* ======= Hero / Search ======= */
+        .browse-page .hero {
+            background: var(--color-surface, #fff);
+            border-bottom: 1px solid var(--color-border, #E5E7EB);
+        }
+
+        .browse-page .container {
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+            padding: var(--space-8, 32px) var(--space-7, 24px);
+        }
+
+        /* Tìm kiếm: fix lệch hàng bằng chiều cao đồng nhất */
+        .browse-page .searchbar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: var(--space-6, 20px);
+        }
+
+        .browse-page .input {
+            flex: 1 1 auto;
+            height: 48px; /* đảm bảo cùng cao với nút */
+            padding: 0 16px;
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 10px;
+            font-size: 16px;
+            background: #fff;
+        }
+
+        .browse-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            min-height: 48px;
+            padding: 0 16px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: background .2s, border-color .2s, color .2s, transform .02s;
+        }
+
+        .browse-page .btn:active {
+            transform: translateY(1px);
+        }
+
+        .browse-page .btn--primary {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+        }
+
+        .browse-page .btn--primary:hover {
+            filter: brightness(1.05);
+        }
+
+        @media (max-width: 600px) {
+            .browse-page .searchbar {
+                flex-direction: column;
+            }
+
+            .browse-page .btn--primary {
+                width: 100%;
+            }
+        }
+
+        /* ======= Bộ lọc ======= */
+        .browse-page .filters {
+            display: grid;
+            gap: 12px;
+            margin-top: var(--space-6, 20px);
+            grid-template-columns: repeat(6, 1fr);
+        }
+
+        @media (max-width: 1100px) {
+            .browse-page .filters {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 680px) {
+            .browse-page .filters {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .browse-page .filter {
+            display: grid;
+            gap: 6px;
+        }
+
+        .browse-page .filter label {
+            font-weight: 600;
+            color: var(--color-primary, #0A0A23);
+            font-size: 14px;
+        }
+
+        .browse-page .select, .browse-page .number {
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 10px;
+            font-size: 14px;
+            background: #fff;
+        }
+
+        /* Chips bộ lọc */
+        .browse-page .applied {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .browse-page .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 12px;
+            color: var(--color-secondary, #F97316);
+            background: rgba(249, 115, 22, .08);
+            border: 1px solid rgba(249, 115, 22, .35);
+        }
+
+        .browse-page .chip a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .browse-page .chip a:hover {
+            text-decoration: underline;
+        }
+
+        /* ======= Thanh kết quả ======= */
+        .browse-page .results-bar {
+            background: var(--color-surface, #fff);
+            border-top: 1px solid var(--color-border, #E5E7EB);
+            border-bottom: 1px solid var(--color-border, #E5E7EB);
+        }
+
+        .browse-page .results-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            padding: var(--space-5, 16px) var(--space-7, 24px);
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+        }
+
+        .browse-page .muted {
+            color: var(--color-text-muted, #6B7280);
+            font-size: 14px;
+        }
+
+        .browse-page .sort {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        /* ======= Lưới thẻ ======= */
+        .browse-page .grid {
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+            padding: var(--space-8, 32px) var(--space-7, 24px);
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: var(--space-7, 24px);
+        }
+
+        /* Khi chỉ 1 kết quả: cố định bề rộng & căn giữa */
+        .browse-page .grid.grid--single {
+            grid-template-columns: 1fr;
+            justify-items: center;
+        }
+
+        .browse-page .grid.grid--single .card {
+            width: min(420px, 100%);
+        }
+
+        .browse-page .card {
+            background: #fff;
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform .2s, box-shadow .2s;
+            cursor: pointer;
+        }
+
+        .browse-page .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(0, 0, 0, .10);
+        }
+
+        .browse-page .card__img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            background: #f3f4f6;
+        }
+
+        .browse-page .card__body {
+            padding: 16px;
+            display: grid;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .browse-page .name {
+            font-weight: 800;
+            color: var(--color-primary, #0A0A23);
+            font-size: 16px;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .browse-page .price {
+            color: var(--color-secondary, #F97316);
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .browse-page .desc {
+            color: #555;
+            font-size: 14px;
+            line-height: 1.45;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .browse-page .meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .browse-page .sold {
+            font-size: 12px;
+            color: var(--color-text-muted, #6B7280);
+        }
+
+        .browse-page .rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .browse-page .stars {
+            display: inline-flex;
+            gap: 2px;
+            color: #FACC15;
+        }
+
+        .browse-page .stars svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        .browse-page .rating__label {
+            font-weight: 700;
+            font-size: 13px;
+            color: #1f2937;
+        }
+
+        .browse-page .badge-popular {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--color-secondary, #F97316);
+            background: rgba(249, 115, 22, .08);
+            border: 1px solid rgba(249, 115, 22, .35);
+            padding: 4px 8px;
+            border-radius: 999px;
+            width: max-content;
+        }
+
+        .browse-page .card__footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+        }
+
+        .browse-page .view {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .browse-page .view:hover {
+            filter: brightness(1.05);
+        }
+
+        /* Empty */
+        .browse-page .empty {
+            text-align: center;
+            color: var(--color-text-muted, #6B7280);
+            padding: var(--space-12, 64px) var(--space-7, 24px);
+        }
+
+        .browse-page .empty h3 {
+            color: var(--color-primary, #0A0A23);
+            margin: 0 0 8px;
+        }
+
+        /* Pagination */
+        .browse-page .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 0 32px;
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+        }
+
+        .browse-page .page {
+            min-width: 40px;
+            text-align: center;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border, #E5E7EB);
+            background: #fff;
+            color: var(--color-primary, #0A0A23);
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .browse-page .page:hover {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+            border-color: var(--color-primary, #0A0A23);
+        }
+
+        .browse-page .page.is-active {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+        }
+
+        .browse-page .page[aria-disabled="true"] {
+            opacity: .5;
+            pointer-events: none;
+        }
+
+        /* Sticky (mobile) */
+        .browse-page .sticky {
+            position: sticky;
+            bottom: 0;
+            z-index: 30;
+            display: none;
+            gap: 10px;
+            padding: 10px var(--space-7, 24px);
+            background: rgba(255, 255, 255, .86);
+            backdrop-filter: saturate(180%) blur(8px);
+            border-top: 1px solid var(--color-border, #E5E7EB);
+        }
+
+        @media (max-width: 768px) {
+            .browse-page .sticky {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* A11y: sr-only */
+        .sr-only {
+            position: absolute !important;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+    </style>
+</head>
+
+<body class="browse-page">
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<section class="hero">
+    <div class="container">
+        <form action="/browse/menu" id="browse-form" method="get">
+            <!-- Tìm kiếm -->
+            <div class="searchbar">
+                <label class="sr-only" for="keyword">Tìm món ăn</label>
+                <input class="input" id="keyword" name="keyword" placeholder="Tìm ‘Pasta’, ‘Steak’, ‘Dessert’…"
+                       th:value="${currentKeyword}" type="text"/>
+                <button class="btn btn--primary" type="submit">Tìm kiếm</button>
+            </div>
+
+            <!-- Bộ lọc (không có nút Apply) -->
+            <div aria-label="Bộ lọc" class="filters" role="group">
+                <div class="filter">
+                    <label for="category">Danh mục</label>
+                    <select class="select" id="category" name="category">
+                        <option value="">Tất cả danh mục</option>
+                        <option th:each="cat : ${categories}" th:selected="${cat.id == currentCategory}"
+                                th:text="${cat.name}" th:value="${cat.id}">
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Ô hiển thị giá theo kiểu VN + hidden input gửi số thô -->
+                <div class="filter">
+                    <label for="minPriceDisplay">Giá tối thiểu (VND)</label>
+                    <input autocomplete="off" class="number" id="minPriceDisplay" inputmode="numeric" placeholder="0"
+                           type="text"/>
+                    <input id="minPrice" name="minPrice" th:value="${currentMinPrice}" type="hidden"/>
+                </div>
+
+                <div class="filter">
+                    <label for="maxPriceDisplay">Giá tối đa (VND)</label>
+                    <input autocomplete="off" class="number" id="maxPriceDisplay" inputmode="numeric"
+                           placeholder="1.000.000"
+                           type="text"/>
+                    <input id="maxPrice" name="maxPrice" th:value="${currentMaxPrice}" type="hidden"/>
+                </div>
+
+                <div class="filter">
+                    <label for="sortBy">Sắp xếp theo</label>
+                    <select class="select" id="sortBy" name="sortBy">
+                        <option th:selected="${currentSortBy == 'name'}" value="name">Tên</option>
+                        <option th:selected="${currentSortBy == 'price'}" value="price">Giá</option>
+                        <option th:selected="${currentSortBy == 'popularity'}" value="popularity">Phổ biến</option>
+                        <option th:selected="${currentSortBy == 'createdAt'}" value="createdAt">Mới nhất</option>
+                    </select>
+                </div>
+
+                <div class="filter">
+                    <label for="sortOrder">Thứ tự</label>
+                    <select class="select" id="sortOrder" name="sortOrder">
+                        <option th:selected="${currentSortOrder == 'asc'}" value="asc">Tăng dần</option>
+                        <option th:selected="${currentSortOrder == 'desc'}" value="desc">Giảm dần</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Chips bộ lọc -->
+            <div aria-label="Bộ lọc đã áp dụng" class="applied">
+        <span class="chip" th:if="${currentKeyword != null and !#strings.isEmpty(currentKeyword)}">
+          Từ khóa: <strong th:text="${currentKeyword}">pizza</strong>
+          <a th:href="@{/browse/menu(keyword=, category=${currentCategory}, minPrice=${currentMinPrice}, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=0)}">×</a>
+        </span>
+
+                <span class="chip" th:if="${currentCategory != null}">
+          Danh mục:
+          <strong
+                  th:text="${
+              !#lists.isEmpty(categories.?[id == #vars.currentCategory])
+              ? (categories.?[id == #vars.currentCategory])[0].name
+              : currentCategory
+            }"
+          >Danh mục</strong>
+                    <!-- Xóa => về ALL category -->
+          <a th:href="@{/browse/menu(keyword=${currentKeyword}, category=, minPrice=${currentMinPrice}, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=0)}">×</a>
+        </span>
+
+                <span class="chip" th:if="${currentMinPrice != null}">
+  Tối thiểu:
+  <strong th:text="${#numbers.formatDecimal(currentMinPrice, 0, 0)}"></strong>
+  <a th:href="@{/browse/menu(keyword=${currentKeyword}, category=${currentCategory}, minPrice=, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=0)}">×</a>
+</span>
+
+                <span class="chip" th:if="${currentMaxPrice != null}">
+  Tối đa:
+  <strong th:text="${#numbers.formatDecimal(currentMaxPrice, 0, 0)}"></strong>
+  <a th:href="@{/browse/menu(keyword=${currentKeyword}, category=${currentCategory}, minPrice=${currentMinPrice}, maxPrice=, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=0)}">×</a>
+</span>
+            </div>
+
+            <input name="page" type="hidden" value="0"/>
+        </form>
+    </div>
+</section>
+
+<!-- Thanh kết quả -->
+<section aria-label="Tóm tắt kết quả" class="results-bar">
+    <div class="results-row">
+        <div class="muted">
+            Có <span th:text="${#lists.size(searchResponse.items)}">0</span> kết quả
+        </div>
+        <div class="sort">
+            <span class="muted">Đang sắp xếp theo</span>
+            <strong th:text="${currentSortBy}">name</strong>
+            <span class="muted">/</span>
+            <strong th:text="${currentSortOrder}">asc</strong>
+        </div>
+    </div>
+</section>
+
+<!-- Lưới kết quả -->
+<section class="grid"
+         th:classappend="${#lists.size(searchResponse.items) == 1} ? ' grid--single' : ''"
+         th:if="${!#lists.isEmpty(searchResponse.items)}">
+    <article class="card"
+             onclick="viewDish(this.dataset.itemSlug)"
+             th:data-item-slug="${item.slug}"
+             th:each="item : ${searchResponse.items}">
+        <img class="card__img"
+             decoding="async"
+             loading="lazy" onerror="this.src='https://via.placeholder.com/520x320?text=No+Image';"
+             th:alt="${item.name}"
+             th:src="${item.imageUrl != null ? item.imageUrl : 'https://images.unsplash.com/photo-1604908812770-32a87e24e0e0'}"/>
+        <div class="card__body" onclick="event.stopPropagation();">
+            <h3 class="name" th:text="${item.name}">Tên món</h3>
+            <div class="price price-vnd" th:attr="data-price=${item.price}">0 VND</div>
+            <p class="desc" th:text="${item.description}">Mô tả ngắn gọn…</p>
+
+            <div class="meta">
+                <div aria-label="5 trên 5 sao" class="rating" role="img">
+                    <div aria-hidden="true" class="stars">
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                    </div>
+                    <span class="rating__label">5.0</span>
+                </div>
+                <span class="sold"
+                      th:text="${(item.soldCount != null ? item.soldCount : 0) + ' đã bán'}">0 đã bán</span>
+            </div>
+
+            <span class="badge-popular"
+                  th:if="${top10Ids != null and #lists.contains(top10Ids, item.id)}">★ Phổ biến</span>
+
+            <div class="card__footer">
+                <span></span>
+                <button class="view" th:attr="onclick=|viewDish('${item.slug}')|" type="button">Xem chi tiết</button>
+            </div>
+        </div>
+    </article>
+</section>
+
+<!-- Empty -->
+<div class="empty" th:if="${#lists.isEmpty(searchResponse.items)}">
+    <h3>Không tìm thấy món nào</h3>
+    <p>Hãy điều chỉnh tiêu chí tìm kiếm hoặc xem tất cả món.</p>
+    <a class="btn btn--primary" th:href="@{/browse/menu}">Xóa bộ lọc</a>
+</div>
+
+<!-- Phân trang -->
+<nav aria-label="Phân trang" class="pagination" role="navigation" th:if="${searchResponse.totalPages > 1}">
+    <a class="page" rel="prev"
+       th:href="@{/browse/menu(keyword=${currentKeyword}, category=${currentCategory}, minPrice=${currentMinPrice}, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=${currentPage - 1})}"
+       th:if="${currentPage > 0}">
+        Trước
+    </a>
+
+    <span th:each="pageNum : ${#numbers.sequence(0, searchResponse.totalPages - 1)}"
+          th:if="${pageNum >= currentPage - 2 and pageNum <= currentPage + 2}">
+    <a class="page"
+       th:href="@{/browse/menu(keyword=${currentKeyword}, category=${currentCategory}, minPrice=${currentMinPrice}, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=${pageNum})}"
+       th:if="${pageNum != currentPage}"
+       th:text="${pageNum + 1}">
+      1
+    </a>
+    <span aria-current="page" class="page is-active" th:if="${pageNum == currentPage}" th:text="${pageNum + 1}">1</span>
+  </span>
+
+    <a class="page" rel="next"
+       th:href="@{/browse/menu(keyword=${currentKeyword}, category=${currentCategory}, minPrice=${currentMinPrice}, maxPrice=${currentMaxPrice}, sortBy=${currentSortBy}, sortOrder=${currentSortOrder}, page=${currentPage + 1})}"
+       th:if="${currentPage < searchResponse.totalPages - 1}">
+        Sau
+    </a>
+</nav>
+
+<!-- Sticky quick actions -->
+<div class="sticky">
+    <a class="btn btn--primary" th:href="@{/menu}">Tất cả món</a>
+    <a class="btn btn--primary" href="javascript:void(0)" onclick="window.scrollTo({top:0, behavior:'smooth'})">Lên đầu
+        trang</a>
+</div>
+
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<script>
+    function viewDish(slug) {
+        window.location.href = '/browse/dish/' + slug;
+    }
+
+    /* ======= VND cho thẻ giá (card) ======= */
+    function formatPriceVND(price) {
+        return new Intl.NumberFormat('vi-VN').format(Math.round(price)) + ' VND';
+    }
+
+    function applyVNDPrices() {
+        document.querySelectorAll('.price-vnd').forEach(el => {
+            const p = Number(el.getAttribute('data-price') || 0);
+            el.textContent = formatPriceVND(p);
+        });
+    }
+
+    /* ======= Định dạng ô nhập giá theo kiểu Việt Nam =======
+       - Hai input hiển thị: #minPriceDisplay, #maxPriceDisplay (text)
+       - Hai input ẩn gửi server: #minPrice, #maxPrice (hidden) */
+    const form = document.getElementById('browse-form');
+    const minDisp = document.getElementById('minPriceDisplay');
+    const maxDisp = document.getElementById('maxPriceDisplay');
+    const minHidden = document.getElementById('minPrice');
+    const maxHidden = document.getElementById('maxPrice');
+
+    const fmtVN = new Intl.NumberFormat('vi-VN');
+    const toNumber = (s) => {
+        const digits = String(s || '').replace(/[^\d]/g, '');
+        return digits ? parseInt(digits, 10) : '';
+    };
+
+    function syncDisplayToHidden(elDisp, elHidden) {
+        const n = toNumber(elDisp.value);
+        elHidden.value = n === '' ? '' : n;
+        elDisp.value = n === '' ? '' : fmtVN.format(n);
+    }
+
+    function initPriceDisplays() {
+        if (minHidden.value) minDisp.value = fmtVN.format(parseInt(minHidden.value, 10));
+        if (maxHidden.value) maxDisp.value = fmtVN.format(parseInt(maxHidden.value, 10));
+
+        // Chỉ cho phép số & dấu chấm, xóa ký tự khác
+        [minDisp, maxDisp].forEach(el => {
+            el.addEventListener('input', () => {
+                el.value = el.value.replace(/[^\d.]/g, ''); // người dùng có thể gõ .
+            });
+            el.addEventListener('blur', () => syncDisplayToHidden(el, el === minDisp ? minHidden : maxHidden)); // định dạng khi rời ô
+            el.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    syncDisplayToHidden(minDisp, minHidden);
+                    syncDisplayToHidden(maxDisp, maxHidden);
+                    form.submit(); // Enter => định dạng VN rồi submit
+                }
+            });
+        });
+    }
+
+    // Tự submit khi đổi select
+    function attachAutoSubmit() {
+        document.querySelectorAll('.browse-page .select').forEach(el => {
+            el.addEventListener('change', () => form.submit());
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyVNDPrices();
+        initPriceDisplays();
+        attachAutoSubmit();
+    });
+</script>
+</body>
+</html>

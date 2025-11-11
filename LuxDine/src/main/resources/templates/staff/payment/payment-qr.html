@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Quét QR để thanh toán — Bella Vista</title>
+    <style>
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background: #F9FAFB;
+            margin: 0
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 32px 16px
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid #E5E7EB;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            padding: 24px
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px
+        }
+
+        @media (min-width: 900px) {
+            .grid {
+                grid-template-columns:300px 1fr
+            }
+        }
+
+        .qr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #E5E7EB;
+            border-radius: 10px;
+            padding: 12px
+        }
+
+        .qr img {
+            width: 260px;
+            height: 260px
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns:1fr auto;
+            gap: 10px 16px
+        }
+
+        .kv dt {
+            color: #6B7280
+        }
+
+        .kv dd {
+            margin: 0;
+            font-weight: 600
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 16px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+            padding: 0 16px;
+            border-radius: 10px;
+            border: 1px solid #E5E7EB;
+            background: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            color: #111827
+        }
+
+        .btn-primary {
+            background: #0A0A23;
+            border-color: #0A0A23;
+            color: #fff
+        }
+
+        .muted {
+            color: #6B7280
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border: 1px solid #E5E7EB;
+            border-radius: 999px
+        }
+    </style>
+</head>
+<body>
+<main class="wrap">
+    <h2>Quét QR để thanh toán</h2>
+
+    <section class="grid card">
+        <div>
+            <div class="qr"><img th:src="${qrUrl}" alt="QR"/></div>
+            <p class="muted" style="margin-top:8px">Mở app ngân hàng/ví điện tử để quét. Đừng đóng trang này.</p>
+        </div>
+        <div>
+            <dl class="kv">
+                <dt>Order ID</dt>
+                <dd th:text="${order.id}">0</dd>
+                <dt>Số tiền</dt>
+                <dd th:text="${#numbers.formatInteger(payment.amount,0)} + ' ₫'">0 ₫</dd>
+                <dt>Phương thức</dt>
+                <dd th:text="${payment.method}">QR</dd>
+                <dt>Trạng thái</dt>
+                <dd><span id="statusText" class="status" th:text="${payment.status}">PENDING</span></dd>
+                <dt>Hết hạn sau</dt>
+                <dd><span id="countdown">05:00</span></dd> <!-- << thêm -->
+                <dt>Nội dung (des)</dt>
+                <dd class="muted" th:text="${payment.referenceCode}">—</dd>
+            </dl>
+            <div class="actions">
+                <a class="btn" th:href="@{|/staff/orders/${order.id}/bill|}">Dùng phương thức khác</a>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- WS libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+<script th:inline="javascript">
+    (function () {
+        const orderId = /*[[${order.id}]]*/ 0;
+        const paymentId = /*[[${payment.id}]]*/ 0;
+        const topic = /*[[${topic}]]*/ '';
+        const expiresAt = /*[[${expiresAt}]]*/ 0;
+
+        const statusEl = document.getElementById('statusText');
+        const countdownEl = document.getElementById('countdown');
+        const go = (url) => window.location.replace(url);
+
+        // Đếm ngược 5 phút (UI-only, không gọi server)
+        function fmt(ms) {
+            const t = Math.max(0, ms);
+            const m = Math.floor(t / 60000);
+            const s = Math.floor((t % 60000) / 1000);
+            return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+        }
+
+        function tick() {
+            const ms = expiresAt - Date.now();
+            countdownEl.textContent = fmt(ms);
+        }
+
+        tick();
+        setInterval(tick, 1000);
+
+        // WebSocket (server-push)
+        const sock = new SockJS('/ws');
+        const stomp = Stomp.over(sock);
+        stomp.debug = null;
+        stomp.connect({}, () => {
+            if (!topic) return;
+            stomp.subscribe(topic, (frame) => {
+                const msg = JSON.parse(frame.body || '{}');
+                if (!msg || Number(msg.orderId) !== Number(orderId)) return;
+
+                if (msg.status) statusEl.textContent = msg.status;
+                if (msg.status === 'COMPLETED') {
+                    go(`/payment/order-success?orderId=${orderId}&paymentId=${paymentId}`);
+                } else if (msg.status === 'FAILED' || msg.status === 'EXPIRED' || msg.reason === 'TIMEOUT') {
+                    go(`/payment/order-failed?orderId=${orderId}&paymentId=${paymentId}&error=${encodeURIComponent(msg.reason || msg.status)}`);
+                }
+            });
+        });
+    })();
+</script>
+</body>
+</html>

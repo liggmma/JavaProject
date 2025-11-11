@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title th:text="${errorTitle}">Lỗi hệ thống</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Typography -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+    <style>
+        /* ===== Design Tokens (Bella Vista) ===== */
+        :root{
+            --color-primary:#0A0A23;      /* headings, primary buttons */
+            --color-secondary:#F97316;    /* CTA */
+            --color-bg:#F9FAFB;           /* page background */
+            --color-border:#E5E7EB;       /* card border */
+            --color-text:#111827;         /* main text */
+            --color-text-muted:#6B7280;   /* secondary text */
+            --color-error:#EF4444;        /* error highlight */
+
+            --radius-sm:6px;
+            --radius-md:8px;
+            --radius-lg:12px;             /* card radius */
+            --shadow-card:0 1px 2px rgba(0,0,0,0.05);
+
+            --space-xs:4px;
+            --space-sm:8px;
+            --space-md:16px;
+            --space-lg:24px;
+            --space-xl:32px;
+            --space-xxl:64px;
+
+            --h1-size:32px; --h1-lh:1.2; --h1-weight:700;
+            --h2-size:24px; --h2-lh:1.3; --h2-weight:600;
+            --body-size:16px; --body-lh:1.5;
+            --small-size:14px;
+        }
+
+        /* ===== Base ===== */
+        *,*::before,*::after{ box-sizing:border-box; }
+        html,body{ height:100%; }
+        body{
+            margin:0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+            font-size:var(--body-size);
+            line-height:var(--body-lh);
+            color:var(--color-text);
+            background: linear-gradient(180deg,#fff 0%, var(--color-bg) 100%);
+            display:grid;
+            place-items:center;
+            padding: var(--space-xxl) var(--space-md);
+        }
+
+        /* ===== Card ===== */
+        .card{
+            width:min(560px, 92vw);
+            background:#fff;
+            border:1px solid var(--color-border);
+            border-radius:var(--radius-lg);
+            box-shadow:var(--shadow-card);
+            padding: clamp(20px, 4vw, 32px);
+            text-align:center;
+        }
+
+        .eyebrow{
+            display:inline-block;
+            padding:2px 10px;
+            border-radius:999px;
+            background: rgba(239,68,68,0.08); /* error soft bg */
+            color: var(--color-error);
+            font-weight:600;
+            font-size:12px;
+            margin-bottom: var(--space-sm);
+        }
+
+        .title{
+            margin:0 0 var(--space-sm) 0;
+            font-size:var(--h1-size);
+            line-height:var(--h1-lh);
+            font-weight:var(--h1-weight);
+            color:var(--color-primary);
+        }
+
+        .subtitle{
+            margin:0 0 var(--space-lg) 0;
+            color:var(--color-text-muted);
+            font-size:var(--small-size);
+        }
+
+        .code{
+            display:inline-block;
+            margin-bottom: var(--space-md);
+            padding: 6px 12px;
+            border:1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            background:#fff;
+            font-weight:600;
+            color: var(--color-error);
+        }
+
+        /* ===== Actions ===== */
+        .actions{ display:flex; gap: var(--space-sm); justify-content:center; }
+        .btn{
+            display:inline-flex; align-items:center; justify-content:center;
+            padding:10px 24px;
+            border-radius:var(--radius-md);
+            border:1px solid transparent;
+            font-weight:600;
+            text-decoration:none;
+            cursor:pointer;
+            transition: box-shadow .2s ease, transform .02s ease;
+        }
+        .btn:active{ transform: translateY(1px); }
+
+        .btn--primary{
+            background: var(--color-primary);
+            color:#fff;
+        }
+        .btn--primary:hover{ box-shadow:0 4px 14px rgba(10,10,35,.2); }
+
+        .btn--secondary{
+            background:#fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+        .btn--secondary:hover{ background: rgba(249,115,22,0.06); }
+
+        /* ===== Footer note ===== */
+        .note{ margin-top: var(--space-lg); color: var(--color-text-muted); font-size: var(--small-size); }
+
+        @media (max-width: 640px){
+            .actions{ flex-direction:column; }
+            .btn{ width:100%; }
+        }
+    </style>
+</head>
+<body>
+<main class="card" role="alert" aria-live="polite">
+    <span class="eyebrow">Error</span>
+    <h1 class="title" th:text="${errorTitle}">Đã xảy ra lỗi</h1>
+    <div class="code">
+        <span th:text="'Mã lỗi: ' + ${errorCode}">Mã lỗi: 500</span>
+    </div>
+    <p class="subtitle" th:text="${errorMessage}">Xin lỗi vì sự bất tiện. Vui lòng thử lại sau.</p>
+
+    <div class="actions">
+        <a class="btn btn--primary" href="/home" th:href="@{/static}">Về trang chủ</a>
+        <a class="btn btn--secondary" href="#" onclick="window.history.back()">Quay lại</a>
+    </div>
+
+    <p class="note">Nếu lỗi tiếp diễn, hãy liên hệ bộ phận hỗ trợ.</p>
+</main>
+</body>
+</html>

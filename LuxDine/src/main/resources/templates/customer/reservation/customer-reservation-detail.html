@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chi tiết đặt bàn — LuxDine</title>
+
+    <!-- Font Việt hóa tốt -->
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+          rel="stylesheet"/>
+
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --color-bg: #F9FAFB;
+            --color-surface: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+
+            /* Badge tokens (đồng bộ màu với trang danh sách) */
+            --badge-waiting-bg: #E0EAFF;
+            --badge-waiting-fg: #1D4ED8;
+            --badge-waiting-bd: #93C5FD; /* WAITING */
+            --badge-pending-bg: #FEF3C7;
+            --badge-pending-fg: #92400E;
+            --badge-pending-bd: #FBBF24; /* PENDING */
+            --badge-confirmed-bg: #DBEAFE;
+            --badge-confirmed-fg: #1E40AF;
+            --badge-confirmed-bd: #60A5FA; /* CONFIRMED */
+            --badge-arrived-bg: #ECFDF5;
+            --badge-arrived-fg: #166534;
+            --badge-arrived-bd: #16A34A; /* ARRIVED/SEATED/COMPLETED */
+            --badge-cancelled-bg: #FEE2E2;
+            --badge-cancelled-fg: #991B1B;
+            --badge-cancelled-bd: #FCA5A5; /* CANCELLED/NO_SHOW */
+
+            --radius: 16px;
+            --container: 720px;
+        }
+
+        html, body {
+            background: var(--color-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Be Vietnam Pro", Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--color-text);
+        }
+
+        .page {
+            display: flex;
+            justify-content: center;
+            padding: 64px 16px;
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .06);
+            width: 100%;
+            max-width: var(--container);
+            padding: 32px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--color-primary);
+            text-align: center;
+            margin: 0 0 24px;
+        }
+
+        .alert {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 16px;
+            border: 1px solid #FCA5A5;
+            font-weight: 600;
+        }
+
+        .section {
+            margin-top: 28px;
+        }
+
+        .section__title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            margin: 0 0 12px;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 220px 1fr;
+            gap: 12px 24px;
+            font-size: 16px;
+            align-items: start;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            background: #FFF;
+        }
+
+        .kv dt {
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        .kv dd {
+            margin: 0;
+            color: var(--color-text);
+            font-weight: 500;
+            word-break: break-word;
+        }
+
+        .meta {
+            color: var(--color-text-muted);
+            font-size: 14px;
+        }
+
+        /* Badge: gom alias theo nhóm màu */
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .02em;
+            text-transform: uppercase;
+            border: 1px solid transparent;
+        }
+
+        /* WAITING group */
+        .status--WAITING_FOR_PAYMENT,
+        .status--PAYMENT_PENDING {
+            background: var(--badge-waiting-bg);
+            color: var(--badge-waiting-fg);
+            border-color: var(--badge-waiting-bd);
+        }
+
+        /* PENDING group */
+        .status--PENDING,
+        .status--HOLD {
+            background: var(--badge-pending-bg);
+            color: var(--badge-pending-fg);
+            border-color: var(--badge-pending-bd);
+        }
+
+        /* CONFIRMED group */
+        .status--CONFIRMED,
+        .status--BOOKED {
+            background: var(--badge-confirmed-bg);
+            color: var(--badge-confirmed-fg);
+            border-color: var(--badge-confirmed-bd);
+        }
+
+        /* ARRIVED/green group */
+        .status--ARRIVED,
+        .status--SEATED,
+        .status--COMPLETED {
+            background: repeating-linear-gradient(45deg, rgba(22, 101, 52, .08) 0 8px, rgba(22, 101, 52, 0) 8px 16px),
+            var(--badge-arrived-bg);
+            color: var(--badge-arrived-fg);
+            border: 1px dashed var(--badge-arrived-bd);
+        }
+
+        /* CANCELLED/red group */
+        .status--CANCELLED,
+        .status--NO_SHOW,
+        .status--EXPIRED,
+        .status--PAYMENT_FAILED {
+            background: var(--badge-cancelled-bg);
+            color: var(--badge-cancelled-fg);
+            border-color: var(--badge-cancelled-bd);
+        }
+
+        .items {
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #FFF;
+        }
+
+        .items table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .items th, .items td {
+            padding: 12px 14px;
+            text-align: left;
+        }
+
+        .items thead th {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            color: var(--color-text-muted);
+            background: #F8FAFC;
+        }
+
+        .items tbody tr + tr {
+            border-top: 1px solid var(--color-border);
+        }
+
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            padding-top: 20px;
+            margin-top: 28px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            text-decoration: none;
+            border: 1px solid transparent;
+            transition: all .2s ease;
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .btn--primary:hover {
+            background: #1C1C38;
+            transform: translateY(-1px);
+        }
+
+        .btn--outline {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+
+        .btn--outline:hover {
+            background: #FFF7ED;
+        }
+
+        .btn--danger {
+            background: #fff;
+            color: #B91C1C;
+            border-color: #FCA5A5;
+        }
+
+        .btn--danger:hover {
+            background: #FEF2F2;
+            border-color: #EF4444;
+            color: #991B1B;
+        }
+
+        .btn--ghost {
+            background: #fff;
+            color: var(--color-text);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn--ghost:hover {
+            background: #F9FAFB;
+        }
+
+        @media (max-width: 640px) {
+            .card {
+                padding: 20px;
+            }
+
+            .kv {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main class="page">
+    <div class="card">
+        <h1 class="title">Chi tiết đặt bàn</h1>
+
+        <!-- Alert lỗi (nếu có) -->
+        <div class="alert" th:if="${param.error}">
+            <span th:text="${param.error[0]}">Đã có lỗi xảy ra</span>
+        </div>
+
+        <!-- Tóm tắt -->
+        <section class="section">
+            <h2 class="section__title">Tóm tắt</h2>
+            <dl class="kv">
+                <dt>Mã đặt bàn</dt>
+                <dd><strong th:text="${reservation.reservationCode}">RSV-001</strong></dd>
+
+                <dt>Trạng thái</dt>
+                <dd>
+          <span class="status-badge"
+                th:classappend="${' status--' + #strings.toUpperCase(reservation.status)}"
+                th:text="${#strings.toUpperCase(reservation.status)}">PENDING</span>
+                </dd>
+
+                <dt>Thời gian đặt</dt>
+                <dd th:text="${reservation.reservationDate != null ? #temporals.format(reservation.reservationDate, 'HH:mm, dd/MM/yyyy') : '—'}">
+                    —
+                </dd>
+
+                <dt>Đến thực tế</dt>
+                <dd th:text="${reservation.actualArrivalTime != null ? #temporals.format(reservation.actualArrivalTime, 'HH:mm, dd/MM/yyyy') : '—'}">
+                    —
+                </dd>
+
+                <dt>Số khách</dt>
+                <dd th:text="${reservation.numberOfGuests != null ? reservation.numberOfGuests : '—'}">—</dd>
+
+                <dt>Đặt cọc</dt>
+                <dd th:text="${reservation.depositAmount != null
+              ? #numbers.formatDecimal(reservation.depositAmount, 1, 'POINT', 0, 'DEFAULT') + ' VND'
+              : '—'}">—
+                </dd>
+
+                <dt>Ghi chú</dt>
+                <dd th:text="${reservation.notes ?: '—'}">—</dd>
+
+                <dt>Tạo lúc</dt>
+                <dd th:text="${reservation.createdAt != null ? #temporals.format(reservation.createdAt.atZone(T(java.time.ZoneId).of('Asia/Ho_Chi_Minh')), 'HH:mm, dd/MM/yyyy') : '—'}">
+                    —
+                </dd>
+            </dl>
+        </section>
+
+        <!-- Thông tin khách -->
+        <section class="section">
+            <h2 class="section__title">Thông tin khách</h2>
+            <dl class="kv">
+                <dt>Họ tên</dt>
+                <dd th:text="${reservation.customerName ?: '—'}">—</dd>
+
+                <dt>Email</dt>
+                <dd th:text="${reservation.customerEmail ?: '—'}">—</dd>
+
+                <dt>SĐT</dt>
+                <dd th:text="${reservation.customerPhone ?: '—'}">—</dd>
+            </dl>
+        </section>
+
+        <!-- Bàn & khu vực -->
+        <section class="section">
+            <h2 class="section__title">Bàn & Khu vực</h2>
+            <dl class="kv">
+                <dt>Tên bàn</dt>
+                <dd th:text="${reservation.tableName ?: 'Chưa gán'}">Chưa gán</dd>
+
+                <dt>Loại bàn</dt>
+                <dd th:text="${reservation.tableType ?: '—'}">—</dd>
+
+                <dt>Sức chứa</dt>
+                <dd th:text="${reservation.tableCapacity != null ? reservation.tableCapacity : '—'}">—</dd>
+
+                <dt>Khu vực</dt>
+                <dd th:text="${reservation.areaName ?: '—'}">—</dd>
+            </dl>
+        </section>
+
+        <!-- Danh sách món (items trong ReservationResponse) -->
+        <section class="section">
+            <h2 class="section__title">Món đã chọn</h2>
+            <div class="items" th:if="${reservation.items != null and !reservation.items.isEmpty()}">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:60%">Tên món</th>
+                        <th style="width:20%">Số lượng</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="it : ${reservation.items}">
+                        <td th:text="${it.itemName}">Bún Bò Huế</td>
+                        <td th:text="${it.quantity}">2</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="meta" th:if="${reservation.items == null or reservation.items.isEmpty()}">Chưa có món nào.</div>
+        </section>
+
+        <!-- Actions -->
+        <div class="actions">
+            <!-- Thanh toán: chỉ khi WAITING_FOR_PAYMENT -->
+            <a class="btn btn--primary"
+               th:href="@{'/reservations/' + ${reservation.id} + '/pay'}"
+               th:if="${#strings.equalsIgnoreCase(reservation.status,'WAITING_FOR_PAYMENT')}">Thanh toán</a>
+
+            <!-- Cập nhật: chỉ khi PENDING hoặc CONFIRMED -->
+            <a class="btn btn--outline"
+               th:href="@{'/reservations/' + ${reservation.id} + '/edit'}"
+               th:if="${#strings.equalsIgnoreCase(reservation.status,'PENDING') or #strings.equalsIgnoreCase(reservation.status,'CONFIRMED')}">Cập nhật</a>
+
+            <!-- Hủy: chỉ khi PENDING hoặc CONFIRMED -->
+            <form method="post"
+                  th:action="@{'/reservations/' + ${reservation.id} + '/cancel'}" th:if="${#strings.equalsIgnoreCase(reservation.status,'PENDING') or #strings.equalsIgnoreCase(reservation.status,'CONFIRMED')}">
+                <button class="btn btn--danger" type="submit">Hủy đặt bàn</button>
+            </form>
+
+            <a class="btn btn--ghost" th:href="@{/reservations}">Quay lại danh sách</a>
+        </div>
+
+    </div>
+</main>
+
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <title>Đơn đặt bàn - LuxDine</title>
+
+    <!-- Typography -->
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <!-- Staff shared styles -->
+    <th:block th:replace="~{staff/fragments/staff-header :: staffStyles}"></th:block>
+
+    <style>
+        :root {
+            --color-primary: #0a0a23;
+            --color-bg: #f9fafb;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+            --color-success: #22c55e;
+            --color-warning: #facc15;
+            --color-error: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, .05);
+            --shadow-hover: 0 4px 14px rgba(0, 0, 0, .1);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            --h1-size: 32px;
+            --h1-lh: 1.2;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-lh: 1.3;
+            --h2-weight: 600;
+            --h3-size: 20px;
+            --h3-lh: 1.4;
+            --h3-weight: 500;
+            --body-size: 16px;
+            --body-lh: 1.5;
+            --body-weight: 400;
+            --small-size: 14px
+        }
+
+        *, *:before, *:after {
+            box-sizing: border-box
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--body-size);
+            line-height: var(--body-lh);
+            color: var(--color-text);
+            background: var(--color-bg)
+        }
+
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-lg);
+            width: 100%
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap;
+            gap: var(--space-md)
+        }
+
+        .page-title {
+            font-size: var(--h1-size);
+            font-weight: var(--h1-weight);
+            line-height: var(--h1-lh);
+            color: var(--color-text);
+            margin: 0
+        }
+
+        .page-subtitle {
+            font-size: var(--body-size);
+            color: var(--color-text-muted);
+            margin: var(--space-xs) 0 0
+        }
+
+        .reservation-count {
+            background: var(--color-bg);
+            color: var(--color-text-muted);
+            padding: var(--space-xs) var(--space-md);
+            border-radius: 999px;
+            font-size: var(--small-size);
+            font-weight: 500
+        }
+
+        .search-filter-bar {
+            display: flex;
+            gap: var(--space-md);
+            align-items: center;
+            margin-bottom: var(--space-xl);
+            flex-wrap: wrap
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            position: relative
+        }
+
+        .search-input input {
+            width: 100%;
+            padding: var(--space-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: var(--body-size);
+            background: #fff;
+            outline: none;
+            transition: border-color .2s
+        }
+
+        .search-input input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(10, 10, 35, .08)
+        }
+
+        .filter-select {
+            padding: var(--space-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background: #fff;
+            font-size: var(--small-size);
+            color: var(--color-text);
+            cursor: pointer;
+            outline: none;
+            transition: border-color .2s;
+            min-width: 140px
+        }
+
+        .filter-select:focus {
+            border-color: var(--color-primary)
+        }
+
+        .reservations-grid {
+            display: grid;
+            gap: var(--space-lg)
+        }
+
+        .reservation-card {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-card);
+            transition: box-shadow .2s
+        }
+
+        .reservation-card:hover {
+            box-shadow: var(--shadow-hover)
+        }
+
+        .reservation-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: var(--space-md)
+        }
+
+        .customer-info {
+            flex: 1
+        }
+
+        .customer-name {
+            font-size: var(--h3-size);
+            font-weight: var(--h3-weight);
+            color: var(--color-primary);
+            margin: 0 0 var(--space-xs)
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px
+        }
+
+        .status-confirmed {
+            background: #dcfce7;
+            color: #166534
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e
+        }
+
+        .status-cancelled {
+            background: #fee2e2;
+            color: #991b1b
+        }
+
+        .status-arrived {
+            background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+            color: #166534;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(34, 197, 94, .2);
+            border: 1px solid #86efac
+        }
+
+        .confirmation-info {
+            color: var(--color-text-muted);
+            font-size: var(--small-size);
+            margin-top: var(--space-xs)
+        }
+
+        .reservation-details {
+            display: grid;
+            grid-template-columns:repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-md);
+            margin-bottom: var(--space-md)
+        }
+
+        .detail-label {
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-xs)
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: var(--color-text)
+        }
+
+        .contact-info {
+            color: var(--color-text-muted);
+            font-size: var(--small-size)
+        }
+
+        .special-notes {
+            margin-top: var(--space-md)
+        }
+
+        .note-tag {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--small-size);
+            font-weight: 500
+        }
+
+        .note-special {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe
+        }
+
+        .reservation-actions {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            font-size: var(--small-size);
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all .2s;
+            white-space: nowrap
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff
+        }
+
+        .btn-primary:hover {
+            box-shadow: 0 4px 14px rgba(10, 10, 35, .2)
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--color-text);
+            border-color: var(--color-border)
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg)
+        }
+
+        /* Inline buttons in forms (Accept / Arrived) */
+        .btn-inline {
+            background: #fff;
+            color: var(--color-text);
+            border: 2px solid var(--color-border);
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all .2s
+        }
+
+        .btn-inline:hover {
+            background: var(--color-bg);
+            border-color: var(--color-primary)
+        }
+
+        @media (max-width: 1024px) {
+            .main-content {
+                padding: var(--space-lg) var(--space-md)
+            }
+
+            .search-filter-bar {
+                flex-direction: column;
+                align-items: stretch
+            }
+
+            .search-input {
+                min-width: auto
+            }
+
+            .reservation-details {
+                grid-template-columns:1fr
+            }
+
+            .reservation-actions {
+                flex-direction: column;
+                align-items: stretch
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: var(--space-md)
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md)
+            }
+
+            .page-title {
+                font-size: var(--h2-size)
+            }
+
+            .reservation-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md)
+            }
+
+            .reservation-actions {
+                width: 100%
+            }
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+
+<body>
+<!-- Header -->
+<div th:replace="~{staff/fragments/staff-header :: staffHeader}"></div>
+
+<main class="main-content">
+    <!-- Thông báo lỗi -->
+    <div class="alert alert-error" style="background:#fee2e2;color:#991b1b;padding:12px 16px;border-radius:8px;margin-bottom:24px;border:1px solid #fca5a5"
+         th:if="${param.error}">
+        <span th:text="${param.error[0]}">Có lỗi xảy ra</span>
+    </div>
+
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Đơn đặt bàn</h1>
+            <p class="page-subtitle">Quản lý tất cả đơn đặt bàn.</p>
+        </div>
+        <div class="reservation-count" th:text="${reservationCount} + ' đơn đặt bàn'">0 đơn đặt bàn</div>
+    </div>
+
+    <!-- Tìm kiếm & Lọc -->
+    <div class="search-filter-bar">
+        <form action="/staff/reservations/search-filter" class="search-filter-form" method="get"
+              style="display:flex;gap:var(--space-md);align-items:center;flex-wrap:wrap;width:100%">
+            <div class="search-input" style="flex:1;min-width:300px">
+                <input name="searchTerm" placeholder="Tìm theo tên hoặc mã đặt bàn..." th:value="${searchRequest?.searchTerm}"
+                       type="text"/>
+            </div>
+
+            <div class="filter-group" style="display:flex;gap:var(--space-sm);align-items:center">
+                <select class="filter-select" name="status" title="Lọc theo trạng thái">
+                    <option value="">Tất cả trạng thái</option>
+                    <option th:selected="${searchRequest?.status == 'CONFIRMED'}" value="CONFIRMED">Đã xác nhận</option>
+                    <option th:selected="${searchRequest?.status == 'ARRIVED'}" value="ARRIVED">Đã đến</option>
+                    <option th:selected="${searchRequest?.status == 'PENDING'}" value="PENDING">Chờ xác nhận</option>
+                    <option th:selected="${searchRequest?.status == 'CANCELLED'}" value="CANCELLED">Đã hủy</option>
+                </select>
+
+                <select class="filter-select" name="dateRange" title="Lọc theo thời gian">
+                    <option value="">Tất cả thời gian</option>
+                    <option th:selected="${searchRequest?.dateRange == 'today'}" value="today">Hôm nay</option>
+                    <option th:selected="${searchRequest?.dateRange == 'tomorrow'}" value="tomorrow">Ngày mai</option>
+                    <option th:selected="${searchRequest?.dateRange == 'this_week'}" value="this_week">Tuần này</option>
+                    <option th:selected="${searchRequest?.dateRange == 'this_month'}" value="this_month">Tháng này
+                    </option>
+                </select>
+
+                <button class="btn btn-primary" type="submit">Tìm & lọc</button>
+                <a class="btn btn-secondary" href="/staff/reservations">Xóa lọc</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Danh sách Đơn đặt bàn -->
+    <div class="reservations-grid" th:if="${!reservations.isEmpty()}">
+        <div class="reservation-card" th:each="reservation : ${reservations}">
+            <div class="reservation-header">
+                <div class="customer-info">
+                    <h3 class="customer-name" th:text="${reservation.customerName}">Khách hàng</h3>
+
+                    <!-- Huy hiệu trạng thái: giữ class theo status, hiển thị nhãn tiếng Việt -->
+                    <span class="status-badge"
+                          th:classappend="' status-' + ${#strings.toLowerCase(reservation.status)}"
+                          th:text="${reservation.status == 'CONFIRMED' ? 'Đã xác nhận' : (reservation.status == 'ARRIVED' ? 'Đã đến' : (reservation.status == 'PENDING' ? 'Chờ xác nhận' : (reservation.status == 'CANCELLED' ? 'Đã hủy' : reservation.status)))}">
+              Đã xác nhận
+            </span>
+
+                    <div class="confirmation-info">
+                        <span th:text="${reservation.reservationCode}">Mã đặt</span>
+                        <span th:text="' • ' + ${reservation.customerPhone}"> • 0123 456 789</span>
+                    </div>
+                </div>
+
+                <div class="reservation-actions">
+                    <!-- Chấp nhận (cho PENDING) -->
+                    <form method="post"
+                          style="display:inline" th:action="@{|/staff/reservations/${reservation.id}/accept|}"
+                          th:if="${reservation.status == 'PENDING'}">
+                        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+                        <button class="btn-inline" type="submit">Chấp nhận</button>
+                    </form>
+
+                    <!-- Đánh dấu ĐÃ ĐẾN (cho CONFIRMED) -->
+                    <form method="post"
+                          style="display:inline" th:action="@{|/staff/reservations/${reservation.id}/mark-arrived|}"
+                          th:if="${reservation.status == 'CONFIRMED'}">
+                        <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+                        <button class="btn-inline" type="submit">Đánh dấu đã đến</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Gọi món (khi ĐÃ ĐẾN) -->
+            <form method="post"
+                  style="display:inline" th:action="@{|/staff/reservations/${reservation.id}/order|}" th:if="${reservation.status == 'ARRIVED'}">
+                <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+                <button class="btn btn-primary" type="submit">Gọi món</button>
+            </form>
+
+            <div class="reservation-details">
+                <div>
+                    <div class="detail-label">Ngày & Giờ</div>
+                    <div class="detail-value"
+                         th:text="${#temporals.format(reservation.reservationDate, 'dd/MM/yyyy HH:mm')}">15/12/2024
+                        19:30
+                    </div>
+                </div>
+                <div>
+                    <div class="detail-label">Số khách</div>
+                    <div class="detail-value" th:text="${reservation.numberOfGuests} + ' khách'">4 khách</div>
+                </div>
+                <div>
+                    <div class="detail-label">Bàn</div>
+                    <div class="detail-value" th:text="${reservation.tableName}">A1</div>
+                </div>
+                <div>
+                    <div class="detail-label">Liên hệ</div>
+                    <div class="contact-info" th:text="${reservation.customerEmail}">email@domain.com</div>
+                </div>
+            </div>
+
+            <div class="special-notes" th:if="${reservation.notes != null and !#strings.isEmpty(reservation.notes)}">
+                <div class="note-tag note-special">
+                    <strong>Ghi chú:</strong>
+                    <span th:text="${reservation.notes}">Yêu cầu đặc biệt</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Trạng thái rỗng -->
+    <div class="empty-state" style="text-align:center;padding:4rem 2rem" th:if="${reservations.isEmpty()}">
+        <div style="font-size:4rem;color:var(--color-text-muted);margin-bottom:1rem">📅</div>
+        <h3 style="color:var(--color-text);margin-bottom:.5rem">Không có đơn đặt bàn</h3>
+        <p style="color:var(--color-text-muted);margin-bottom:2rem">Không có đơn nào phù hợp với tiêu chí tìm kiếm.</p>
+        <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+            <a class="btn btn-primary" href="/staff/reservations">Xem tất cả</a>
+        </div>
+    </div>
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('.search-filter-form');
+        const input = document.querySelector('input[name="searchTerm"]');
+        const statusSel = document.querySelector('select[name="status"]');
+        const dateSel = document.querySelector('select[name="dateRange"]');
+        const clearBtn = document.querySelector('a[href="/staff/reservations"]');
+
+        if (input) {
+            input.addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    form.submit();
+                }
+            });
+        }
+        if (statusSel) {
+            statusSel.addEventListener('change', () => form.submit());
+        }
+        if (dateSel) {
+            dateSel.addEventListener('change', () => form.submit());
+        }
+        if (clearBtn) {
+            clearBtn.addEventListener('click', e => {
+                e.preventDefault();
+                input.value = '';
+                statusSel.value = '';
+                dateSel.value = '';
+                window.location.href = '/staff/reservations';
+            });
+        }
+        if (form) {
+            form.addEventListener('submit', () => {
+                const btn = form.querySelector('button[type="submit"]');
+                if (btn) {
+                    btn.textContent = '⏳ Đang tìm...';
+                    btn.disabled = true;
+                }
+            });
+        }
+    });
+</script>
+
+<!-- AI Chatbot Widget -->
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title th:text="${item.name} + ' | LuxDine'">Chi tiết món | LuxDine</title>
+
+    <!-- Design tokens từ fragments -->
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+
+    <style>
+        :root {
+            --font: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+            --color-bg: #F9FAFB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+            --color-surface: #fff;
+            --color-border: #E5E7EB;
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --space-6: 20px;
+            --space-7: 24px;
+            --space-8: 32px;
+            --space-10: 48px;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .dish-page {
+            font-family: var(--font);
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .dish-page .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-10) var(--space-7);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns:1.1fr 0.9fr;
+            gap: var(--space-8);
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+        }
+
+        .media {
+            padding: var(--space-6);
+        }
+
+        .media__main {
+            position: relative;
+            aspect-ratio: 4/3;
+            background: #f3f4f6;
+            border-radius: 10px;
+            overflow: hidden;
+            display: grid;
+            place-items: center;
+        }
+
+        .media__main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .summary {
+            padding: var(--space-7);
+        }
+
+        .title {
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 800;
+            margin: 0 0 6px;
+            color: var(--color-primary);
+        }
+
+        .meta-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .price {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--color-secondary);
+        }
+
+        .sold {
+            font-size: 13px;
+            color: var(--color-text-muted);
+        }
+
+        .category {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--color-bg);
+            color: var(--color-text-muted);
+            border: 1px solid var(--color-border);
+            font-weight: 600;
+            font-size: 13px;
+            width: fit-content;
+        }
+
+        .rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .stars svg {
+            width: 18px;
+            height: 18px;
+            flex: none;
+            fill: currentColor;
+            color: #FACC15;
+        }
+
+        .rating__label {
+            font-weight: 700;
+            font-size: 14px;
+            color: #1f2937;
+        }
+
+        .badges {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            font-weight: 700;
+            font-size: 12px;
+            border: 1px solid transparent;
+            background: #fff;
+        }
+
+        .badge--popular {
+            color: var(--color-secondary);
+            background: rgba(249, 115, 22, .08);
+            border-color: rgba(249, 115, 22, .35);
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 14px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            user-select: none;
+            transition: background .2s, border-color .2s, color .2s, transform .02s;
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .btn--primary:hover {
+            filter: brightness(1.08);
+        }
+
+        .btn--ghost {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+
+        .btn--ghost:hover {
+            background: rgba(249, 115, 22, .06);
+        }
+
+        .btn--reserve {
+            background: #fff;
+            color: var(--color-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn--reserve:hover {
+            background: #f3f4f6;
+        }
+
+        /* Tabs (APG + Material/NNg inspired) */
+        .tabs {
+            margin-top: var(--space-8);
+        }
+
+        .tablist {
+            display: flex;
+            gap: 8px;
+            background: #F3F4F6;
+            padding: 6px;
+            border-radius: 10px;
+            border: 1px solid var(--color-border);
+            overflow: auto;
+        }
+
+        .tab {
+            appearance: none;
+            background: transparent;
+            border: 0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 700;
+            color: #4b5563;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .tab[aria-selected="true"] {
+            background: #fff;
+            color: var(--color-primary);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .04);
+        }
+
+        .tabpanel {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 10px;
+        }
+
+        .tabpanel[hidden] {
+            display: none;
+        }
+
+        /* Feedback list */
+        .feedback {
+            display: grid;
+            gap: 14px;
+        }
+
+        .feedback__item {
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .feedback__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 6px;
+        }
+
+        .feedback__name {
+            font-weight: 700;
+        }
+
+        .feedback__time {
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        /* Sticky actions (mobile) */
+        .sticky {
+            position: sticky;
+            bottom: 0;
+            z-index: 30;
+            background: rgba(255, 255, 255, .86);
+            backdrop-filter: saturate(180%) blur(8px);
+            border-top: 1px solid var(--color-border);
+            display: none;
+            gap: 10px;
+            padding: 10px var(--space-7);
+        }
+
+        @media (max-width: 1024px) {
+            .layout {
+                grid-template-columns:1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sticky {
+                display: grid;
+                grid-template-columns:1fr 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="dish-page">
+<!-- Header -->
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main class="container">
+    <section class="layout" aria-label="Dish detail layout">
+        <!-- Media -->
+        <aside class="media card" aria-label="Hình ảnh món ăn">
+            <div class="media__main">
+                <img
+                        th:src="${item.imageUrl != null ? item.imageUrl : 'https://images.unsplash.com/photo-1604908812770-32a87e24e0e0'}"
+                        th:alt="${item.name}"
+                        loading="eager" decoding="async"
+                        onerror="this.src='https://via.placeholder.com/800x560?text=No+Image';"/>
+            </div>
+        </aside>
+
+        <!-- Summary -->
+        <article class="summary card" aria-labelledby="dish-title">
+            <h1 id="dish-title" class="title" th:text="${item.name}">Tên món</h1>
+
+            <div class="meta-row">
+                <!-- Giá dùng JS format vi-VN -->
+                <div class="price" id="price-vnd" th:attr="data-price=${item.price}">0 VND</div>
+
+                <div class="sold" th:text="${(item.soldCount != null ? item.soldCount : 0) + ' đã bán'}">0 đã bán</div>
+
+                <!-- Rating: mặc định 5 sao -->
+                <div class="rating" role="img" aria-label="5 trên 5 sao">
+                    <div class="stars" aria-hidden="true">
+                        <!-- 5 sao SVG -->
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                        <svg viewBox="0 0 20 20">
+                            <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                        </svg>
+                    </div>
+                    <span class="rating__label">5.0</span>
+                    <span class="sold" aria-hidden="true">• 4 đánh giá</span>
+                </div>
+            </div>
+
+            <div class="category" th:if="${item.category != null}">
+                <span th:text="${item.category.name}">Danh mục</span>
+            </div>
+
+            <!-- Badges -->
+            <div class="badges">
+          <span class="badge badge--popular"
+                th:if="${top10Ids != null and #lists.contains(top10Ids, item.id)}">★ Phổ biến</span>
+            </div>
+
+            <!-- CTA -->
+            <div class="actions">
+                <a class="btn btn--ghost" href="javascript:void(0)" onclick="window.history.back()">Quay lại menu</a>
+                <a class="btn btn--reserve" href="/reservations/new" aria-label="Đặt bàn ngay">Đặt bàn ngay</a>
+                <!--
+                <button type="button" class="btn btn--primary"
+                        th:if="${item.slug != null}"
+                        th:attr="onclick=|addToOrder('${item.slug}')|">
+                  Thêm vào đơn
+                </button>
+                -->
+            </div>
+        </article>
+    </section>
+
+    <!-- Tabs: Mô tả / Đánh giá -->
+    <section class="tabs" aria-label="Chi tiết món">
+        <div class="tablist" role="tablist" aria-label="Tabs">
+            <button class="tab" role="tab" id="tab-desc" aria-selected="true" aria-controls="panel-desc">Mô tả</button>
+            <button class="tab" role="tab" id="tab-feedback" aria-selected="false" aria-controls="panel-feedback"
+                    tabindex="-1">Đánh giá
+            </button>
+        </div>
+
+        <div id="panel-desc" class="tabpanel" role="tabpanel" aria-labelledby="tab-desc">
+            <p class="desc" th:text="${item.description}">Mô tả ngắn gọn về món ăn…</p>
+        </div>
+
+        <div id="panel-feedback" class="tabpanel" role="tabpanel" aria-labelledby="tab-feedback" hidden>
+            <div class="feedback" aria-live="polite">
+                <!-- Demo 4 feedback (placeholder) -->
+                <div class="feedback__item">
+                    <div class="feedback__head">
+                        <span class="feedback__name">Lan P.</span>
+                        <span class="feedback__time">02/10/2025</span>
+                    </div>
+                    <div class="rating" role="img" aria-label="5 trên 5 sao">
+                        <div class="stars" aria-hidden="true">
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="rating__label">Tuyệt vời!</span>
+                    </div>
+                    <p>Hương vị đậm đà, trình bày đẹp mắt. Sẽ quay lại.</p>
+                </div>
+
+                <div class="feedback__item">
+                    <div class="feedback__head">
+                        <span class="feedback__name">Minh K.</span>
+                        <span class="feedback__time">15/09/2025</span>
+                    </div>
+                    <div class="rating" role="img" aria-label="5 trên 5 sao">
+                        <div class="stars" aria-hidden="true">
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="rating__label">Ngon chuẩn!</span>
+                    </div>
+                    <p>Phục vụ nhanh, phần ăn nóng hổi.</p>
+                </div>
+
+                <div class="feedback__item">
+                    <div class="feedback__head">
+                        <span class="feedback__name">Thảo V.</span>
+                        <span class="feedback__time">30/08/2025</span>
+                    </div>
+                    <div class="rating" role="img" aria-label="5 trên 5 sao">
+                        <div class="stars" aria-hidden="true">
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="rating__label">Rất đáng thử!</span>
+                    </div>
+                    <p>Không gian quán ấm cúng, hợp đi gia đình.</p>
+                </div>
+
+                <div class="feedback__item">
+                    <div class="feedback__head">
+                        <span class="feedback__name">Quang H.</span>
+                        <span class="feedback__time">10/08/2025</span>
+                    </div>
+                    <div class="rating" role="img" aria-label="5 trên 5 sao">
+                        <div class="stars" aria-hidden="true">
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                            <svg viewBox="0 0 20 20">
+                                <path d="M10 1.5l2.58 5.23 5.77.84-4.18 4.07.99 5.76L10 14.9l-5.16 2.5.99-5.76L1.65 7.57l5.77-.84L10 1.5z"/>
+                            </svg>
+                        </div>
+                        <span class="rating__label">Xuất sắc</span>
+                    </div>
+                    <p>Món ăn hợp khẩu vị, giá hợp lý.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sticky actions (mobile) -->
+    <div class="sticky" aria-label="Quick actions">
+        <a class="btn btn--ghost" href="javascript:void(0)" onclick="window.history.back()">Quay lại</a>
+        <a class="btn btn--primary" href="/reservations/new">Đặt bàn ngay</a>
+    </div>
+</main>
+
+<!-- Footer -->
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<script th:inline="javascript">
+    // === Price: VND formatter (vi-VN)
+    // Tham khảo MDN Intl.NumberFormat. :contentReference[oaicite:3]{index=3}
+    function formatPriceVND(price) {
+        return new Intl.NumberFormat('vi-VN').format(Math.round(price)) + ' VND';
+    }
+
+    (function applyVND() {
+        const el = document.getElementById('price-vnd');
+        if (!el) return;
+        const p = Number(el.dataset.price || 0);
+        el.textContent = formatPriceVND(p);
+    })();
+
+    // === Tabs (APG-compliant keyboard interactions). Tham khảo WAI-ARIA & Material/NNg. :contentReference[oaicite:4]{index=4}
+    (function tabs() {
+        const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+        const panels = Array.from(document.querySelectorAll('[role="tabpanel"]'));
+
+        function activate(tab) {
+            tabs.forEach(t => {
+                const selected = t === tab;
+                t.setAttribute('aria-selected', String(selected));
+                t.tabIndex = selected ? 0 : -1;
+                const panel = document.getElementById(t.getAttribute('aria-controls'));
+                if (panel) {
+                    panel.hidden = !selected;
+                }
+            });
+            tab.focus();
+        }
+
+        tabs.forEach(t => {
+            t.addEventListener('click', () => activate(t));
+            t.addEventListener('keydown', (e) => {
+                const i = tabs.indexOf(document.activeElement);
+                if (e.key === 'ArrowRight') {
+                    e.preventDefault();
+                    activate(tabs[(i + 1) % tabs.length]);
+                }
+                if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    activate(tabs[(i - 1 + tabs.length) % tabs.length]);
+                }
+                if (e.key === 'Home') {
+                    e.preventDefault();
+                    activate(tabs[0]);
+                }
+                if (e.key === 'End') {
+                    e.preventDefault();
+                    activate(tabs[tabs.length - 1]);
+                }
+            });
+        });
+    })();
+
+    // === Add to Order (giữ nguyên logic cũ)
+    function addToOrder(slug) {
+        fetch('/orders/add/' + slug, {method: 'POST', headers: {'Content-Type': 'application/json'}})
+            .then(r => {
+                if (r.ok) {
+                    alert('✅ Đã thêm vào đơn!');
+                    location.reload();
+                } else if (r.status === 401) {
+                    alert('⚠️ Vui lòng đăng nhập.');
+                    window.location.href = '/login';
+                } else {
+                    alert('❌ Thêm món thất bại.');
+                }
+            })
+            .catch(() => alert('❌ Lỗi không xác định.'));
+    }
+</script>
+</body>
+</html>

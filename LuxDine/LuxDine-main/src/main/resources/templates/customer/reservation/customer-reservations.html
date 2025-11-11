@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Đặt bàn của tôi — LuxDine</title>
+
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --color-bg: #F9FAFB;
+            --color-surface: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+            --radius: 12px;
+            --status-col: 120px;
+            --actions-col: 420px;
+        }
+
+        html, body {
+            background: var(--color-bg);
+            margin: 0;
+            padding: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            color: var(--color-text)
+        }
+
+        .myres-page {
+            min-height: 100vh;
+            background: linear-gradient(180deg, #fff 0%, var(--color-bg) 100%);
+            padding-top: 32px
+        }
+
+        .myres-container {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 0 16px
+        }
+
+        .myres-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px
+        }
+
+        .myres-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin: 0
+        }
+
+        .myres-grid {
+            display: grid;
+            gap: 16px
+        }
+
+        .myres-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05)
+        }
+
+        .myres-row {
+            display: grid;
+            grid-template-columns:minmax(260px, 1fr) var(--status-col) var(--actions-col);
+            align-items: center;
+            gap: 12px
+        }
+
+        .myres-info {
+            min-width: 0
+        }
+
+        .myres-status {
+            text-align: center
+        }
+
+        .myres-meta {
+            color: var(--color-text-muted);
+            font-size: 14px
+        }
+
+        .myres-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+            flex-wrap: wrap
+        }
+
+        .myres-btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            border: 1px solid transparent;
+            cursor: pointer;
+            font-weight: 600;
+            text-decoration: none;
+            display: inline-block;
+            white-space: nowrap;
+            transition: all .2s
+        }
+
+        .myres-btn-primary {
+            background: var(--color-primary);
+            color: #fff
+        }
+
+        .myres-btn-primary:hover {
+            background: #1f1f3a
+        }
+
+        .myres-btn-secondary {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary)
+        }
+
+        .myres-btn-secondary:hover {
+            background: #fff7ed
+        }
+
+        .myres-actions form {
+            display: inline;
+            margin: 0
+        }
+
+        /* Badges */
+        .myres-badge {
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            display: inline-block
+        }
+
+        .myres-badge.waiting {
+            background: #E0EAFF;
+            color: #1D4ED8
+        }
+
+        /* WAITING_FOR_PAYMENT */
+        .myres-badge.pending {
+            background: #FEF3C7;
+            color: #92400E
+        }
+
+        .myres-badge.confirmed {
+            background: #DBEAFE;
+            color: #1E40AF
+        }
+
+        .myres-badge.arrived {
+            background: #DCFCE7;
+            color: #166534
+        }
+
+        .myres-badge.cancelled {
+            background: #FEE2E2;
+            color: #991B1B
+        }
+
+        .myres-empty {
+            text-align: center;
+            padding: 32px;
+            color: var(--color-text-muted)
+        }
+
+        @media (max-width: 900px) {
+            .myres-row {
+                grid-template-columns:1fr var(--status-col);
+                grid-template-rows:auto auto
+            }
+
+            .myres-actions {
+                grid-column: 1/-1;
+                justify-content: flex-start
+            }
+        }
+
+        @media (max-width: 640px) {
+            .myres-row {
+                grid-template-columns:1fr
+            }
+
+            .myres-status {
+                justify-self: start
+            }
+        }
+
+        /* ===== Toast (Flash message) ===== */
+        .toast-stack {
+            position: fixed;
+            top: 16px;
+            right: 16px;
+            z-index: 1000;
+            display: grid;
+            gap: 10px;
+            max-width: 92vw;
+        }
+
+        .toast {
+            --toast-duration: 5s;
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .12);
+            padding: 12px 14px;
+            min-width: 320px;
+            max-width: 440px;
+            font-weight: 600;
+            color: var(--color-text);
+            position: relative;
+            animation: toast-in .28s ease-out;
+            cursor: pointer;
+        }
+
+        .toast--success {
+            border-left: 4px solid #16A34A;
+        }
+
+        .toast--error {
+            border-left: 4px solid #DC2626;
+        }
+
+        .toast__msg {
+            font-weight: 600;
+        }
+
+        .toast__progress {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 3px;
+            overflow: hidden;
+            border-radius: 0 0 10px 10px;
+        }
+
+        .toast--success .toast__progress {
+            background: #BBF7D0;
+        }
+
+        .toast--error .toast__progress {
+            background: #FCA5A5;
+        }
+
+        .toast__progress::before {
+            content: "";
+            display: block;
+            height: 100%;
+            width: 100%;
+            animation: toast-progress var(--toast-duration) linear forwards;
+            background: currentColor;
+        }
+
+        .toast--success .toast__progress::before {
+            color: #16A34A;
+        }
+
+        .toast--error .toast__progress::before {
+            color: #DC2626;
+        }
+
+        .toast.is-hiding {
+            animation: toast-out .22s ease-in forwards;
+        }
+
+        @keyframes toast-in {
+            from {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes toast-out {
+            to {
+                opacity: 0;
+                transform: translateY(-8px);
+            }
+        }
+
+        @keyframes toast-progress {
+            from {
+                transform: translateX(0%);
+            }
+            to {
+                transform: translateX(-100%);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .toast-stack {
+                left: 50%;
+                right: auto;
+                transform: translateX(-50%);
+                width: min(560px, 94vw);
+            }
+
+            .toast {
+                min-width: auto;
+                width: 100%;
+            }
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+
+<body>
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<!-- Toast messages -->
+<div aria-atomic="true" aria-live="polite" class="toast-stack">
+    <div class="toast toast--success js-toast" role="alert" th:if="${success}" title="Đóng">
+        <div class="toast__msg" th:text="${success}">Hủy đặt bàn thành công.</div>
+        <div class="toast__progress"></div>
+    </div>
+    <div class="toast toast--error js-toast" role="alert" th:if="${error}" title="Đóng">
+        <div class="toast__msg" th:text="${error}">Có lỗi xảy ra.</div>
+        <div class="toast__progress"></div>
+    </div>
+</div>
+
+<main class="myres-page">
+    <div class="myres-container">
+        <div class="myres-header">
+            <h1 class="myres-title">Đặt bàn của tôi</h1>
+            <a class="myres-btn myres-btn-primary" th:href="@{/reservations/new}">Tạo đặt bàn</a>
+        </div>
+
+        <!-- List -->
+        <div class="myres-grid" th:if="${reservations != null and !reservations.isEmpty()}">
+            <div class="myres-card" th:each="r : ${reservations}" th:with="s=${#strings.toUpperCase(r.status)}">
+                <div class="myres-row">
+                    <!-- Info -->
+                    <div class="myres-info">
+                        <div><strong th:text="${r.reservationCode}">RSV-001</strong></div>
+                        <div class="myres-meta"
+                             th:text="${r.reservationDate != null ? #temporals.format(r.reservationDate, 'HH:mm, dd/MM/yyyy') : '—'}"></div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="myres-status" th:switch="${s}">
+                        <span class="myres-badge waiting" th:case="'WAITING_FOR_PAYMENT'">WAITING_FOR_PAYMENT</span>
+                        <span class="myres-badge pending" th:case="'PENDING'">PENDING</span>
+                        <span class="myres-badge confirmed" th:case="'CONFIRMED'">CONFIRMED</span>
+                        <span class="myres-badge arrived" th:case="'ARRIVED'">ARRIVED</span>
+                        <span class="myres-badge cancelled" th:case="'CANCELLED'">CANCELLED</span>
+                        <span class="myres-badge pending" th:case="*" th:text="${s}">OTHER</span>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="myres-actions">
+                        <a class="myres-btn myres-btn-secondary" th:href="@{|/reservations/${r.id}|}">Xem chi tiết</a>
+                        <!-- Không còn nút Hủy theo yêu cầu -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Empty -->
+        <div class="myres-empty" th:if="${reservations == null or reservations.isEmpty()}">
+            Chưa có đặt bàn nào.
+        </div>
+    </div>
+</main>
+
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+
+<!-- Auto-dismiss toasts -->
+<script>
+    (function () {
+        const DURATION = 5000; // 5s
+        document.querySelectorAll('.js-toast').forEach(function (toast) {
+            const hideAt = setTimeout(() => toast.classList.add('is-hiding'), DURATION - 220);
+            const removeAt = setTimeout(() => toast.remove(), DURATION);
+            toast.addEventListener('click', () => {
+                clearTimeout(hideAt);
+                clearTimeout(removeAt);
+                toast.classList.add('is-hiding');
+                setTimeout(() => toast.remove(), 220);
+            });
+        });
+    })();
+</script>
+<!-- AI Chatbot Widget -->
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+</body>
+</html>

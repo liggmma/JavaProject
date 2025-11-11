@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <title>Trạng thái bàn - LuxDine</title>
+
+        <!-- Typography: Inter -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Include Staff Styles -->
+        <th:block
+            th:replace="staff/fragments/staff-header :: staffStyles"
+        ></th:block>
+
+        <style>
+            /* ========== Design Tokens (LuxDine Floor Plan) ========== */
+            :root {
+                --color-primary: #0a0a23;
+                --color-secondary: #f97316;
+                --color-bg: #f9fafb;
+                --color-border: #e5e7eb;
+                --color-text: #111827;
+                --color-text-muted: #6b7280;
+                --color-success: #22c55e;
+                --color-warning: #facc15;
+                --color-error: #ef4444;
+                --color-info: #3b82f6;
+                --color-accent: #8b5cf6;
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+                --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.1);
+                --space-xs: 4px;
+                --space-sm: 8px;
+                --space-md: 16px;
+                --space-lg: 24px;
+                --space-xl: 32px;
+                --space-xxl: 64px;
+                --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+                    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+                --h1-size: 32px;
+                --h1-lh: 1.2;
+                --h1-weight: 700;
+                --h2-size: 24px;
+                --h2-lh: 1.3;
+                --h2-weight: 600;
+                --h3-size: 20px;
+                --h3-lh: 1.4;
+                --h3-weight: 500;
+                --body-size: 16px;
+                --body-lh: 1.5;
+                --body-weight: 400;
+                --small-size: 14px;
+                --small-lh: 1.4;
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                font-family: var(--font-family);
+                font-size: var(--body-size);
+                line-height: var(--body-lh);
+                color: var(--color-text);
+                background: var(--color-bg);
+            }
+
+            /* Main content container for consistent alignment */
+            .main-content {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: var(--space-xl) var(--space-lg);
+                width: 100%;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: var(--space-xl);
+                flex-wrap: wrap;
+                gap: var(--space-md);
+            }
+
+            .page-title {
+                font-size: var(--h1-size);
+                font-weight: var(--h1-weight);
+                line-height: var(--h1-lh);
+                color: var(--color-text);
+                margin: 0;
+            }
+
+            .page-subtitle {
+                font-size: var(--body-size);
+                color: var(--color-text-muted);
+                margin: var(--space-xs) 0 0 0;
+            }
+
+            /* Floor plan specific styles */
+
+            /* ========== Summary Cards ========== */
+            .summary-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: var(--space-md);
+                margin-bottom: var(--space-xl);
+            }
+
+            .summary-card {
+                background: white;
+                border-radius: var(--radius-lg);
+                padding: var(--space-lg);
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--color-border);
+                display: flex;
+                align-items: center;
+                gap: var(--space-md);
+            }
+
+            .summary-card.available {
+                border-left: 4px solid var(--color-success);
+            }
+
+            .summary-card.occupied {
+                border-left: 4px solid var(--color-error);
+            }
+
+            .summary-card.reserved {
+                border-left: 4px solid var(--color-warning);
+            }
+
+            .summary-card.cleaning {
+                border-left: 4px solid var(--color-text-muted);
+            }
+
+            .summary-card__icon {
+                width: 40px;
+                height: 40px;
+                border-radius: var(--radius-md);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 18px;
+            }
+
+            .summary-card.available .summary-card__icon {
+                background: rgba(34, 197, 94, 0.1);
+                color: var(--color-success);
+            }
+
+            .summary-card.occupied .summary-card__icon {
+                background: rgba(239, 68, 68, 0.1);
+                color: var(--color-error);
+            }
+
+            .summary-card.reserved .summary-card__icon {
+                background: rgba(250, 204, 21, 0.1);
+                color: var(--color-warning);
+            }
+
+            .summary-card.cleaning .summary-card__icon {
+                background: rgba(107, 114, 128, 0.1);
+                color: var(--color-text-muted);
+            }
+
+            .summary-card__content {
+                flex: 1;
+            }
+
+            .summary-card__count {
+                font-size: var(--h2-size);
+                font-weight: var(--h2-weight);
+                color: var(--color-text);
+            }
+
+            .summary-card__label {
+                font-size: var(--small-size);
+                color: var(--color-text-muted);
+                margin-top: var(--space-xs);
+            }
+
+            /* ========== Filters ========== */
+            .filters {
+                display: flex;
+                align-items: center;
+                gap: var(--space-md);
+                margin-bottom: var(--space-xl);
+                padding: var(--space-md);
+                background: white;
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--color-border);
+            }
+
+            .filter-group {
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm);
+            }
+
+            .filter-select {
+                padding: var(--space-sm) var(--space-md);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                background: white;
+                font-size: var(--small-size);
+                color: var(--color-text);
+                min-width: 150px;
+            }
+
+            .btn {
+                padding: var(--space-sm) var(--space-md);
+                border: none;
+                border-radius: var(--radius-md);
+                font-size: var(--small-size);
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                gap: var(--space-xs);
+            }
+
+            .btn-primary {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: #1a1a3a;
+            }
+
+            /* ========== Floor Plan Layout ========== */
+            .floor-plan {
+                background: white;
+                border-radius: var(--radius-lg);
+                padding: var(--space-xl);
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--color-border);
+                margin-bottom: var(--space-xl);
+            }
+
+            .floor-plan__title {
+                font-size: var(--h2-size);
+                font-weight: var(--h2-weight);
+                margin-bottom: var(--space-lg);
+                color: var(--color-text);
+            }
+
+            .floor-plan__grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: var(--space-lg);
+            }
+
+            .area-section {
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-lg);
+                padding: var(--space-lg);
+                background: #fafafa;
+            }
+
+            /* Toast Notification Styles */
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: -400px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                padding: 16px 20px;
+                min-width: 320px;
+                z-index: 10000;
+                transition: right 0.3s ease;
+                border-left: 4px solid;
+            }
+
+            .toast.show {
+                right: 20px;
+            }
+
+            .toast.success {
+                border-left-color: #22c55e;
+            }
+
+            .toast.error {
+                border-left-color: #ef4444;
+            }
+
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .toast-icon {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                color: white;
+            }
+
+            .toast.success .toast-icon {
+                background: #22c55e;
+            }
+
+            .toast.error .toast-icon {
+                background: #ef4444;
+            }
+
+            .toast-message {
+                flex: 1;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--color-text);
+            }
+
+            .toast-progress {
+                position: absolute;
+                bottom: 0;
+                left: 0;
+                height: 3px;
+                background: #e5e7eb;
+                border-radius: 0 0 8px 8px;
+                animation: progress 3s linear;
+            }
+
+            @keyframes progress {
+                0% {
+                    width: 100%;
+                }
+                100% {
+                    width: 0%;
+                }
+            }
+
+            .area-title {
+                font-size: var(--h3-size);
+                font-weight: var(--h3-weight);
+                margin-bottom: var(--space-md);
+                color: var(--color-text);
+                text-align: center;
+            }
+
+            .area-tables {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                gap: var(--space-sm);
+            }
+
+            .table {
+                aspect-ratio: 1;
+                border-radius: var(--radius-md);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                border: 2px solid transparent;
+                font-size: var(--small-size);
+                font-weight: 500;
+                color: white;
+                position: relative;
+            }
+
+            .table:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-hover);
+            }
+
+            .table.selected {
+                border-color: var(--color-warning);
+                box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.3);
+            }
+
+            .table.available {
+                background: var(--color-success);
+            }
+
+            .table.occupied {
+                background: var(--color-error);
+            }
+
+            .table.reserved {
+                background: var(--color-warning);
+                color: var(--color-text);
+            }
+
+            .table.cleaning {
+                background: var(--color-text-muted);
+            }
+
+            .table__code {
+                font-weight: 600;
+                margin-bottom: var(--space-xs);
+            }
+
+            .table__capacity {
+                font-size: 10px;
+                background: var(--color-secondary);
+                color: #fff;
+                border-radius: 10px;
+                padding: 2px 8px;
+                margin-top: 4px;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            }
+
+            /* ========== Table Details Panel ========== */
+            .table-details {
+                position: fixed;
+                top: 50%;
+                right: var(--space-lg);
+                transform: translateY(-50%);
+                width: 380px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                    0 10px 10px -5px rgba(0, 0, 0, 0.04);
+                border: 1px solid rgba(229, 231, 235, 0.8);
+                z-index: 1000;
+                display: none;
+                -webkit-backdrop-filter: blur(10px);
+                backdrop-filter: blur(10px);
+                animation: slideInRight 0.3s ease-out;
+            }
+
+            @keyframes slideInRight {
+                from {
+                    transform: translateY(-50%) translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(-50%) translateX(0);
+                    opacity: 1;
+                }
+            }
+
+            .table-details.show {
+                display: block;
+                animation: slideInRight 0.3s ease-out;
+            }
+
+            .table-details.hide {
+                animation: slideOutRight 0.3s ease-in;
+            }
+
+            @keyframes slideOutRight {
+                from {
+                    transform: translateY(-50%) translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateY(-50%) translateX(100%);
+                    opacity: 0;
+                }
+            }
+
+            .table-details__header {
+                padding: 24px 24px 16px 24px;
+                border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: var(--color-primary);
+                border-radius: 16px 16px 0 0;
+            }
+
+            .table-details__title {
+                font-size: 20px;
+                font-weight: 700;
+                color: white;
+                margin: 0;
+            }
+
+            .table-details__close {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                color: white;
+                padding: 8px;
+                border-radius: 50%;
+                width: 32px;
+                height: 32px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: all 0.2s ease;
+            }
+
+            .table-details__close:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.1);
+            }
+
+            .table-details__content {
+                padding: 24px;
+                max-height: 60vh;
+                overflow-y: auto;
+            }
+
+            .table-details__content::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .table-details__content::-webkit-scrollbar-track {
+                background: rgba(229, 231, 235, 0.3);
+                border-radius: 3px;
+            }
+
+            .table-details__content::-webkit-scrollbar-thumb {
+                background: var(--color-primary);
+                border-radius: 3px;
+            }
+
+            .table-details__content::-webkit-scrollbar-thumb:hover {
+                background: var(--color-primary);
+            }
+
+            .detail-item {
+                margin-bottom: 20px;
+                padding: 16px;
+                background: rgba(249, 250, 251, 0.5);
+                border-radius: 12px;
+                border-left: 4px solid var(--color-primary);
+                transition: all 0.2s ease;
+            }
+
+            .detail-item:hover {
+                background: rgba(249, 250, 251, 0.8);
+                transform: translateX(2px);
+                border-left-color: var(--color-primary);
+            }
+
+            .detail-label {
+                font-size: 12px;
+                color: var(--color-text-muted);
+                margin-bottom: 6px;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .detail-value {
+                font-size: 16px;
+                color: var(--color-text);
+                font-weight: 600;
+                line-height: 1.4;
+            }
+
+            .status-tag {
+                display: inline-flex;
+                align-items: center;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 12px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .status-tag::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: linear-gradient(
+                    45deg,
+                    transparent 30%,
+                    rgba(255, 255, 255, 0.2) 50%,
+                    transparent 70%
+                );
+                transform: translateX(-100%);
+                transition: transform 0.6s;
+            }
+
+            .status-tag:hover::before {
+                transform: translateX(100%);
+            }
+
+            .status-tag.available {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .status-tag.occupied {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .status-tag.reserved {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .status-tag.cleaning {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            /* ========== Reservation Details ========== */
+            .reservation-details-hidden {
+                display: none;
+            }
+
+            .reservation-details-visible {
+                display: block;
+            }
+
+            .status-update {
+                margin-top: 24px;
+                padding-top: 24px;
+                border-top: 2px solid rgba(229, 231, 235, 0.3);
+            }
+
+            .status-update__title {
+                font-size: 14px;
+                color: var(--color-text-muted);
+                margin-bottom: 16px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.8px;
+            }
+
+            .status-options {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 12px;
+            }
+
+            .status-option {
+                padding: 16px 12px;
+                border: 2px solid var(--color-border);
+                border-radius: 12px;
+                background: var(--color-surface);
+                cursor: pointer;
+                text-align: center;
+                font-size: 13px;
+                font-weight: 600;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .status-option::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.4),
+                    transparent
+                );
+                transition: left 0.5s;
+            }
+
+            .status-option:hover {
+                border-color: var(--color-primary);
+                background: var(--color-primary);
+                color: white;
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(10, 10, 35, 0.3);
+            }
+
+            .status-option:hover::before {
+                left: 100%;
+            }
+
+            .status-option.selected {
+                border-color: var(--color-primary);
+                background: var(--color-primary);
+                color: white;
+                transform: scale(1.05);
+                box-shadow: 0 8px 25px rgba(10, 10, 35, 0.4);
+            }
+
+            /* ========== Responsive ========== */
+            @media (max-width: 1024px) {
+                .main-content {
+                    padding: var(--space-lg) var(--space-md);
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: var(--space-md);
+                }
+
+                .page-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: var(--space-md);
+                }
+
+                .page-title {
+                    font-size: var(--h2-size);
+                }
+
+                .summary-cards {
+                    grid-template-columns: 1fr;
+                }
+
+                .floor-plan__grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .table-details {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    transform: none;
+                    width: 100%;
+                    border-radius: 0;
+                }
+            }
+
+            /* đồng bộ với admin canvas-content */
+            .canvas-content-admin {
+                background-color: #fff;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.08);
+                position: relative !important;
+            }
+            .area-preview-admin {
+                border: 2px solid #e5e7eb;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #eef2ff;
+                color: #0a0a23;
+                font-weight: 600;
+                font-size: 19px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.10);
+                transition: all 0.2s;
+                cursor: pointer;
+                position: absolute;
+                user-select: none;
+                text-align:center;
+            }
+            .area-preview-admin:hover {
+                border-color: #f97316;
+                background: #fdeccf;
+                box-shadow: 0 4px 8px rgba(249, 115, 22, 0.12);
+                color: #b45309;
+            }
+            .table-shape-admin {
+                position: absolute;
+                border: 2px solid #0a0a23;
+                border-radius: 6px;
+                background: rgba(10,10,35,0.09);
+                box-shadow: 0 2px 4px rgba(10,10,35,0.13);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #0a0a23;
+                font-weight: 600;
+                font-size: 13px;
+                user-select: none;
+                text-align: center;
+                padding: 4px;
+                transition: all 0.2s;
+            }
+            .table-shape-admin.circle{ border-radius: 50%!important;}
+            .table-shape-admin:hover {
+                background: rgba(10,10,35,0.15);
+                box-shadow: 0 4px 8px rgba(10,10,35,0.15);
+                border-color: #f97316;
+                transform: translateY(-2px);
+                cursor: pointer;
+            }
+            /* Status colors */
+            .table-shape-admin.available {
+                background: rgba(34, 197, 94, 0.2); /* green */
+                border-color: #22c55e;
+            }
+            .table-shape-admin.occupied {
+                background: rgba(239, 68, 68, 0.2); /* red */
+                border-color: #ef4444;
+            }
+            .table-shape-admin.reserved {
+                background: rgba(250, 204, 21, 0.3); /* yellow */
+                border-color: #facc15;
+            }
+            .table-shape-admin.cleaning {
+                background: rgba(107, 114, 128, 0.2); /* gray */
+                border-color: #6b7280;
+            }
+            .table-shape-admin.selected {
+                box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.4);
+                transform: scale(1.05);
+            }
+            /* Feature (doors, windows, sofa, etc.) for staff view */
+            .feature-shape-admin {
+                position: absolute;
+                border: 2px dashed var(--color-text-muted);
+                border-radius: 6px;
+                background: rgba(107,114,128,0.10);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-primary);
+                font-size: 12px;
+                user-select: none;
+                text-align: center;
+                padding: 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.10);
+            }
+            .feature-badge {
+                position: absolute;
+                top: -18px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 10px;
+                color: var(--color-text-muted);
+                background: var(--color-bg);
+                padding: 1px 6px;
+                border: 1px solid var(--color-border);
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+            .capacity-badge {
+                font-size: 10px;
+                background: #f97316;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 8px;
+                margin-top: 4px;
+                font-weight: 500;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            }
+            .canvas-wrapper { 
+                width:100%; 
+                min-height:500px; 
+                display:flex; 
+                align-items:center; 
+                justify-content:center; 
+                background:#f8fafc; 
+            }
+            
+            /* Empty state styling */
+            .empty-canvas-state {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                padding: 32px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                border: 2px dashed #e5e7eb;
+                min-width: 280px;
+                z-index: 10;
+            }
+            
+            .empty-canvas-state__icon {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+            
+            .empty-canvas-state__title {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--color-text);
+                margin-bottom: 8px;
+                white-space: nowrap;
+            }
+            
+            .empty-canvas-state__message {
+                font-size: 14px;
+                color: var(--color-text-muted);
+                line-height: 1.5;
+                white-space: nowrap;
+            }
+        </style>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+    </head>
+
+    <body>
+        <!-- Header -->
+        <div th:replace="staff/fragments/staff-header :: staffHeader"></div>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sơ đồ bàn</h1>
+                    <p class="page-subtitle">
+                        Quản lý trạng thái bàn và khu vực trong nhà hàng.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="summary-cards">
+                <div class="summary-card available">
+                    <div class="summary-card__content">
+                        <div
+                            class="summary-card__count"
+                            th:text="${statusSummary['AVAILABLE']}"
+                        >
+                            6
+                        </div>
+                        <div class="summary-card__label">Sẵn sàng</div>
+                    </div>
+                </div>
+                <div class="summary-card occupied">
+                    <div class="summary-card__content">
+                        <div
+                            class="summary-card__count"
+                            th:text="${statusSummary['OCCUPIED']}"
+                        >
+                            5
+                        </div>
+                        <div class="summary-card__label">Đang sử dụng</div>
+                    </div>
+                </div>
+                <div class="summary-card reserved">
+                    <div class="summary-card__content">
+                        <div
+                            class="summary-card__count"
+                            th:text="${statusSummary['RESERVED']}"
+                        >
+                            3
+                        </div>
+                        <div class="summary-card__label">Đã đặt trước</div>
+                    </div>
+                </div>
+                <div class="summary-card cleaning">
+                    <div class="summary-card__content">
+                        <div
+                            class="summary-card__count"
+                            th:text="${statusSummary['CLEANING']}"
+                        >
+                            1
+                        </div>
+                        <div class="summary-card__label">Đang dọn</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="floorFilter">Tầng:</label>
+                    <select
+                        id="floorFilter"
+                        class="filter-select"
+                        onchange="onFloorChange()"
+                    >
+                        
+                    </select>
+                </div>
+                <button class="btn btn-primary" onclick="refreshData()">
+                    Làm mới
+                </button>
+            </div>
+
+            <!-- Floor Overview (Areas Layout) -->
+            <div class="floor-plan" id="floorOverview" style="margin-bottom:24px;">
+                <h2 class="floor-plan__title">Sơ đồ tầng</h2>
+                <div class="canvas-wrapper" style="min-height:520px;">
+                  <div id="floorCanvas" class="canvas-content-admin"></div>
+                </div>
+                <div style="margin-top: 12px; color: var(--color-text-muted); font-size: 14px;">Nhấn khu vực để xem sơ đồ bàn.</div>
+            </div>
+            <!-- Area Canvas (Tables Layout) -->
+            <div class="floor-plan" id="areaCanvas" style="display:none; margin-bottom:24px;">
+              <button id="backToArea" class="btn btn-secondary" type="button" style="margin-bottom:12px;" onclick="exitAreaView()">← Quay lại sơ đồ khu vực</button>
+              <h2 class="floor-plan__title" id="areaCanvasTitle">Area</h2>
+              <div class="canvas-wrapper" style="min-height:400px;">
+                <div id="areaTableCanvas" class="canvas-content-admin"></div>
+              </div>
+            </div>
+
+            <!-- Floor Plan Layout -->
+            
+        </main>
+
+        <!-- Table Details Panel -->
+        <div id="tableDetailsPanel" class="table-details">
+            <div class="table-details__header">
+                <h3 class="table-details__title" id="tableDetailsTitle">
+                    Bàn 1
+                </h3>
+                <button
+                    class="table-details__close"
+                    onclick="closeTableDetails()"
+                >
+                    ×
+                </button>
+            </div>
+            <div class="table-details__content">
+                <div class="detail-item">
+                    <div class="detail-label">Sức chứa</div>
+                    <div class="detail-value" id="tableCapacity">4 guests</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Trạng thái</div>
+                    <div class="detail-value">
+                        <span class="status-tag" id="tableStatus"
+                            >reserved</span
+                        >
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Khu vực</div>
+                    <div class="detail-value" id="tableArea">Main Dining</div>
+                </div>
+
+                <!-- Reservation Details (if reserved) -->
+                <div id="reservationDetails" class="reservation-details-hidden">
+                    <div class="detail-item">
+                        <div class="detail-label">Tên khách hàng</div>
+                        <div class="detail-value" id="reservationGuest">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Thời gian đặt</div>
+                        <div class="detail-value" id="reservationTime">-</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Số người</div>
+                        <div class="detail-value" id="reservationPartySize">
+                            -
+                        </div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Mã đặt trước</div>
+                        <div class="detail-value" id="reservationCode">-</div>
+                    </div>
+                </div>
+
+                <!-- Cập nhật trạng thái -->
+                <div class="status-update">
+                    <div class="status-update__title">Cập nhật trạng thái</div>
+                    <div class="status-options">
+                        <div class="status-option" data-status="AVAILABLE"
+                             onclick="updateTableStatus(this.dataset.status)">
+                            Sẵn sàng
+                        </div>
+                        <div class="status-option" data-status="RESERVED"
+                             onclick="updateTableStatus(this.dataset.status)">
+                            Đã đặt trước
+                        </div>
+                        <div class="status-option" data-status="OCCUPIED"
+                             onclick="updateTableStatus(this.dataset.status)">
+                            Đang sử dụng
+                        </div>
+                        <div class="status-option" data-status="CLEANING"
+                             onclick="updateTableStatus(this.dataset.status)">
+                            Đang dọn
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            // Expose areas to JS to render floor/area overview similar to admin
+            const AREAS = /*[[${areas}]]*/ [];
+            const ALL_TABLES_LIST_FROM_SERVER = /*[[${tables}]]*/ [];
+        </script>
+
+        <script>
+            let selectedTableId = null;
+            let currentTableData = null;
+            let currentFloorNumber = null;
+            let currentAreaObj = null;
+
+            const STATUS_LABELS = {
+                AVAILABLE: 'Sẵn sàng',
+                RESERVED: 'Đã đặt trước',
+                OCCUPIED: 'Đang sử dụng',
+                CLEANING: 'Đang dọn'
+            };
+
+            // Keep staff UI in sync with admin: sort tables in each area by numeric suffix of "Bàn N"
+            function sortTablesInEachArea() {
+                try {
+                    document.querySelectorAll('.area-section .area-tables').forEach(container => {
+                        const items = Array.from(container.children);
+                        const getNum = (el) => {
+                            const codeEl = el.querySelector('.table__code');
+                            if (!codeEl) return Number.MAX_SAFE_INTEGER;
+                            const m = codeEl.textContent.trim().match(/\bBàn\s+(\d+)$/i);
+                            return m ? parseInt(m[1]) : Number.MAX_SAFE_INTEGER;
+                        };
+                        items.sort((a, b) => getNum(a) - getNum(b));
+                        items.forEach(el => container.appendChild(el));
+                    });
+                } catch (e) {
+                    console.warn('Sort tables UI skipped:', e);
+                }
+            }
+
+            // Floor selection handler
+            function onFloorChange() {
+                const floor = document.getElementById("floorFilter").value;
+                currentFloorNumber = floor ? parseInt(floor) : null;
+                renderFloorOverview();
+                const ov = document.getElementById('floorOverview');
+                if (ov) ov.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+
+            function buildFloorOptions() {
+                try {
+                    const select = document.getElementById('floorFilter');
+                    if (!select || !Array.isArray(AREAS)) return;
+                    const floors = Array.from(new Set(AREAS.map(a => a.floor || 1))).sort((a,b)=>a-b);
+                    floors.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f;
+                        opt.textContent = `Tầng ${f}`;
+                        select.appendChild(opt);
+                    });
+                } catch (e) { console.warn('Build floor options failed', e); }
+            }
+
+            function renderFloorOverview() {
+                const container = document.getElementById('floorOverview');
+                const canvas = document.getElementById('floorCanvas');
+                if (!container || !canvas) return;
+                canvas.innerHTML = '';
+                const floor = currentFloorNumber;
+                const areas = Array.isArray(AREAS) ? AREAS.filter(a => {
+                    const areaFloor = a.floor || 1;
+                    return !floor || (areaFloor === floor);
+                }) : [];
+                container.style.display = areas.length ? '' : 'none';
+                document.getElementById('areaCanvas').style.display = 'none';
+                currentAreaObj = null;
+                if (!areas.length) return;
+
+                // Đồng bộ style canvas với admin (nền grid, border, shadow, radius)
+                canvas.className = 'canvas-content-admin';
+                const margin = 32;
+                let minX=99999, minY=99999, maxX=0, maxY=0;
+                areas.forEach(a => {
+                    if(a.positionX!=null&&a.positionY!=null&&a.width!=null&&a.height!=null) {
+                        if(a.positionX<minX) minX=a.positionX;
+                        if(a.positionY<minY) minY=a.positionY;
+                        if(a.positionX+a.width>maxX) maxX=a.positionX+a.width;
+                        if(a.positionY+a.height>maxY) maxY=a.positionY+a.height;
+                    }
+                });
+                if(maxX===0 || maxY===0) { minX=40;minY=40; maxX=640;maxY=440; }
+                canvas.style.width = (maxX-minX+margin*2)+"px";
+                canvas.style.height= (maxY-minY+margin*2)+"px";
+                canvas.style.position='relative';
+                areas.forEach((area,idx) => {
+                    const tile = document.createElement('div');
+                    tile.textContent = area.name;
+                    tile.className = 'area-preview-admin';
+                    tile.style.left = (area.positionX!=null?(area.positionX-minX+margin):margin)+"px";
+                    tile.style.top = (area.positionY!=null?(area.positionY-minY+margin):margin)+"px";
+                    tile.style.width = (area.width||200)+"px";
+                    tile.style.height = (area.height||100)+"px";
+                    tile.onclick = ()=> focusArea(area.name);
+                    canvas.appendChild(tile);
+                });
+            }
+
+            function focusArea(areaName) {
+                const area = (AREAS||[]).find(a=>a.name===areaName);
+                if(!area) return;
+                currentAreaObj = area;
+                document.getElementById('floorOverview').style.display = 'none';
+                renderAreaCanvas(area);
+            }
+
+            function exitAreaView() {
+                document.getElementById('areaCanvas').style.display = 'none';
+                renderFloorOverview();
+            }
+
+            async function renderAreaCanvas(area) {
+                const ctn = document.getElementById('areaCanvas');
+                const title = document.getElementById('areaCanvasTitle');
+                const canvas = document.getElementById('areaTableCanvas');
+                if (!ctn || !title || !canvas || !area) return;
+                ctn.style.display = '';
+                // Clear canvas hoàn toàn trước khi render (đồng bộ với admin)
+                canvas.innerHTML = '';
+                title.textContent = `${area.name} (Tầng ${area.floor||''})`;
+                canvas.style.position='relative';
+                canvas.className = 'canvas-content-admin';
+
+                // Hiển thị loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'empty-canvas-state';
+                loadingDiv.innerHTML = '<div class="empty-canvas-state__title">Đang tải sơ đồ...</div>';
+                canvas.appendChild(loadingDiv);
+
+                // Tối ưu: Load layouts và features song song (Promise.all)
+                try {
+                    const cacheBuster = '?_=' + Date.now();
+                    const [layoutsRes, featuresRes] = await Promise.all([
+                        fetch(`/api/staff/layouts/area/${area.id}${cacheBuster}`, {
+                            cache: 'no-store',
+                            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                        }),
+                        fetch(`/api/staff/features/area/${area.id}${cacheBuster}`, {
+                            cache: 'no-store',
+                            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                        })
+                    ]);
+
+                    // Xóa loading indicator
+                    loadingDiv.remove();
+
+                    if (!layoutsRes.ok) throw new Error(`HTTP error! status: ${layoutsRes.status}`);
+                    const layouts = await layoutsRes.json();
+
+                    if (!Array.isArray(layouts) || layouts.length === 0) {
+                        // Empty state - giống admin
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-canvas-state';
+                        empty.innerHTML = `
+                            <div class="empty-canvas-state__title">Chưa có sơ đồ bàn</div>
+                            <div class="empty-canvas-state__message">Khu vực này chưa được thiết lập bàn</div>
+                        `;
+                        canvas.appendChild(empty);
+                        return;
+                    }
+
+                    // Map capacity/status từ tables list (tối ưu: tạo Map một lần)
+                    const allTables = Array.isArray(ALL_TABLES_LIST_FROM_SERVER) ? ALL_TABLES_LIST_FROM_SERVER : [];
+                    const tableByName = new Map();
+                    allTables.forEach(t => { if (t && t.tableName) tableByName.set(t.tableName, t); });
+
+                    // Tính kích thước canvas theo bounding box (tối ưu: tính một lần)
+                    let maxX = 0, maxY = 0;
+                    layouts.forEach(l => {
+                        const w = (typeof l.width === 'number') ? l.width : 100;
+                        const h = (typeof l.height === 'number') ? l.height : 100;
+                        const px = (typeof l.positionX === 'number') ? l.positionX : 0;
+                        const py = (typeof l.positionY === 'number') ? l.positionY : 0;
+                        maxX = Math.max(maxX, px + w);
+                        maxY = Math.max(maxY, py + h);
+                    });
+                    
+                    // Tính features bounding box nếu có
+                    let features = [];
+                    if (featuresRes.ok) {
+                        features = await featuresRes.json();
+                        if (Array.isArray(features) && features.length > 0) {
+                            features.forEach(f => {
+                                const w = (typeof f.width === 'number') ? f.width : 60;
+                                const h = (typeof f.height === 'number') ? f.height : 20;
+                                const px = (typeof f.positionX === 'number') ? f.positionX : 0;
+                                const py = (typeof f.positionY === 'number') ? f.positionY : 0;
+                                maxX = Math.max(maxX, px + w);
+                                maxY = Math.max(maxY, py + h);
+                            });
+                        }
+                    }
+                    
+                    const netW = Math.max(600, maxX + 40);
+                    const netH = Math.max(400, maxY + 40);
+                    canvas.style.width = netW + 'px';
+                    canvas.style.height = netH + 'px';
+
+                    // Tối ưu: Dùng DocumentFragment để batch DOM operations (giảm reflow)
+                    const fragment = document.createDocumentFragment();
+
+                    // Render tables vào fragment (không gây reflow)
+                    layouts.forEach(l => {
+                        const posX = (typeof l.positionX === 'number') ? l.positionX : 0;
+                        const posY = (typeof l.positionY === 'number') ? l.positionY : 0;
+                        const w = (typeof l.width === 'number') ? l.width : 100;
+                        const h = (typeof l.height === 'number') ? l.height : 100;
+                        const shape = l.shape || 'rectangle';
+                        const name = l.tableName || '';
+                        const tableData = tableByName.get(name);
+                        const cap = (typeof l.capacity === 'number') ? l.capacity : (tableData?.capacity || 4);
+                        const status = (tableData?.status || 'AVAILABLE').toLowerCase();
+                        
+                        const div = document.createElement('div');
+                        div.className = `table-shape-admin ${shape} ${status}`;
+                        div.style.left = posX + 'px';
+                        div.style.top  = posY + 'px';
+                        div.style.width = w + 'px';
+                        div.style.height= h + 'px';
+                        div.innerHTML = `<div>${name}</div><div class='capacity-badge'>${cap} khách</div>`;
+                        div.setAttribute('data-table-id', tableData?.id || '');
+                        div.setAttribute('data-table-name', name);
+                        div.onclick = (e) => {
+                            e.stopPropagation();
+                            handleTableClick(div, tableData);
+                        };
+                        fragment.appendChild(div);
+                    });
+
+                    // Render features vào fragment (không gây reflow)
+                    if (Array.isArray(features) && features.length > 0) {
+                        features.forEach(f => {
+                            const posX = (typeof f.positionX === 'number') ? f.positionX : 0;
+                            const posY = (typeof f.positionY === 'number') ? f.positionY : 0;
+                            const w = (typeof f.width === 'number') ? f.width : 60;
+                            const h = (typeof f.height === 'number') ? f.height : 20;
+                            const label = f.label || f.type || '';
+                            const rot = (typeof f.rotationAngle === 'number') ? f.rotationAngle : 0;
+                            
+                            const div = document.createElement('div');
+                            div.className = 'feature-shape-admin';
+                            div.style.left = posX + 'px';
+                            div.style.top = posY + 'px';
+                            div.style.width = w + 'px';
+                            div.style.height = h + 'px';
+                            if (rot) {
+                                div.style.transform = `rotate(${rot}deg)`;
+                            }
+                            
+                            const badge = document.createElement('div');
+                            badge.className = 'feature-badge';
+                            badge.textContent = label;
+                            div.appendChild(badge);
+                            
+                            fragment.appendChild(div);
+                        });
+                    }
+
+                    // Append tất cả một lần (chỉ 1 reflow thay vì N reflows)
+                    canvas.appendChild(fragment);
+
+                } catch (error) {
+                    console.error('Error loading layout:', error);
+                    // Xóa loading indicator nếu có lỗi
+                    loadingDiv.remove();
+                    // Hiển thị empty state khi có lỗi
+                    const empty = document.createElement('div');
+                    empty.className = 'empty-canvas-state';
+                    empty.innerHTML = `
+                        <div class="empty-canvas-state__title">Lỗi tải sơ đồ</div>
+                        <div class="empty-canvas-state__message">Không thể tải sơ đồ bàn. Vui lòng thử lại.</div>
+                    `;
+                    canvas.appendChild(empty);
+                }
+
+                // Căn giữa ngay lập tức sau khi render xong (dùng requestAnimationFrame để mượt hơn)
+                requestAnimationFrame(() => {
+                    centerCanvasContent(canvas);
+                });
+            }
+            
+            // Hàm tự động căn giữa nội dung canvas
+            function centerCanvasContent(canvas) {
+                if (!canvas) return;
+                
+                const children = Array.from(canvas.children);
+                if (children.length === 0) return;
+                
+                // Tính bounding box của tất cả phần tử
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                children.forEach(child => {
+                    // Bỏ qua empty state vì nó dùng transform để căn giữa
+                    if (child.classList.contains('empty-canvas-state')) return;
+                    
+                    // Lấy trực tiếp từ style (nhanh hơn getBoundingClientRect)
+                    const x = parseFloat(child.style.left) || 0;
+                    const y = parseFloat(child.style.top) || 0;
+                    const w = parseFloat(child.style.width) || 0;
+                    const h = parseFloat(child.style.height) || 0;
+                    
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x + w);
+                    maxY = Math.max(maxY, y + h);
+                });
+                
+                // Nếu không có phần tử nào (chỉ có empty state), không cần căn giữa
+                if (minX === Infinity) return;
+                
+                // Tính offset để căn giữa
+                const contentWidth = maxX - minX;
+                const contentHeight = maxY - minY;
+                const margin = 40; // Margin tối thiểu
+                
+                // Tính kích thước canvas mới với margin đều
+                const newWidth = contentWidth + margin * 2;
+                const newHeight = contentHeight + margin * 2;
+                
+                // Cập nhật kích thước canvas
+                canvas.style.width = newWidth + 'px';
+                canvas.style.height = newHeight + 'px';
+                
+                // Điều chỉnh vị trí của tất cả phần tử để căn giữa (bỏ qua empty state)
+                const offsetX = margin - minX;
+                const offsetY = margin - minY;
+                
+                children.forEach(child => {
+                    if (child.classList.contains('empty-canvas-state')) return;
+                    const x = parseFloat(child.style.left) || 0;
+                    const y = parseFloat(child.style.top) || 0;
+                    child.style.left = (x + offsetX) + 'px';
+                    child.style.top = (y + offsetY) + 'px';
+                });
+                
+                console.log('✅ Canvas content centered', {
+                    contentSize: `${contentWidth}x${contentHeight}`,
+                    canvasSize: `${newWidth}x${newHeight}`,
+                    offset: `${offsetX}, ${offsetY}`
+                });
+            }
+
+            // Refresh data
+            function refreshData() {
+                window.location.reload();
+            }
+
+            // Handle table click in canvas
+            function handleTableClick(element, tableData) {
+                if (!tableData || !tableData.id) return;
+                // Use existing selectTable function which handles both grid and canvas
+                selectTable(tableData.id);
+            }
+
+            // Select table
+            function selectTable(tableId) {
+                // Remove previous selection from both grid and canvas
+                document.querySelectorAll(".table, .table-shape-admin").forEach((table) => {
+                    table.classList.remove("selected");
+                });
+
+                // Add selection to clicked table (works for both grid and canvas)
+                const tableElement = document.querySelector(
+                    `[data-table-id="${tableId}"]`
+                );
+                if (tableElement) {
+                    tableElement.classList.add("selected");
+                }
+
+                selectedTableId = tableId;
+
+                // Fetch table details
+                fetch(`/api/tables/${tableId}`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        currentTableData = data;
+                        showTableDetails(data);
+                    })
+                    .catch((error) => {
+                        console.error("Error fetching table details:", error);
+                    });
+            }
+
+            // Show table details
+            function showTableDetails(table) {
+                document.getElementById(
+                    "tableDetailsTitle"
+                ).textContent = `Table Details: ${table.tableName}`;
+                document.getElementById(
+                    "tableCapacity"
+                ).textContent = `${table.capacity} guests`;
+                document.getElementById("tableArea").textContent =
+                    table.areaName;
+
+                // Update status tag
+                const statusTag = document.getElementById("tableStatus");
+                statusTag.textContent = STATUS_LABELS[table.status] || table.status;
+                statusTag.className = `status-tag ${table.status.toLowerCase()}`;
+
+                document.querySelectorAll(".status-option").forEach((option) => {
+                    option.classList.toggle("selected", option.dataset.status === table.status);
+                });
+
+                // Show/hide reservation details
+                const reservationDetails =
+                    document.getElementById("reservationDetails");
+                if (table.status === "RESERVED" && table.reservationGuest) {
+                    document.getElementById("reservationGuest").textContent =
+                        table.reservationGuest || "-";
+                    document.getElementById("reservationTime").textContent =
+                        table.reservationTime || "-";
+                    document.getElementById(
+                        "reservationPartySize"
+                    ).textContent = table.reservationPartySize || "-";
+                    document.getElementById("reservationCode").textContent =
+                        table.reservationCode || "-";
+                    reservationDetails.className =
+                        "reservation-details-visible";
+                } else {
+                    reservationDetails.className = "reservation-details-hidden";
+                }
+
+                // Update status options
+                document
+                    .querySelectorAll(".status-option")
+                    .forEach((option) => {
+                        option.classList.remove("selected");
+                        const optionText = option.textContent
+                            .trim()
+                            .toLowerCase();
+                        const tableStatus = table.status.toLowerCase();
+                        if (optionText === tableStatus) {
+                            option.classList.add("selected");
+                        }
+                    });
+
+                // Show panel
+                document
+                    .getElementById("tableDetailsPanel")
+                    .classList.add("show");
+            }
+
+            // Close table details
+            function closeTableDetails() {
+                const panel = document.getElementById("tableDetailsPanel");
+                panel.classList.add("hide");
+                setTimeout(() => {
+                    panel.classList.remove("show", "hide");
+                    // Remove selection from both grid and canvas
+                    document.querySelectorAll(".table, .table-shape-admin").forEach((table) => {
+                        table.classList.remove("selected");
+                    });
+                    selectedTableId = null;
+                    currentTableData = null;
+                }, 300);
+            }
+
+            // Update table status
+            function updateTableStatus(status) {
+                if (!selectedTableId) {
+                    console.error("No table selected");
+                    showToast("Please select a table first", "error");
+                    return;
+                }
+
+                console.log(
+                    `Updating table ${selectedTableId} status to: ${status}`
+                );
+
+                // Show loading state
+                const statusOptions =
+                    document.querySelectorAll(".status-option");
+                statusOptions.forEach((option) => {
+                    option.style.opacity = "0.5";
+                    option.style.pointerEvents = "none";
+                });
+
+                fetch(`/api/tables/${selectedTableId}/status`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": document
+                            .querySelector('meta[name="_csrf"]')
+                            .getAttribute("content"),
+                    },
+                    body: JSON.stringify({ status: status }),
+                })
+                    .then((response) => {
+                        if (!response.ok) {
+                            return response.text().then((text) => {
+                                throw new Error(
+                                    `HTTP ${response.status}: ${text}`
+                                );
+                            });
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log("Table status updated successfully:", data);
+
+                        // Update UI
+                        currentTableData = data;
+                        showTableDetails(data);
+
+                        // Update table element in both grid and canvas
+                        const tableElement = document.querySelector(
+                            `[data-table-id="${selectedTableId}"]`
+                        );
+                        if (tableElement) {
+                            // Get existing classes (shape, etc.) and update status
+                            const currentClasses = tableElement.className.split(' ').filter(cls => 
+                                !['available', 'occupied', 'reserved', 'cleaning'].includes(cls)
+                            ).join(' ');
+                            tableElement.className = `${currentClasses} ${status.toLowerCase()}`;
+                        }
+                        
+                        // Also update canvas table element if exists
+                        const canvasTableElement = document.querySelector(
+                            `.table-shape-admin[data-table-id="${selectedTableId}"]`
+                        );
+                        if (canvasTableElement) {
+                            // Get existing classes (shape) and update status
+                            const canvasClasses = canvasTableElement.className.split(' ').filter(cls => 
+                                !['available', 'occupied', 'reserved', 'cleaning', 'table-shape-admin'].includes(cls)
+                            ).join(' ');
+                            canvasTableElement.className = `table-shape-admin ${canvasClasses} ${status.toLowerCase()}`;
+                        }
+
+                        // Refresh summary cards
+                        refreshSummaryCards();
+
+                        // Show success message
+                        showToast(
+                            `Đã cập nhật trạng thái bàn sang “${STATUS_LABELS[status] || status}”`, "success"
+                        );
+                    })
+                    .catch((error) => {
+                        console.error("Error updating table status:", error);
+                        showToast(
+                            `Error updating table status: ${error.message}`,
+                            "error"
+                        );
+                    })
+                    .finally(() => {
+                        // Remove loading state
+                        statusOptions.forEach((option) => {
+                            option.style.opacity = "1";
+                            option.style.pointerEvents = "auto";
+                        });
+                    });
+            }
+
+            // Refresh summary cards
+            function refreshSummaryCards() {
+                fetch("/api/tables")
+                    .then((response) => response.json())
+                    .then((tables) => {
+                        const summary = {
+                            AVAILABLE: 0,
+                            OCCUPIED: 0,
+                            RESERVED: 0,
+                            CLEANING: 0,
+                        };
+
+                        tables.forEach((table) => {
+                            summary[table.status]++;
+                        });
+
+                        // Update UI
+                        document.querySelector(
+                            ".summary-card.available .summary-card__count"
+                        ).textContent = summary.AVAILABLE;
+                        document.querySelector(
+                            ".summary-card.occupied .summary-card__count"
+                        ).textContent = summary.OCCUPIED;
+                        document.querySelector(
+                            ".summary-card.reserved .summary-card__count"
+                        ).textContent = summary.RESERVED;
+                        document.querySelector(
+                            ".summary-card.cleaning .summary-card__count"
+                        ).textContent = summary.CLEANING;
+                    })
+                    .catch((error) => {
+                        console.error("Error refreshing summary:", error);
+                    });
+            }
+
+            // Set initial floor UI
+            document.addEventListener("DOMContentLoaded", function () {
+                buildFloorOptions();
+                const select = document.getElementById('floorFilter');
+                if (select && select.options.length > 1) {
+                    select.selectedIndex = 1;
+                    currentFloorNumber = parseInt(select.value);
+                }
+                renderFloorOverview();
+                // Apply UI sorting for tables to mirror admin order by code
+                sortTablesInEachArea();
+            });
+
+            // Toast notification function
+            function showToast(message, type) {
+                // Create toast if doesn't exist
+                let toast = document.getElementById("toast");
+                if (!toast) {
+                    toast = document.createElement("div");
+                    toast.id = "toast";
+                    toast.className = "toast";
+                    toast.innerHTML = `
+                        <div class="toast-content">
+                            <div class="toast-icon"></div>
+                            <div class="toast-message"></div>
+                        </div>
+                        <div class="toast-progress"></div>
+                    `;
+                    document.body.appendChild(toast);
+                }
+
+                const toastMessage = toast.querySelector(".toast-message");
+                const toastIcon = toast.querySelector(".toast-icon");
+
+                toastMessage.textContent = message;
+
+                if (type === "success") {
+                    toast.classList.add("success");
+                    toast.classList.remove("error");
+                } else {
+                    toast.classList.add("error");
+                    toast.classList.remove("success");
+                }
+
+                // Hide icon
+                toastIcon.style.display = "none";
+
+                toast.classList.add("show");
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+        </script>
+
+        <!-- AI Chatbot Widget -->
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+    </body>
+</html>

@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Login — LuxDine</title>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --color-primary: #0a0a23;
+            --color-secondary: #f97316;
+            --color-bg: #f9fafb;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+            --color-success: #22c55e;
+            --color-warning: #facc15;
+            --color-error: #ef4444;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, .05);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-xxl: 64px;
+            --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            --h1-size: 32px;
+            --h1-lh: 1.2;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-lh: 1.3;
+            --h2-weight: 600;
+            --body-size: 16px;
+            --body-lh: 1.5;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box
+        }
+
+        html, body {
+            height: 100%
+        }
+
+        body {
+            margin: 0;
+            font-family: var(--font-family);
+            font-size: var(--body-size);
+            line-height: var(--body-lh);
+            color: var(--color-text);
+            background: linear-gradient(180deg, #fff 0%, var(--color-bg) 100%);
+        }
+
+        .navbar {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md)
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-weight: 700;
+            color: var(--color-primary)
+        }
+
+        .brand__logo {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: var(--color-primary)
+        }
+
+        .nav {
+            display: flex;
+            gap: var(--space-lg)
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: var(--color-text);
+            font-weight: 500
+        }
+
+        .nav a:hover {
+            text-decoration: underline
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-md);
+            display: grid;
+            grid-template-columns:1.2fr 1fr;
+            gap: var(--space-xxl);
+            align-items: center;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns:1fr;
+                gap: var(--space-xl);
+                padding-top: var(--space-lg)
+            }
+
+            .hero {
+                order: 2
+            }
+
+            .card {
+                order: 1
+            }
+        }
+
+        .hero h1 {
+            font-size: var(--h1-size);
+            line-height: var(--h1-lh);
+            font-weight: var(--h1-weight);
+            color: var(--color-primary);
+            margin: 0 0 var(--space-md)
+        }
+
+        .hero p {
+            color: var(--color-text-muted);
+            margin: 0 0 var(--space-lg);
+            max-width: 60ch
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-card);
+            padding: clamp(20px, 4vw, 32px)
+        }
+
+        .card__header {
+            margin-bottom: var(--space-md)
+        }
+
+        .card__title {
+            font-size: var(--h2-size);
+            line-height: var(--h2-lh);
+            font-weight: var(--h2-weight);
+            margin: 0 0 var(--space-sm);
+            color: var(--color-primary)
+        }
+
+        .card__desc {
+            color: var(--color-text-muted);
+            margin: 0
+        }
+
+        .alert {
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            margin-bottom: var(--space-md);
+            font-size: 14px;
+            transition: opacity .25s ease, transform .25s ease;
+        }
+
+        .alert--error {
+            background: #fef2f2;
+            color: #991b1b;
+            border: 1px solid #fecaca
+        }
+
+        .alert--info {
+            background: #eff6ff;
+            color: #1e3a8a;
+            border: 1px solid #bfdbfe
+        }
+
+        .alert.is-hiding {
+            opacity: 0;
+            transform: translateY(-4px);
+            pointer-events: none
+        }
+
+        .form {
+            display: grid;
+            gap: var(--space-md);
+            margin-top: var(--space-lg)
+        }
+
+        .field {
+            display: grid;
+            gap: var(--space-sm)
+        }
+
+        .label {
+            font-weight: 500
+        }
+
+        .hint {
+            font-size: 14px;
+            color: var(--color-text-muted)
+        }
+
+        .input {
+            width: 100%;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            font: inherit;
+            outline: none;
+            background: #fff
+        }
+
+        .input::placeholder {
+            color: #9ca3af
+        }
+
+        .input:focus {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 3px rgba(10, 10, 35, .08)
+        }
+
+        .input--error {
+            border-color: var(--color-error)
+        }
+
+        .error-text {
+            font-size: 14px;
+            color: var(--color-error);
+            margin-top: -4px
+        }
+
+        .form__row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--space-sm)
+        }
+
+        .checkbox {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            user-select: none
+        }
+
+        .checkbox input {
+            width: 16px;
+            height: 16px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: transform .02s ease, box-shadow .2s ease, background .2s ease
+        }
+
+        .btn:active {
+            transform: translateY(1px)
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: #fff
+        }
+
+        .btn--primary:hover {
+            box-shadow: 0 4px 14px rgba(10, 10, 35, .2)
+        }
+
+        .btn--secondary {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary)
+        }
+
+        .btn--secondary:hover {
+            background: rgba(249, 115, 22, .06)
+        }
+
+        .actions {
+            display: grid;
+            gap: var(--space-sm);
+            margin-top: var(--space-md)
+        }
+
+        .actions .btn {
+            width: 100%
+        }
+
+        .note {
+            margin-top: var(--space-md);
+            font-size: 14px;
+            color: var(--color-text-muted);
+            text-align: center
+        }
+
+        .note a {
+            color: var(--color-secondary);
+            font-weight: 600;
+            text-decoration: none
+        }
+
+        .note a:hover {
+            text-decoration: underline
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 12px;
+            font-weight: 600
+        }
+
+        /* Social/Alt logins */
+        .divider {
+            display: grid;
+            grid-template-columns:1fr auto 1fr;
+            align-items: center;
+            gap: 12px;
+            margin: 16px 0
+        }
+
+        .divider::before, .divider::after {
+            content: "";
+            height: 1px;
+            background: var(--color-border)
+        }
+
+        .social {
+            display: grid;
+            gap: 12px
+        }
+
+        .btn--google {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            color: #3c4043;
+            justify-content: center;
+            gap: 10px
+        }
+
+        .btn--google img {
+            width: 18px;
+            height: 18px
+        }
+
+        .btn--ghost {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            color: var(--color-text)
+        }
+
+        .otp-block {
+            display: none;
+            border: 1px dashed var(--color-border);
+            border-radius: 10px;
+            padding: 12px
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            align-items: center
+        }
+    </style>
+</head>
+<body>
+<header aria-label="Site" class="navbar">
+    <div aria-label="Bella Vista" class="brand">
+        <span aria-hidden="true" class="brand__logo"></span>
+        <span>LuxDine</span>
+    </div>
+    <nav aria-label="Primary" class="nav">
+        <a th:href="@{/home}">Trang chủ</a>
+        <a th:href="@{/menu}">Thực đơn</a>
+        <a href="#">Liên hệ</a>
+        <a aria-current="page" th:href="@{/login}">Đăng nhập</a>
+        <a th:href="@{/register}">Đăng ký</a>
+    </nav>
+</header>
+
+<main class="container">
+    <section aria-labelledby="login-hero-title" class="hero">
+        <h1 id="login-hero-title">Chào mừng trở lại 👋</h1>
+        <p>Đăng nhập để đặt bàn nhanh, xem lịch sử đơn hàng, và nhận ưu đãi dành riêng cho bạn.</p>
+        <div aria-label="Info" class="badge">Bảo mật</div>
+        <p class="hint" style="margin-top: var(--space-sm)">Chúng tôi không bao giờ chia sẻ thông tin đăng nhập của
+            bạn.</p>
+    </section>
+
+    <section aria-labelledby="login-card-title" class="card">
+        <div class="card__header">
+            <h2 class="card__title" id="login-card-title">Đăng nhập</h2>
+            <p class="card__desc">Nhập tài khoản và mật khẩu, hoặc dùng các phương thức nhanh bên dưới.</p>
+        </div>
+
+        <!-- Alerts -->
+        <div aria-live="assertive" class="alert alert--error" role="alert" th:if="${param.error}">Tài khoản hoặc mật
+            khẩu không đúng. Vui lòng thử lại.
+        </div>
+        <div aria-live="polite" class="alert alert--info" role="status" th:if="${param.logout}">Bạn đã đăng xuất thành
+            công.
+        </div>
+
+        <!-- Form (username/password) -->
+        <form class="form" method="post" novalidate th:action="@{/login}">
+            <input th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+
+            <div class="field">
+                <label class="label" for="username">Username</label>
+                <input autocomplete="username" class="input" id="username" name="username" required/>
+            </div>
+
+            <div class="field">
+                <label class="label" for="password">Mật khẩu</label>
+                <input autocomplete="current-password" class="input" id="password" minlength="6" name="password"
+                       placeholder="••••••••" required th:classappend="${param.error} ? ' input--error' : ''"
+                       type="password"/>
+            </div>
+
+            <div class="form__row">
+                <label class="checkbox" title="Ghi nhớ đăng nhập (cần cấu hình remember-me)">
+                    <input name="remember-me" type="checkbox"/>
+                    <span>Ghi nhớ tôi</span>
+                </label>
+                <a class="hint" href="#">Quên mật khẩu?</a>
+            </div>
+
+            <div class="actions">
+                <button class="btn btn--primary" type="submit">Đăng nhập</button>
+            </div>
+        </form>
+
+        <!-- Divider -->
+        <div class="divider"><span class="hint">hoặc</span></div>
+
+        <!-- Social / Alternative sign-in -->
+        <div class="social">
+            <!-- Google (OAuth2) -->
+            <a class="btn btn--google" href="/oauth2/authorization/google" title="Sign in with Google">
+                <img alt="" src="https://www.gstatic.com/images/branding/product/1x/gsa_64dp.png"/>
+                <span>Tiếp tục với google</span>
+            </a>
+
+            <!-- Email OTP -->
+            <button class="btn btn--ghost" id="btn-email-otp" type="button">Đăng nhập bằng email (OTP)</button>
+            <div class="otp-block" id="email-otp">
+                <div class="field">
+                    <label class="label" for="otpEmail">Email</label>
+                    <div class="row">
+                        <input autocomplete="email" class="input" id="otpEmail" placeholder="you@example.com"
+                               type="email"/>
+                        <button class="btn btn--secondary" id="sendEmailOtp" type="button">Gửi mã</button>
+                    </div>
+                </div>
+                <div class="field" style="margin-top:8px;">
+                    <label class="label" for="otpCodeEmail">Mã OTP</label>
+                    <div class="row">
+                        <input class="input" id="otpCodeEmail" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"
+                               placeholder="------"/>
+                        <button class="btn btn--primary" id="verifyEmailOtp" type="button">Xác thực & đăng nhập</button>
+                    </div>
+                    <p class="error-text" id="email-otp-error" style="display:none;"></p>
+                </div>
+            </div>
+
+            <!-- Phone (SMS OTP) -->
+            <button class="btn btn--ghost" id="btn-sms-otp" type="button">Đăng nhập bằng SĐT (OTP)</button>
+            <div class="otp-block" id="sms-otp">
+                <div class="field">
+                    <label class="label" for="otpPhone">Số điện thoại</label>
+                    <div class="row">
+                        <input autocomplete="tel" class="input" id="otpPhone" placeholder="+84xxxxxxxxx" type="tel"/>
+                        <button class="btn btn--secondary" id="sendSmsOtp" type="button">Gửi mã</button>
+                    </div>
+                </div>
+                <div class="field" style="margin-top:8px;">
+                    <label class="label" for="otpCodePhone">Mã OTP</label>
+                    <div class="row">
+                        <input class="input" id="otpCodePhone" inputmode="numeric" maxlength="6" pattern="[0-9]{6}"
+                               placeholder="------"/>
+                        <button class="btn btn--primary" id="verifySmsOtp" type="button">Xác thực & đăng nhập</button>
+                    </div>
+                    <p class="error-text" id="sms-otp-error" style="display:none;"></p>
+                </div>
+            </div>
+        </div>
+
+        <p class="note">
+            Khi tiếp tục, bạn đồng ý với <a href="#">Điều khoản</a> & <a href="#">Chính sách bảo mật</a> của chúng tôi.
+        </p>
+    </section>
+</main>
+
+<!-- Auto-dismiss alerts after 5s -->
+<script>
+    (function () {
+        const alerts = Array.from(document.querySelectorAll('.alert'));
+        if (!alerts.length) return;
+        const prefersReduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        setTimeout(() => {
+            alerts.forEach(el => {
+                if (!prefersReduce) {
+                    el.classList.add('is-hiding');
+                    setTimeout(() => {
+                        el.style.display = 'none';
+                    }, 300);
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }, 5000);
+    })();
+</script>
+
+<!-- OTP flows (Email & SMS) -->
+<script>
+    (function () {
+        const csrf = document.querySelector('input[name="_csrf"]')?.value;
+
+        const emailBlockBtn = document.getElementById('btn-email-otp');
+        const smsBlockBtn = document.getElementById('btn-sms-otp');
+        const emailBlock = document.getElementById('email-otp');
+        const smsBlock = document.getElementById('sms-otp');
+
+        const sendEmailOtp = document.getElementById('sendEmailOtp');
+        const verifyEmailOtp = document.getElementById('verifyEmailOtp');
+        const emailInput = document.getElementById('otpEmail');
+        const emailCode = document.getElementById('otpCodeEmail');
+        const emailErr = document.getElementById('email-otp-error');
+
+        const sendSmsOtp = document.getElementById('sendSmsOtp');
+        const verifySmsOtp = document.getElementById('verifySmsOtp');
+        const phoneInput = document.getElementById('otpPhone');
+        const phoneCode = document.getElementById('otpCodePhone');
+        const smsErr = document.getElementById('sms-otp-error');
+
+        function cooldownBtn(btn, seconds, baseLabel = 'Gửi lại') {
+            let left = Math.max(1, parseInt(seconds || 60, 10));
+            btn.disabled = true;
+            const orig = btn.dataset.origText || btn.textContent;
+            btn.dataset.origText = orig;
+            btn.textContent = `${baseLabel} (${left}s)`;
+            const t = setInterval(() => {
+                left--;
+                btn.textContent = `${baseLabel} (${left}s)`;
+                if (left <= 0) {
+                    clearInterval(t);
+                    btn.disabled = false;
+                    btn.textContent = orig;
+                }
+            }, 1000);
+        }
+
+        function secFrom(res) {
+            if (Number.isFinite(res?.retryAfter)) return Math.max(1, res.retryAfter);
+            const m = (res?.message || '').match(/(\d+)\s*s/); // “5s” hoặc “5 s”
+            return m ? Math.max(1, parseInt(m[1], 10)) : null;
+        }
+
+        async function post(url, data) {
+            const body = new URLSearchParams(data || {});
+            if (csrf) body.set('_csrf', csrf);
+            try {
+                const r = await fetch(url, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRF-TOKEN': csrf},
+                    body,
+                    credentials: 'same-origin'
+                });
+                const text = await r.text();
+                try {
+                    return JSON.parse(text);
+                } catch {
+                    return {ok: false, message: text || 'Lỗi máy chủ.'};
+                }
+            } catch {
+                return {ok: false, message: 'Lỗi mạng. Thử lại.'};
+            }
+        }
+
+        emailBlockBtn.addEventListener('click', () => {
+            emailBlock.style.display = emailBlock.style.display ? '' : 'block';
+            smsBlock.style.display = '';
+        });
+        smsBlockBtn.addEventListener('click', () => {
+            smsBlock.style.display = smsBlock.style.display ? '' : 'block';
+            emailBlock.style.display = '';
+        });
+
+        // ===== Email OTP =====
+        sendEmailOtp.addEventListener('click', async () => {
+            emailErr.style.display = 'none';
+            const email = emailInput.value?.trim();
+            if (!email) {
+                emailInput.focus();
+                return;
+            }
+
+            // chặn double-click trước khi có phản hồi
+            sendEmailOtp.disabled = true;
+
+            const res = await post('/auth/otp-login/email/send', {email});
+
+            // Nếu server cho biết đang cooldown → đếm ngược theo retryAfter
+            const sec = secFrom(res);
+            if (res.ok) {
+                cooldownBtn(sendEmailOtp, sec ?? 60);
+            } else if (sec) {
+                emailErr.textContent = res.message;
+                emailErr.style.display = 'block';
+                cooldownBtn(sendEmailOtp, sec); // vẫn khóa nút trong thời gian server yêu cầu
+            } else {
+                emailErr.textContent = res.message || 'Không gửi được mã.';
+                emailErr.style.display = 'block';
+                sendEmailOtp.disabled = false;  // lỗi không phải cooldown → bật lại
+            }
+        });
+
+        verifyEmailOtp.addEventListener('click', async () => {
+            emailErr.style.display = 'none';
+            const email = emailInput.value?.trim(), code = emailCode.value?.trim();
+            if (!email || !code) {
+                (!email ? emailInput : emailCode).focus();
+                return;
+            }
+            const res = await post('/auth/otp-login/email/verify', {email, code});
+            if (res.ok) {
+                window.location.href = '/home';
+            } else {
+                emailErr.textContent = res.message || 'Mã không hợp lệ.';
+                emailErr.style.display = 'block';
+            }
+        });
+
+        // ===== SMS OTP =====
+        sendSmsOtp.addEventListener('click', async () => {
+            smsErr.style.display = 'none';
+            const phone = phoneInput.value?.trim();
+            if (!phone) {
+                phoneInput.focus();
+                return;
+            }
+
+            sendSmsOtp.disabled = true;
+
+            const res = await post('/auth/otp-login/sms/send', {phone});
+
+            const sec = secFrom(res);
+            if (res.ok) {
+                cooldownBtn(sendSmsOtp, sec ?? 60);
+            } else if (sec) {
+                smsErr.textContent = res.message;
+                smsErr.style.display = 'block';
+                cooldownBtn(sendSmsOtp, sec);
+            } else {
+                smsErr.textContent = res.message || 'Không gửi được mã.';
+                smsErr.style.display = 'block';
+                sendSmsOtp.disabled = false;
+            }
+        });
+
+        verifySmsOtp.addEventListener('click', async () => {
+            smsErr.style.display = 'none';
+            const phone = phoneInput.value?.trim(), code = phoneCode.value?.trim();
+            if (!phone || !code) {
+                (!phone ? phoneInput : phoneCode).focus();
+                return;
+            }
+            const res = await post('/auth/otp-login/sms/verify', {phone, code});
+            if (res.ok) {
+                window.location.href = '/home';
+            } else {
+                smsErr.textContent = res.message || 'Mã không hợp lệ.';
+                smsErr.style.display = 'block';
+            }
+        });
+    })();
+</script>
+</body>
+</html>

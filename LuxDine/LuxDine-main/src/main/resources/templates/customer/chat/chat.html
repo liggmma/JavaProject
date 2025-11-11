@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Chat hỗ trợ — LuxDine</title>
+
+        <th:block
+            th:replace="~{customer/fragments/header :: styles}"
+        ></th:block>
+        <th:block
+            th:replace="~{customer/fragments/footer :: styles}"
+        ></th:block>
+
+        <style>
+            /* ===================== Base ===================== */
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+            }
+            body {
+                margin: 0;
+                font-family: var(--font);
+                font-size: 16px;
+                line-height: 1.6;
+                color: var(--color-text);
+                background: linear-gradient(
+                    180deg,
+                    #fff 0%,
+                    var(--color-bg) 100%
+                );
+            }
+
+            main.chat-page {
+                min-height: calc(100vh - 60px);
+                padding: var(--space-2) 0;
+            }
+
+            .chat-container {
+                max-width: 900px;
+                margin: 0 auto;
+                padding: 0 var(--space-7);
+            }
+
+            .chat-window {
+                display: flex;
+                flex-direction: column;
+                height: calc(100vh - 150px);
+                background: var(--color-surface);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-elev);
+                overflow: hidden;
+            }
+
+            .chat-header {
+                padding: var(--space-5) var(--space-6);
+                border-bottom: 1px solid var(--color-border);
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1a1a3a 50%,
+                    #0f0f23 100%
+                );
+            }
+
+            .chat-header h2 {
+                margin: 0;
+                font-size: var(--h3-size);
+                font-weight: 600;
+                color: #fff;
+            }
+
+            .chat-header .staff-info {
+                color: rgba(255, 255, 255, 0.8);
+                font-size: var(--small-size);
+                margin-top: var(--space-2);
+            }
+
+            .chat-messages {
+                flex: 1;
+                overflow-y: auto;
+                padding: var(--space-6);
+                display: flex;
+                flex-direction: column;
+                gap: var(--space-4);
+                background: linear-gradient(180deg, #fafafa 0%, #f0f0f0 100%);
+            }
+
+            .message {
+                display: flex;
+                flex-direction: column;
+                max-width: 70%;
+                animation: fadeIn 0.3s ease-in;
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .message.sent {
+                align-self: flex-end;
+            }
+
+            .message.received {
+                align-self: flex-start;
+            }
+
+            .message-bubble {
+                padding: var(--space-4) var(--space-5);
+                border-radius: var(--radius-md);
+                word-wrap: break-word;
+            }
+
+            .message.sent .message-bubble {
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1a1a3a 100%
+                );
+                color: #fff;
+                border-bottom-right-radius: 4px;
+            }
+
+            .message.received .message-bubble {
+                background: var(--color-surface);
+                color: var(--color-text);
+                border: 1px solid var(--color-border);
+                border-bottom-left-radius: 4px;
+            }
+
+            .message-meta {
+                font-size: 11px;
+                color: var(--color-text-muted);
+                margin-top: var(--space-2);
+                padding: 0 var(--space-3);
+            }
+
+            .chat-input-area {
+                padding: var(--space-5);
+                border-top: 1px solid var(--color-border);
+                background: var(--color-surface);
+            }
+
+            .chat-input-form {
+                display: flex;
+                gap: var(--space-3);
+            }
+
+            .chat-input {
+                flex: 1;
+                padding: var(--space-4) var(--space-5);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                font: inherit;
+                resize: none;
+                min-height: 44px;
+                max-height: 120px;
+            }
+
+            .chat-input:focus {
+                outline: none;
+                border-color: var(--color-primary);
+            }
+
+            .btn-send {
+                padding: var(--space-4) var(--space-6);
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1a1a3a 100%
+                );
+                color: #fff;
+                border: none;
+                border-radius: var(--radius-md);
+                font-weight: 600;
+                cursor: pointer;
+                transition: filter 0.2s;
+            }
+
+            .btn-send:hover:not(:disabled) {
+                filter: brightness(0.95);
+            }
+
+            .btn-send:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .loading {
+                text-align: center;
+                padding: var(--space-6);
+                color: var(--color-text-muted);
+            }
+
+            .empty-chat {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: 100%;
+                color: var(--color-text-muted);
+                text-align: center;
+            }
+
+            .request-chat-container {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                height: calc(100vh - 150px);
+                background: var(--color-surface);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-elev);
+                padding: var(--space-8);
+            }
+
+            .request-chat-container h2 {
+                margin: 0 0 var(--space-5) 0;
+                font-size: var(--h2-size);
+                font-weight: 600;
+                color: var(--color-text);
+            }
+
+            .request-chat-container p {
+                margin: 0 0 var(--space-8) 0;
+                color: var(--color-text-muted);
+                text-align: center;
+                max-width: 500px;
+            }
+
+            .btn-request-chat {
+                padding: var(--space-5) var(--space-8);
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1a1a3a 100%
+                );
+                color: #fff;
+                border: none;
+                border-radius: var(--radius-md);
+                font-size: var(--body-size);
+                font-weight: 600;
+                cursor: pointer;
+                transition: filter 0.2s;
+            }
+
+            .btn-request-chat:hover:not(:disabled) {
+                filter: brightness(0.95);
+            }
+
+            .btn-request-chat:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+
+            .chat-window {
+                display: none;
+            }
+
+            .chat-window.active {
+                display: flex;
+            }
+
+            .request-chat-container {
+                display: flex;
+            }
+
+            .request-chat-container.hidden {
+                display: none;
+            }
+
+            /* Popup Modal Styles */
+            .popup-modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(4px);
+                z-index: 10000;
+                align-items: center;
+                justify-content: center;
+                padding: var(--space-4);
+                box-sizing: border-box;
+            }
+
+            .popup-modal.show {
+                display: flex;
+            }
+
+            .popup-modal-content {
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 480px;
+                width: 100%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                position: relative;
+                border: 1px solid rgba(0, 0, 0, 0.1);
+                animation: slideUp 0.3s ease-out;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            @keyframes slideUp {
+                from {
+                    transform: translateY(20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .popup-modal-header {
+                margin-bottom: var(--space-6);
+            }
+
+            .popup-modal-header h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+                color: #111827;
+                line-height: 1.4;
+            }
+
+            .popup-modal-body {
+                margin-bottom: 24px;
+                color: #374151;
+                line-height: 1.6;
+                font-size: 15px;
+            }
+
+            .popup-modal-body p {
+                margin: 0;
+            }
+
+            .popup-modal-footer {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                flex-wrap: nowrap;
+                margin-top: 8px;
+            }
+
+            .popup-btn {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                border: none;
+                transition: all 0.2s;
+                font-size: 14px;
+                white-space: nowrap;
+                flex-shrink: 0;
+                min-width: 100px;
+                height: 40px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .popup-btn-primary {
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1a1a3a 100%
+                );
+                color: #fff;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .popup-btn-primary:hover {
+                filter: brightness(0.95);
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            }
+
+            .popup-btn-primary:active {
+                transform: translateY(1px);
+            }
+
+            .popup-btn-secondary {
+                background: #ffffff;
+                color: #374151;
+                border: 1px solid #d1d5db;
+            }
+
+            .popup-btn-secondary:hover {
+                background: #f9fafb;
+                border-color: #9ca3af;
+            }
+
+            .popup-btn-secondary:active {
+                transform: translateY(1px);
+            }
+
+            .popup-btn-danger {
+                background: var(--color-error);
+                color: #fff;
+            }
+
+            .popup-btn-danger:hover {
+                filter: brightness(0.95);
+            }
+        </style>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+    </head>
+    <body>
+        <th:block
+            th:replace="~{customer/fragments/header :: header}"
+        ></th:block>
+
+        <main class="chat-page">
+            <div class="chat-container">
+                <!-- Request Chat Container (hiển thị ban đầu) -->
+                <div class="request-chat-container" id="requestChatContainer">
+                    <h2>Chat hỗ trợ</h2>
+                    <p>
+                        Bạn cần hỗ trợ? Nhấn nút bên dưới để bắt đầu cuộc trò chuyện 
+                        với nhân viên của chúng tôi.
+                    </p>
+                    <button
+                        class="btn-request-chat"
+                        id="requestChatButton"
+                        onclick="requestChatSupport()"
+                    >
+                        Yêu cầu chat hỗ trợ
+                    </button>
+                </div>
+
+                <!-- Chat Window (ẩn ban đầu, chỉ hiện khi có session ACTIVE) -->
+                <div class="chat-window" id="chatWindow">
+                    <div class="chat-header">
+                        <h2>Chat hỗ trợ</h2>
+                        <div class="staff-info" id="staffInfo"></div>
+                    </div>
+
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="loading">Đang tải tin nhắn...</div>
+                    </div>
+
+                    <div class="chat-input-area">
+                        <form
+                            class="chat-input-form"
+                            id="chatForm"
+                            onsubmit="sendMessage(event)"
+                        >
+                            <textarea
+                                class="chat-input"
+                                id="messageInput"
+                                placeholder="Nhập tin nhắn của bạn..."
+                                rows="1"
+                                required
+                            ></textarea>
+                            <button
+                                type="submit"
+                                class="btn-send"
+                                id="sendButton"
+                            >
+                                Gửi
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Popup Modal -->
+        <div class="popup-modal" id="popupModal">
+            <div class="popup-modal-content">
+                <div class="popup-modal-header">
+                    <h3 id="popupTitle">Thông báo</h3>
+                </div>
+                <div class="popup-modal-body">
+                    <p id="popupMessage"></p>
+                </div>
+                <div class="popup-modal-footer" id="popupFooter">
+                    <!-- Buttons will be added dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <th:block
+            th:replace="~{customer/fragments/footer :: footer}"
+        ></th:block>
+        <th:block
+            th:replace="~{customer/fragments/footer :: scripts}"
+        ></th:block>
+        <th:block
+            th:replace="~{customer/fragments/header :: scripts}"
+        ></th:block>
+
+        <!-- WebSocket Libraries -->
+        <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+        <script th:inline="javascript">
+            window.sessionId = null;
+            window.currentUserId = /*[[${currentUser.id}]]*/ null;
+            console.log(
+                "Initialized chat with sessionId:",
+                window.sessionId,
+                "userId:",
+                window.currentUserId
+            );
+        </script>
+        <script src="/js/customer/chat.js"></script>
+        
+        <!-- Popup Utility -->
+        <script>
+            // Popup utility functions
+            function showPopup(title, message, type = 'info') {
+                const modal = document.getElementById('popupModal');
+                const titleEl = document.getElementById('popupTitle');
+                const messageEl = document.getElementById('popupMessage');
+                const footerEl = document.getElementById('popupFooter');
+                
+                titleEl.textContent = title || 'Thông báo';
+                messageEl.textContent = message;
+                footerEl.innerHTML = '';
+                const closeBtn = document.createElement('button');
+                closeBtn.className = 'popup-btn popup-btn-primary';
+                closeBtn.textContent = 'Đóng';
+                closeBtn.onclick = closePopup;
+                footerEl.appendChild(closeBtn);
+                
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Focus on close button
+                setTimeout(() => {
+                    footerEl.querySelector('button').focus();
+                }, 100);
+            }
+            
+            function showConfirmPopup(title, message, onConfirm, onCancel) {
+                const modal = document.getElementById('popupModal');
+                const titleEl = document.getElementById('popupTitle');
+                const messageEl = document.getElementById('popupMessage');
+                const footerEl = document.getElementById('popupFooter');
+                
+                titleEl.textContent = title || 'Xác nhận';
+                messageEl.textContent = message;
+                
+                footerEl.innerHTML = '';
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'popup-btn popup-btn-secondary';
+                cancelBtn.textContent = 'Hủy';
+                cancelBtn.onclick = () => closeConfirmPopup(false);
+                
+                const confirmBtn = document.createElement('button');
+                confirmBtn.className = 'popup-btn popup-btn-primary';
+                confirmBtn.textContent = 'Xác nhận';
+                confirmBtn.onclick = () => closeConfirmPopup(true);
+                
+                footerEl.appendChild(cancelBtn);
+                footerEl.appendChild(confirmBtn);
+                
+                modal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                
+                // Store callbacks
+                modal._onConfirm = onConfirm;
+                modal._onCancel = onCancel;
+                
+                // Focus on confirm button
+                setTimeout(() => {
+                    footerEl.querySelector('.popup-btn-primary').focus();
+                }, 100);
+            }
+            
+            function closePopup() {
+                const modal = document.getElementById('popupModal');
+                modal.classList.remove('show');
+                document.body.style.overflow = '';
+            }
+            
+            function closeConfirmPopup(confirmed) {
+                const modal = document.getElementById('popupModal');
+                const onConfirm = modal._onConfirm;
+                const onCancel = modal._onCancel;
+                
+                closePopup();
+                
+                // Clear callbacks before executing to prevent issues
+                modal._onConfirm = null;
+                modal._onCancel = null;
+                
+                // Execute callbacks after closing
+                if (confirmed && onConfirm) {
+                    setTimeout(() => onConfirm(), 100);
+                } else if (!confirmed && onCancel) {
+                    setTimeout(() => onCancel(), 100);
+                }
+            }
+            
+            // Close popup when clicking outside (only for non-confirm popups)
+            document.getElementById('popupModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    // Only close if it's not a confirm popup (has _onConfirm)
+                    if (!this._onConfirm) {
+                        closePopup();
+                    }
+                }
+            });
+            
+            // Close popup with Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('popupModal');
+                    if (modal.classList.contains('show')) {
+                        // If confirm popup, treat Escape as cancel
+                        if (modal._onConfirm) {
+                            closeConfirmPopup(false);
+                        } else {
+                            closePopup();
+                        }
+                    }
+                }
+            });
+        </script>
+
+        <!-- AI Chatbot Widget -->
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+    </body>
+</html>

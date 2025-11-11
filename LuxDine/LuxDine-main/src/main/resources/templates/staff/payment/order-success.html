@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width,initial-scale=1" name="viewport"/>
+    <title>Thanh toán thành công - LuxDine</title>
+
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-bg: #F9FAFB;
+            --color-surface: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+            --success-bg: #ECFDF5;
+            --success-fg: #065F46;
+            --success-br: #A7F3D0;
+            --radius: 12px;
+            --btn-radius: 8px;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            --container: 980px;
+            --space-2: 12px;
+            --space-3: 16px;
+            --space-4: 24px;
+            --space-5: 32px
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text)
+        }
+
+        .container {
+            max-width: var(--container);
+            margin: 0 auto;
+            padding: var(--space-5) var(--space-3)
+        }
+
+        h1 {
+            font-size: 28px;
+            margin: 0 0 var(--space-4)
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: var(--space-4)
+        }
+
+        .badge-success {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: var(--success-bg);
+            color: var(--success-fg);
+            border: 1px solid var(--success-br);
+            font-weight: 600
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns:1fr auto;
+            gap: 10px 16px
+        }
+
+        .kv dt {
+            color: var(--color-text-muted)
+        }
+
+        .kv dd {
+            margin: 0;
+            font-weight: 600
+        }
+
+        .grid {
+            display: grid;
+            gap: var(--space-4)
+        }
+
+        @media (min-width: 900px) {
+            .grid {
+                grid-template-columns:1fr 1fr
+            }
+        }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: var(--space-4)
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+            padding: 0 16px;
+            border-radius: var(--btn-radius);
+            border: 1px solid transparent;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff
+        }
+
+        .btn-ghost {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            color: var(--color-text)
+        }
+
+        .muted {
+            color: var(--color-text-muted)
+        }
+
+        /* ===== HÓA ĐƠN IN ===== */
+        .print-area {
+            display: none
+        }
+
+        .receipt {
+            margin: 0 auto;
+            max-width: 700px;
+            font-size: 14px;
+            line-height: 1.45;
+            color: #111
+        }
+
+        .r-head {
+            text-align: center;
+            margin-bottom: 16px
+        }
+
+        .r-head h2 {
+            margin: 0 0 6px 0;
+            font-size: 18px
+        }
+
+        .r-meta {
+            display: grid;
+            grid-template-columns:1fr 1fr;
+            gap: 8px 16px;
+            margin-bottom: 12px
+        }
+
+        .r-meta div {
+            display: flex;
+            justify-content: space-between
+        }
+
+        .r-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-variant-numeric: tabular-nums
+        }
+
+        .r-table th, .r-table td {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 8px 6px;
+            text-align: left;
+            vertical-align: top
+        }
+
+        .r-table th:last-child, .r-table td:last-child {
+            text-align: right
+        }
+
+        .r-sum {
+            margin-top: 8px
+        }
+
+        .r-sum .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            border-bottom: 1px dashed #e5e7eb
+        }
+
+        .r-sum .row.total {
+            font-weight: 700;
+            border-bottom: 1px solid #111
+        }
+
+        .r-foot {
+            margin-top: 12px;
+            text-align: center;
+            color: #6b7280
+        }
+
+        .mono {
+            font-variant-numeric: tabular-nums
+        }
+
+        /* In: chỉ hiện print-area, ẩn phần còn lại */
+        @media print {
+            @page {
+                size: A4;
+                margin: 12mm
+            }
+
+            body {
+                background: #fff
+            }
+
+            .container, .actions {
+                display: none !important
+            }
+
+            .print-area {
+                display: block
+            }
+        }
+    </style>
+</head>
+<body>
+<main class="container">
+    <h1><span class="badge-success">✓ Thanh toán thành công</span></h1>
+
+    <section class="grid">
+        <!-- Biên nhận thanh toán -->
+        <article class="card">
+            <h2>Biên nhận</h2>
+            <dl class="kv" style="margin-top:12px">
+                <dt>Mã thanh toán</dt>
+                <dd class="mono" th:text="${payment.id}">0</dd>
+                <dt>Mã đơn</dt>
+                <dd class="mono" th:text="${order.id}">0</dd>
+                <dt>Transaction ID</dt>
+                <dd class="mono" th:text="${payment.transactionId != null ? payment.transactionId : '—'}">—</dd>
+                <dt>Phương thức</dt>
+                <dd th:text="${payment.method}">CASH</dd>
+                <dt>Trạng thái</dt>
+                <dd th:text="${payment.status}">COMPLETED</dd>
+                <dt>Số tiền đã thu</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${payment.amount}">0 VND</dd>
+                <dt>Thời gian</dt>
+                <dd class="mono" th:text="${#dates.format(payment.createdDate, 'dd/MM/yyyy HH:mm')}">—</dd>
+            </dl>
+            <p class="muted" style="margin-top:8px">Vui lòng lưu giữ Transaction ID để đối soát khi cần.</p>
+        </article>
+
+        <!-- Tóm tắt đơn -->
+        <article class="card">
+            <h2>Tóm tắt đơn</h2>
+            <dl class="kv" style="margin-top:12px">
+                <dt>Bàn</dt>
+                <dd th:text="${order.reservation.table != null ? (order.reservation.table.tableName != null ? order.reservation.table.tableName : order.reservation.table.id) : '—'}">
+                    —
+                </dd>
+                <dt>Sub-total</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${order.subTotal}">0 VND</dd>
+                <dt>Giảm giá</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${order.discountTotal}">0 VND</dd>
+                <dt>Thuế</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${order.tax}">0 VND</dd>
+                <dt>Phí dịch vụ</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${order.serviceCharge}">0 VND</dd>
+                <dt>Đã đặt cọc</dt>
+                <dd class="mono" data-amount th:attr="data-amount=${order.depositApplied}">0 VND</dd>
+                <dt><strong>Cần thanh toán</strong></dt>
+                <dd><strong class="mono" data-amount th:attr="data-amount=${order.amountDue}">0 VND</strong></dd>
+            </dl>
+        </article>
+    </section>
+
+    <div class="actions">
+        <button class="btn btn-primary" onclick="printInvoice()" type="button">In hóa đơn</button>
+        <a class="btn btn-ghost" th:href="@{|/staff/orders/${order.id}|}">Xem đơn</a>
+        <a class="btn btn-ghost" th:href="@{/staff/orders}">Về danh sách</a>
+    </div>
+</main>
+
+<!-- ===== KHU VỰC HÓA ĐƠN CHO IN ===== -->
+<section class="print-area" id="print-area">
+    <div class="receipt">
+        <div class="r-head">
+            <h2>LUXDINE</h2>
+            <div class="muted">HÓA ĐƠN THANH TOÁN</div>
+        </div>
+
+        <div class="r-meta">
+            <div><span>Mã đơn:</span><strong class="mono" th:text="${order.id}">0</strong></div>
+            <div><span>Thời gian:</span><strong class="mono"
+                                                th:text="${#dates.format(payment.createdDate, 'dd/MM/yyyy HH:mm')}">—</strong>
+            </div>
+            <div><span>Phương thức:</span><strong th:text="${payment.method.name()}">CASH</strong></div>
+            <div><span>Bàn:</span><strong
+                    th:text="${order.reservation.table != null ? (order.reservation.table.tableName != null ? order.reservation.table.tableName : order.reservation.table.id) : '—'}">—</strong>
+            </div>
+        </div>
+
+        <!-- Danh sách món -->
+        <table class="r-table" th:if="${groupedItems != null and !#lists.isEmpty(groupedItems)}">
+            <thead>
+            <tr>
+                <th style="width:36px">#</th>
+                <th>Món</th>
+                <th style="width:150px">SL × Đơn giá</th>
+                <th style="width:140px">Thành tiền</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="gi, idx : ${groupedItems}">
+                <td class="mono" th:text="${idx.index + 1}">1</td>
+                <td th:text="${gi.name}">Tên món</td>
+                <td class="mono">
+                    <span th:text="${gi.quantity}">0</span> ×
+                    <span data-amount th:attr="data-amount=${gi.unitPrice}">0 VND</span>
+                </td>
+                <td class="mono" data-amount th:attr="data-amount=${gi.lineTotal}">0 VND</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- Tổng kết -->
+        <div class="r-sum">
+            <div class="row"><span>Tạm tính</span><span class="mono" data-amount
+                                                        th:attr="data-amount=${order.subTotal}">0 VND</span></div>
+            <div class="row"><span>Giảm giá</span><span class="mono" data-amount
+                                                        th:attr="data-amount=${order.discountTotal}">0 VND</span></div>
+            <div class="row"><span>Thuế</span><span class="mono" data-amount
+                                                    th:attr="data-amount=${order.tax}">0 VND</span></div>
+            <div class="row"><span>Phí dịch vụ</span><span class="mono" data-amount
+                                                           th:attr="data-amount=${order.serviceCharge}">0 VND</span>
+            </div>
+            <div class="row"><span>Đặt cọc đã khấu trừ</span><span class="mono" data-amount
+                                                                   th:attr="data-amount=${order.depositApplied}">0 VND</span>
+            </div>
+            <div class="row total"><span>Khách thanh toán</span><span class="mono" data-amount
+                                                                      th:attr="data-amount=${payment.amount}">0 VND</span>
+            </div>
+        </div>
+
+        <div class="r-foot">
+            Cảm ơn quý khách đã dùng bữa tại LuxDine!
+        </div>
+    </div>
+</section>
+
+<script>
+    // === Định dạng tiền VND theo yêu cầu ===
+    function formatPriceVND(price) {
+        const n = Number(price);
+        if (isNaN(n)) return '0 VND';
+        return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' VND';
+    }
+
+    function applyMoneyFormatting(root = document) {
+        root.querySelectorAll('[data-amount]').forEach(function (el) {
+            const raw = el.getAttribute('data-amount');
+            el.textContent = formatPriceVND(raw);
+        });
+    }
+
+    // In hóa đơn
+    function printInvoice() {
+        window.print();
+    }
+
+    // Áp dụng khi trang sẵn sàng
+    document.addEventListener('DOMContentLoaded', function () {
+        applyMoneyFormatting();
+    });
+</script>
+</body>
+</html>

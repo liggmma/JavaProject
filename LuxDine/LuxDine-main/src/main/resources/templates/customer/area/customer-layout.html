@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta name="_csrf" th:content="${_csrf.token}" />
+        <title>Sơ đồ nhà hàng - LuxDine</title>
+
+        <!-- Include Customer Styles -->
+        <th:block th:replace="customer/fragments/header :: styles"></th:block>
+        <th:block th:replace="customer/fragments/footer :: styles"></th:block>
+
+        <style>
+            /* ========== Design Tokens (LuxDine Customer Layout) ========== */
+            :root {
+                --color-primary: #0a0a23;
+                --color-secondary: #f97316;
+                --color-bg: #f9fafb;
+                --color-border: #e5e7eb;
+                --color-text: #111827;
+                --color-text-muted: #6b7280;
+                --color-success: #22c55e;
+                --color-warning: #facc15;
+                --color-error: #ef4444;
+                --color-info: #3b82f6;
+                --radius-sm: 6px;
+                --radius-md: 8px;
+                --radius-lg: 12px;
+                --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+                --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.1);
+                --space-xs: 4px;
+                --space-sm: 8px;
+                --space-md: 16px;
+                --space-lg: 24px;
+                --space-xl: 32px;
+                --space-xxl: 64px;
+                --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+                    Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+                --h1-size: 32px;
+                --h1-lh: 1.2;
+                --h1-weight: 700;
+                --h2-size: 24px;
+                --h2-lh: 1.3;
+                --h2-weight: 600;
+                --h3-size: 20px;
+                --h3-lh: 1.4;
+                --h3-weight: 500;
+                --body-size: 16px;
+                --body-lh: 1.5;
+                --body-weight: 400;
+                --small-size: 14px;
+                --small-lh: 1.4;
+            }
+
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+            }
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+            }
+            body {
+                font-family: var(--font-family);
+                font-size: var(--body-size);
+                line-height: var(--body-lh);
+                color: var(--color-text);
+                background: var(--color-bg);
+            }
+
+            /* Main content container for consistent alignment */
+            .main-content {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: var(--space-xl) var(--space-lg);
+                width: 100%;
+            }
+
+            .page-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: var(--space-xl);
+                flex-wrap: wrap;
+                gap: var(--space-md);
+            }
+
+            .page-title {
+                font-size: var(--h1-size);
+                font-weight: var(--h1-weight);
+                line-height: var(--h1-lh);
+                color: var(--color-text);
+                margin: 0;
+            }
+
+            .page-subtitle {
+                font-size: var(--body-size);
+                color: var(--color-text-muted);
+                margin: var(--space-xs) 0 0 0;
+            }
+
+            /* ========== Filters ========== */
+            .filters {
+                display: flex;
+                align-items: center;
+                gap: var(--space-md);
+                margin-bottom: var(--space-xl);
+                padding: var(--space-md);
+                background: white;
+                border-radius: var(--radius-lg);
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--color-border);
+            }
+
+            .filter-group {
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm);
+            }
+
+            .filter-select {
+                padding: var(--space-sm) var(--space-md);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                background: white;
+                font-size: var(--small-size);
+                color: var(--color-text);
+                min-width: 150px;
+            }
+
+            .btn {
+                padding: var(--space-sm) var(--space-md);
+                border: none;
+                border-radius: var(--radius-md);
+                font-size: var(--small-size);
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: var(--space-xs);
+                text-decoration: none;
+            }
+
+            .btn-primary {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: #1a1a3a;
+            }
+
+            .btn-secondary {
+                background: white;
+                color: var(--color-secondary);
+                border: 1px solid var(--color-secondary);
+            }
+
+            .btn-secondary:hover {
+                background: rgba(249, 115, 22, 0.06);
+            }
+
+            /* ========== Floor Plan Layout ========== */
+            .floor-plan {
+                background: white;
+                border-radius: var(--radius-lg);
+                padding: var(--space-xl);
+                box-shadow: var(--shadow-card);
+                border: 1px solid var(--color-border);
+                margin-bottom: var(--space-xl);
+            }
+
+            .floor-plan__title {
+                font-size: var(--h2-size);
+                font-weight: var(--h2-weight);
+                margin-bottom: var(--space-lg);
+                color: var(--color-text);
+            }
+
+            /* Đồng bộ với admin/staff canvas-content */
+            .canvas-content-admin {
+                background-color: #fff;
+                border: 1.5px solid #e5e7eb;
+                border-radius: 12px;
+                box-shadow: 0 0 10px rgba(0,0,0,0.08);
+                position: relative !important;
+            }
+            .area-preview-admin {
+                border: 2px solid #e5e7eb;
+                border-radius: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #eef2ff;
+                color: #0a0a23;
+                font-weight: 600;
+                font-size: 19px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.10);
+                transition: all 0.2s;
+                cursor: pointer;
+                position: absolute;
+                user-select: none;
+                text-align:center;
+            }
+            .area-preview-admin:hover {
+                border-color: #f97316;
+                background: #fdeccf;
+                box-shadow: 0 4px 8px rgba(249, 115, 22, 0.12);
+                color: #b45309;
+            }
+            .table-shape-admin {
+                position: absolute;
+                border: 2px solid #0a0a23;
+                border-radius: 6px;
+                background: rgba(10,10,35,0.09);
+                box-shadow: 0 2px 4px rgba(10,10,35,0.13);
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: #0a0a23;
+                font-weight: 600;
+                font-size: 13px;
+                user-select: none;
+                text-align: center;
+                padding: 4px;
+                transition: all 0.2s;
+            }
+            .table-shape-admin.circle{ border-radius: 50%!important;}
+            .table-shape-admin:hover {
+                background: rgba(10,10,35,0.15);
+                box-shadow: 0 4px 8px rgba(10,10,35,0.15);
+                border-color: #f97316;
+                transform: translateY(-2px);
+                cursor: pointer;
+            }
+            /* Bàn luôn dùng màu bình thường, không theo trạng thái */
+            .table-shape-admin.selected {
+                box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.4);
+                transform: scale(1.05);
+            }
+            /* Feature (doors, windows, sofa, etc.) */
+            .feature-shape-admin {
+                position: absolute;
+                border: 2px dashed var(--color-text-muted);
+                border-radius: 6px;
+                background: rgba(107,114,128,0.10);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-primary);
+                font-size: 12px;
+                user-select: none;
+                text-align: center;
+                padding: 4px;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.10);
+            }
+            .feature-badge {
+                position: absolute;
+                top: -18px;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 10px;
+                color: var(--color-text-muted);
+                background: var(--color-bg);
+                padding: 1px 6px;
+                border: 1px solid var(--color-border);
+                border-radius: 10px;
+                white-space: nowrap;
+            }
+            .capacity-badge {
+                font-size: 10px;
+                background: #f97316;
+                color: white;
+                border-radius: 10px;
+                padding: 2px 8px;
+                margin-top: 4px;
+                font-weight: 500;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            }
+            .canvas-wrapper { 
+                width:100%; 
+                min-height:500px; 
+                display:flex; 
+                align-items:center; 
+                justify-content:center; 
+                background:#f8fafc; 
+            }
+            
+            /* Empty state styling */
+            .empty-canvas-state {
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%);
+                text-align: center;
+                padding: 32px;
+                background: white;
+                border-radius: 16px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                border: 2px dashed #e5e7eb;
+                min-width: 280px;
+                z-index: 10;
+            }
+            
+            .empty-canvas-state__icon {
+                font-size: 48px;
+                margin-bottom: 16px;
+                opacity: 0.5;
+            }
+            
+            .empty-canvas-state__title {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--color-text);
+                margin-bottom: 8px;
+                white-space: nowrap;
+            }
+            
+            .empty-canvas-state__message {
+                font-size: 14px;
+                color: var(--color-text-muted);
+                line-height: 1.5;
+                white-space: nowrap;
+            }
+
+            /* ========== Responsive ========== */
+            @media (max-width: 1024px) {
+                .main-content {
+                    padding: var(--space-lg) var(--space-md);
+                }
+            }
+
+            @media (max-width: 768px) {
+                .main-content {
+                    padding: var(--space-md);
+                }
+
+                .page-header {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: var(--space-md);
+                }
+
+                .page-title {
+                    font-size: var(--h2-size);
+                }
+
+                .floor-plan__grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <!-- Header -->
+        <th:block th:replace="customer/fragments/header :: header"></th:block>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Page Header -->
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Sơ đồ nhà hàng</h1>
+                    <p class="page-subtitle">
+                        Xem sơ đồ khu vực và bàn ăn để đặt bàn dễ dàng
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            
+
+            <!-- Floor Overview (Areas Layout) -->
+            <div class="floor-plan" id="floorOverview" style="margin-bottom:24px;">
+                <h2 class="floor-plan__title">Sơ đồ khu vực</h2>
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="floorFilter">Tầng:</label>
+                        <select
+                            id="floorFilter"
+                            class="filter-select"
+                            onchange="onFloorChange()"
+                        >
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="refreshData()">
+                        Làm mới
+                    </button>
+                </div>
+                <div class="canvas-wrapper" style="min-height:520px;">
+                  <div id="floorCanvas" class="canvas-content-admin"></div>
+                </div>
+                <div style="margin-top: 12px; color: var(--color-text-muted); font-size: 14px;">Nhấn khu vực để xem sơ đồ bàn.</div>
+            </div>
+            <!-- Area Canvas (Tables Layout) -->
+            <div class="floor-plan" id="areaCanvas" style="display:none; margin-bottom:24px;">
+              <button id="backToArea" class="btn btn-secondary" type="button" style="margin-bottom:12px;" onclick="exitAreaView()">← Quay lại sơ đồ khu vực</button>
+              <h2 class="floor-plan__title" id="areaCanvasTitle">Khu vực</h2>
+              <div class="canvas-wrapper" style="min-height:400px;">
+                <div id="areaTableCanvas" class="canvas-content-admin"></div>
+              </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <th:block th:replace="customer/fragments/footer :: footer"></th:block>
+
+        <script th:inline="javascript">
+            // Expose areas to JS to render floor/area overview similar to staff
+            const AREAS = /*[[${areas}]]*/ [];
+            const ALL_TABLES_LIST_FROM_SERVER = /*[[${tables}]]*/ [];
+        </script>
+
+        <script>
+            let currentFloorNumber = null;
+            let currentAreaObj = null;
+
+            // Floor selection handler
+            function onFloorChange() {
+                const floor = document.getElementById("floorFilter").value;
+                currentFloorNumber = floor ? parseInt(floor) : null;
+                renderFloorOverview();
+                const ov = document.getElementById('floorOverview');
+                if (ov) ov.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+
+            function buildFloorOptions() {
+                try {
+                    const select = document.getElementById('floorFilter');
+                    if (!select || !Array.isArray(AREAS)) return null;
+                    const floors = Array.from(new Set(AREAS.map(a => a.floor || 1))).sort((a,b)=>a-b);
+                    floors.forEach(f => {
+                        const opt = document.createElement('option');
+                        opt.value = f;
+                        opt.textContent = `Tầng ${f}`;
+                        select.appendChild(opt);
+                    });
+                    // Mặc định chọn Tầng 1 nếu có
+                    const floor1Option = select.querySelector('option[value="1"]');
+                    if (floor1Option) {
+                        floor1Option.selected = true;
+                        return 1;
+                    }
+                    // Nếu không có Tầng 1, chọn tầng đầu tiên có sẵn
+                    if (select.options.length > 0) {
+                        select.selectedIndex = 0;
+                        return parseInt(select.options[0].value);
+                    }
+                    return null;
+                } catch (e) { 
+                    console.warn('Build floor options failed', e); 
+                    return null;
+                }
+            }
+
+            function renderFloorOverview() {
+                const container = document.getElementById('floorOverview');
+                const canvas = document.getElementById('floorCanvas');
+                if (!container || !canvas) return;
+                canvas.innerHTML = '';
+                const floor = currentFloorNumber;
+                const areas = Array.isArray(AREAS) ? AREAS.filter(a => !floor || (a.floor === floor)) : [];
+                container.style.display = areas.length ? '' : 'none';
+                document.getElementById('areaCanvas').style.display = 'none';
+                currentAreaObj = null;
+                if (!areas.length) return;
+
+                // Đồng bộ style canvas với admin/staff (nền grid, border, shadow, radius)
+                canvas.className = 'canvas-content-admin';
+                const margin = 32;
+                let minX=99999, minY=99999, maxX=0, maxY=0;
+                areas.forEach(a => {
+                    if(a.positionX!=null&&a.positionY!=null&&a.width!=null&&a.height!=null) {
+                        if(a.positionX<minX) minX=a.positionX;
+                        if(a.positionY<minY) minY=a.positionY;
+                        if(a.positionX+a.width>maxX) maxX=a.positionX+a.width;
+                        if(a.positionY+a.height>maxY) maxY=a.positionY+a.height;
+                    }
+                });
+                if(maxX===0 || maxY===0) { minX=40;minY=40; maxX=640;maxY=440; }
+                canvas.style.width = (maxX-minX+margin*2)+"px";
+                canvas.style.height= (maxY-minY+margin*2)+"px";
+                canvas.style.position='relative';
+                areas.forEach((area,idx) => {
+                    const tile = document.createElement('div');
+                    tile.textContent = area.name;
+                    tile.className = 'area-preview-admin';
+                    tile.style.left = (area.positionX!=null?(area.positionX-minX+margin):margin)+"px";
+                    tile.style.top = (area.positionY!=null?(area.positionY-minY+margin):margin)+"px";
+                    tile.style.width = (area.width||200)+"px";
+                    tile.style.height = (area.height||100)+"px";
+                    tile.onclick = ()=> focusArea(area.name);
+                    canvas.appendChild(tile);
+                });
+            }
+
+            function focusArea(areaName) {
+                const area = (AREAS||[]).find(a=>a.name===areaName);
+                if(!area) return;
+                currentAreaObj = area;
+                document.getElementById('floorOverview').style.display = 'none';
+                renderAreaCanvas(area);
+            }
+
+            function exitAreaView() {
+                document.getElementById('areaCanvas').style.display = 'none';
+                renderFloorOverview();
+            }
+
+            async function renderAreaCanvas(area) {
+                const ctn = document.getElementById('areaCanvas');
+                const title = document.getElementById('areaCanvasTitle');
+                const canvas = document.getElementById('areaTableCanvas');
+                if (!ctn || !title || !canvas || !area) return;
+                ctn.style.display = '';
+                // Clear canvas hoàn toàn trước khi render (đồng bộ với admin)
+                canvas.innerHTML = '';
+                title.textContent = `${area.name} (Tầng ${area.floor||''})`;
+                canvas.style.position='relative';
+                canvas.className = 'canvas-content-admin';
+
+                // Hiển thị loading indicator
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'empty-canvas-state';
+                loadingDiv.innerHTML = '<div class="empty-canvas-state__title">Đang tải sơ đồ...</div>';
+                canvas.appendChild(loadingDiv);
+
+                // Tối ưu: Load layouts và features song song (Promise.all)
+                try {
+                    const cacheBuster = '?_=' + Date.now();
+                    const [layoutsRes, featuresRes] = await Promise.all([
+                        fetch(`/api/public/layouts/area/${area.id}${cacheBuster}`, {
+                            cache: 'no-store',
+                            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                        }),
+                        fetch(`/api/public/features/area/${area.id}${cacheBuster}`, {
+                            cache: 'no-store',
+                            headers: { 'Cache-Control': 'no-cache', 'Pragma': 'no-cache' }
+                        })
+                    ]);
+
+                    // Xóa loading indicator
+                    loadingDiv.remove();
+
+                    if (!layoutsRes.ok) throw new Error(`HTTP error! status: ${layoutsRes.status}`);
+                    const layouts = await layoutsRes.json();
+
+                    if (!Array.isArray(layouts) || layouts.length === 0) {
+                        // Empty state - giống admin
+                        const empty = document.createElement('div');
+                        empty.className = 'empty-canvas-state';
+                        empty.innerHTML = `
+                            <div class="empty-canvas-state__title">Chưa có sơ đồ bàn</div>
+                            <div class="empty-canvas-state__message">Khu vực này chưa được thiết lập bàn</div>
+                        `;
+                        canvas.appendChild(empty);
+                        return;
+                    }
+
+                    // Map capacity/status từ tables list (tối ưu: tạo Map một lần)
+                    const allTables = Array.isArray(ALL_TABLES_LIST_FROM_SERVER) ? ALL_TABLES_LIST_FROM_SERVER : [];
+                    const tableByName = new Map();
+                    allTables.forEach(t => { if (t && t.tableName) tableByName.set(t.tableName, t); });
+
+                    // Tính kích thước canvas theo bounding box (tối ưu: tính một lần)
+                    let maxX = 0, maxY = 0;
+                    layouts.forEach(l => {
+                        const w = (typeof l.width === 'number') ? l.width : 100;
+                        const h = (typeof l.height === 'number') ? l.height : 100;
+                        const px = (typeof l.positionX === 'number') ? l.positionX : 0;
+                        const py = (typeof l.positionY === 'number') ? l.positionY : 0;
+                        maxX = Math.max(maxX, px + w);
+                        maxY = Math.max(maxY, py + h);
+                    });
+                    
+                    // Tính features bounding box nếu có
+                    let features = [];
+                    if (featuresRes.ok) {
+                        features = await featuresRes.json();
+                        if (Array.isArray(features) && features.length > 0) {
+                            features.forEach(f => {
+                                const w = (typeof f.width === 'number') ? f.width : 60;
+                                const h = (typeof f.height === 'number') ? f.height : 20;
+                                const px = (typeof f.positionX === 'number') ? f.positionX : 0;
+                                const py = (typeof f.positionY === 'number') ? f.positionY : 0;
+                                maxX = Math.max(maxX, px + w);
+                                maxY = Math.max(maxY, py + h);
+                            });
+                        }
+                    }
+                    
+                    const netW = Math.max(600, maxX + 40);
+                    const netH = Math.max(400, maxY + 40);
+                    canvas.style.width = netW + 'px';
+                    canvas.style.height = netH + 'px';
+
+                    // Tối ưu: Dùng DocumentFragment để batch DOM operations (giảm reflow)
+                    const fragment = document.createDocumentFragment();
+
+                    // Render tables vào fragment (không gây reflow)
+                    layouts.forEach(l => {
+                        const posX = (typeof l.positionX === 'number') ? l.positionX : 0;
+                        const posY = (typeof l.positionY === 'number') ? l.positionY : 0;
+                        const w = (typeof l.width === 'number') ? l.width : 100;
+                        const h = (typeof l.height === 'number') ? l.height : 100;
+                        const shape = l.shape || 'rectangle';
+                        const name = l.tableName || '';
+                        const tableData = tableByName.get(name);
+                        const cap = (typeof l.capacity === 'number') ? l.capacity : (tableData?.capacity || 4);
+                        const status = (tableData?.status || 'AVAILABLE').toLowerCase();
+                        
+                        const div = document.createElement('div');
+                        div.className = `table-shape-admin ${shape} ${status}`;
+                        div.style.left = posX + 'px';
+                        div.style.top  = posY + 'px';
+                        div.style.width = w + 'px';
+                        div.style.height= h + 'px';
+                        div.innerHTML = `<div>${name}</div><div class='capacity-badge'>${cap} khách</div>`;
+                        div.setAttribute('data-table-id', tableData?.id || '');
+                        div.setAttribute('data-table-name', name);
+                        fragment.appendChild(div);
+                    });
+
+                    // Render features vào fragment (không gây reflow)
+                    if (Array.isArray(features) && features.length > 0) {
+                        features.forEach(f => {
+                            const posX = (typeof f.positionX === 'number') ? f.positionX : 0;
+                            const posY = (typeof f.positionY === 'number') ? f.positionY : 0;
+                            const w = (typeof f.width === 'number') ? f.width : 60;
+                            const h = (typeof f.height === 'number') ? f.height : 20;
+                            const label = f.label || f.type || '';
+                            const rot = (typeof f.rotationAngle === 'number') ? f.rotationAngle : 0;
+                            
+                            const div = document.createElement('div');
+                            div.className = 'feature-shape-admin';
+                            div.style.left = posX + 'px';
+                            div.style.top = posY + 'px';
+                            div.style.width = w + 'px';
+                            div.style.height = h + 'px';
+                            if (rot) {
+                                div.style.transform = `rotate(${rot}deg)`;
+                            }
+                            
+                            const badge = document.createElement('div');
+                            badge.className = 'feature-badge';
+                            badge.textContent = label;
+                            div.appendChild(badge);
+                            
+                            fragment.appendChild(div);
+                        });
+                    }
+
+                    // Append tất cả một lần (chỉ 1 reflow thay vì N reflows)
+                    canvas.appendChild(fragment);
+
+                } catch (error) {
+                    console.error('Error loading layout:', error);
+                    // Xóa loading indicator nếu có lỗi
+                    loadingDiv.remove();
+                    // Hiển thị empty state khi có lỗi
+                    const empty = document.createElement('div');
+                    empty.className = 'empty-canvas-state';
+                    empty.innerHTML = `
+                        <div class="empty-canvas-state__title">Lỗi tải sơ đồ</div>
+                        <div class="empty-canvas-state__message">Không thể tải sơ đồ bàn. Vui lòng thử lại.</div>
+                    `;
+                    canvas.appendChild(empty);
+                }
+
+                // Căn giữa ngay lập tức sau khi render xong (dùng requestAnimationFrame để mượt hơn)
+                requestAnimationFrame(() => {
+                    centerCanvasContent(canvas);
+                });
+            }
+            
+            // Hàm tự động căn giữa nội dung canvas
+            function centerCanvasContent(canvas) {
+                if (!canvas) return;
+                
+                const children = Array.from(canvas.children);
+                if (children.length === 0) return;
+                
+                // Tính bounding box của tất cả phần tử
+                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+                
+                children.forEach(child => {
+                    // Bỏ qua empty state vì nó dùng transform để căn giữa
+                    if (child.classList.contains('empty-canvas-state')) return;
+                    
+                    // Lấy trực tiếp từ style (nhanh hơn getBoundingClientRect)
+                    const x = parseFloat(child.style.left) || 0;
+                    const y = parseFloat(child.style.top) || 0;
+                    const w = parseFloat(child.style.width) || 0;
+                    const h = parseFloat(child.style.height) || 0;
+                    
+                    minX = Math.min(minX, x);
+                    minY = Math.min(minY, y);
+                    maxX = Math.max(maxX, x + w);
+                    maxY = Math.max(maxY, y + h);
+                });
+                
+                // Nếu không có phần tử nào (chỉ có empty state), không cần căn giữa
+                if (minX === Infinity) return;
+                
+                // Tính offset để căn giữa
+                const contentWidth = maxX - minX;
+                const contentHeight = maxY - minY;
+                const margin = 40; // Margin tối thiểu
+                
+                // Tính kích thước canvas mới với margin đều
+                const newWidth = contentWidth + margin * 2;
+                const newHeight = contentHeight + margin * 2;
+                
+                // Cập nhật kích thước canvas
+                canvas.style.width = newWidth + 'px';
+                canvas.style.height = newHeight + 'px';
+                
+                // Điều chỉnh vị trí của tất cả phần tử để căn giữa (bỏ qua empty state)
+                const offsetX = margin - minX;
+                const offsetY = margin - minY;
+                
+                children.forEach(child => {
+                    if (child.classList.contains('empty-canvas-state')) return;
+                    const x = parseFloat(child.style.left) || 0;
+                    const y = parseFloat(child.style.top) || 0;
+                    child.style.left = (x + offsetX) + 'px';
+                    child.style.top = (y + offsetY) + 'px';
+                });
+                
+                console.log('✅ Canvas content centered', {
+                    contentSize: `${contentWidth}x${contentHeight}`,
+                    canvasSize: `${newWidth}x${newHeight}`,
+                    offset: `${offsetX}, ${offsetY}`
+                });
+            }
+
+            // Refresh data
+            function refreshData() {
+                window.location.reload();
+            }
+
+
+            // Set initial floor UI
+            document.addEventListener("DOMContentLoaded", function () {
+                const defaultFloor = buildFloorOptions();
+                if (defaultFloor !== null) {
+                    currentFloorNumber = defaultFloor;
+                }
+                renderFloorOverview();
+            });
+        </script>
+
+        <!-- Include Customer Scripts -->
+        <th:block th:replace="customer/fragments/header :: scripts"></th:block>
+        <th:block th:replace="customer/fragments/footer :: scripts"></th:block>
+    </body>
+</html>
+

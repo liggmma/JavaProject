@@ -1,0 +1,135 @@
+/* ========== ADMIN HEADER STYLES ========== */
+.admin-header .navbar {
+  background: #fff;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.admin-header .nav-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+}
+
+.admin-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #0a0a23;
+  font-size: 20px;
+}
+
+.admin-header .brand__logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(
+          135deg,
+          #0a0a23 0%,
+          #1a1a1a 50%,
+          #0f0f23 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 900;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(10, 10, 35, 0.4);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-header .brand__logo::before {
+  content: "🍽️";
+  position: absolute;
+  font-size: 24px;
+  z-index: 2;
+}
+
+.admin-header .nav {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.admin-header .nav-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.admin-header .nav-item:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.admin-header .nav-item.active {
+  background: #0a0a23;
+  color: #fff;
+}
+
+.admin-header .nav-item i {
+  font-size: 16px;
+}
+
+.admin-header .logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: #6b7280;
+  font-weight: 500;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: "Inter", system-ui, sans-serif;
+}
+
+.admin-header .logout-btn:hover {
+  background: #f9fafb;
+  color: #111827;
+}
+
+.admin-header .logout-btn i {
+  font-size: 16px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .admin-header .nav-container {
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .admin-header .nav {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}

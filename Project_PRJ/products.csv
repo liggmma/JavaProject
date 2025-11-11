@@ -1,0 +1,126 @@
+product_id|name|description|category
+1|Áo sơ mi trắng cổ đứng|Lịch sự, form slimfit, thích hợp công sở.|Áo thun & sơ mi nam
+2|Áo thun cổ tròn in chữ|Cá tính, chất cotton thoáng mát.|Áo thun & sơ mi nam
+3|Áo polo nam tay ngắn|Phối màu trẻ trung, mặc đi làm hay đi chơi.|Áo thun & sơ mi nam
+4|Quần tây trơn form slim|Tôn dáng, vải co giãn nhẹ.|Quần jeans & kaki nam
+5|Quần short kaki túi hộp|Năng động, nhiều màu, chất dày dặn.|Quần jeans & kaki nam
+6|Quần jogger thể thao co giãn|Thu hút mồ hôi, dễ vận động.|Quần jeans & kaki nam
+7|Cà vạt lụa trơn bản vừa|Cổ điển, phối suit lịch sự.|Phụ kiện thời trang nam
+8|Nơ cổ vải nhung họa tiết caro|Cực hút mắt, phù hợp tiệc cưới, sự kiện.|Phụ kiện thời trang nam
+9|Cà vạt bản nhỏ sọc xéo|Trẻ trung, hiện đại, dễ phối áo sơ mi.|Phụ kiện thời trang nam
+10|Tai nghe Bluetooth TWS mini|Chống ồn chủ động, case sạc nhỏ gọn.|Tai nghe & Loa Bluetooth
+11|Loa Bluetooth di động chống nước|Thời lượng pin 12h, kết nối 2 thiết bị cùng lúc.|Tai nghe & Loa Bluetooth
+12|Tai nghe chụp tai gaming RGB|Âm thanh vòm 7.1, đệm tai êm.|Tai nghe & Loa Bluetooth
+13|Cáp sạc nhanh USB-C to Lightning|PD 20W, chiều dài 1m, chống gãy.|Phụ kiện sạc & cáp
+14|Sạc dự phòng 10000mAh mỏng nhẹ|Tích hợp 2 cổng output, vỏ nhôm.|Phụ kiện sạc & cáp
+15|Giá đỡ điện thoại để bàn xoay 360°|Phù hợp livestream, học online.|Phụ kiện sạc & cáp
+16|Smartwatch cảm ứng chống nước IP68|Theo dõi bước chân, nhịp tim, đổi mặt đồng hồ.|Thiết bị đeo thông minh
+17|Đồng hồ thông minh dây da classic|Kết nối Bluetooth, hiển thị thông báo.|Thiết bị đeo thông minh
+18|Smartband đo nhịp tim liên tục|Pin lên đến 10 ngày, màn hình AMOLED.|Thiết bị đeo thông minh
+19|Samsung Galaxy S23 128GB|Máy trang bị màn hình Dynamic AMOLED 6.1 inch siêu nét, hiệu năng vượt trội với chip Snapdragon 8 Gen 2, camera 50MP chụp đêm cực đỉnh. Pin 3900mAh hỗ trợ sạc nhanh 25W.|Điện thoại thông minh
+20|iPhone 14 Pro Max 128GB|Sở hữu thiết kế sang trọng với Dynamic Island mới lạ, chip A16 Bionic mạnh mẽ, camera 48MP cho ảnh siêu chi tiết, hỗ trợ quay video 4K. Pin bền bỉ dùng cả ngày.|Điện thoại thông minh
+21|Xiaomi Redmi Note 12 Pro 5G|Màn hình OLED 120Hz siêu mượt, camera 108MP chụp hình sắc nét, pin 5000mAh kèm sạc nhanh 67W. Cấu hình mạnh mẽ với chip Dimensity 1080.|Điện thoại thông minh
+22|Nokia 105 4G|Điện thoại nghe gọi cơ bản, hỗ trợ sóng 4G, bàn phím T9 dễ thao tác, pin 1020mAh cho thời gian chờ lên đến 18 ngày. Có đèn pin và FM Radio.|Điện thoại phổ thông
+23|Mobell M529|Màn hình màu 2.4 inch, 2 sim tiện lợi, pin 1800mAh lâu hết, có hỗ trợ thẻ nhớ ngoài và loa ngoài lớn. Thiết kế nhỏ gọn, chắc chắn.|Điện thoại phổ thông
+24|Cáp sạc nhanh USB-C to Lightning 20W|Hỗ trợ sạc nhanh PD cho iPhone, dây dài 1m, lõi đồng nguyên chất, chống đứt gãy, vỏ bọc chống rối.|Phụ kiện sạc & cáp
+25|Bộ sạc 2 cổng USB 18W|Hỗ trợ sạc nhanh QC 3.0, tích hợp bảo vệ quá dòng và quá nhiệt, phù hợp sạc điện thoại và tablet.|Phụ kiện sạc & cáp
+26|Tai nghe Bluetooth TWS ANC|Thiết kế in-ear nhỏ gọn, tích hợp chống ồn chủ động, pin 30 giờ kèm case sạc. Kết nối Bluetooth 5.2 siêu ổn định.|Tai nghe & Loa Bluetooth
+27|Loa Bluetooth mini chống nước IPX7|Âm thanh sống động, bass mạnh, kết nối được 2 thiết bị cùng lúc. Dung lượng pin 12 giờ, thiết kế gọn nhẹ dễ mang theo.|Tai nghe & Loa Bluetooth
+28|Ốp lưng iPhone 14 Pro Max chống sốc|Chất liệu TPU cao cấp, chống va đập hiệu quả, thiết kế ôm sát thân máy. Có viền bảo vệ camera và lưng chống trầy.|Ốp lưng & Miếng dán
+29|Miếng dán cường lực 9H Full màn|Dán full màn hình, chống vân tay và chống xước tốt, độ trong suốt cao, dễ dán không bong mép.|Ốp lưng & Miếng dán
+30|HP Pavilion 15 i5 Gen12 8GB SSD 512GB|Máy nhẹ 1.7kg, màn hình 15.6 inch Full HD, pin bền, phù hợp học tập và làm việc văn phòng. Hỗ trợ Windows bản quyền.|Laptop văn phòng
+31|ASUS VivoBook 14 i3 Gen11|Laptop mỏng nhẹ 1.4kg, màn hình chống chói, SSD 256GB cho tốc độ nhanh, pin 42Wh. Cổng USB-C hiện đại.|Laptop văn phòng
+32|Lenovo Legion 5 AMD R7 RTX 3060|Cấu hình mạnh cho game AAA: Ryzen 7 5800H, RTX 3060 6GB, RAM 16GB, SSD 512GB. Tản nhiệt hiệu quả, màn hình 165Hz siêu mượt.|Laptop gaming
+33|PC văn phòng Core i3 Gen10 RAM 8GB SSD 256GB|Cấu hình đủ dùng cho học sinh, sinh viên, văn phòng. Vỏ case nhỏ gọn, tiết kiệm điện, chạy mát và êm ái.|Máy tính để bàn
+34|Chuột không dây Logitech M331|Thiết kế Ergonomic chống ồn, pin xài 24 tháng, kết nối qua đầu USB receiver. Phù hợp học tập, làm việc.|Phụ kiện máy tính
+35|Bàn phím cơ RGB DareU EK87|Switch D đỏ êm, có LED RGB 16 triệu màu, build chắc chắn, layout TKL tiện gọn.|Phụ kiện máy tính
+36|Màn hình LG 24 inch Full HD IPS 75Hz|Tấm nền IPS cho màu sắc trung thực, góc nhìn rộng, viền mỏng tinh tế, hỗ trợ HDMI và VGA.|Màn hình máy tính
+37|Màn hình cong Samsung 27 inch 165Hz|Độ cong 1000R cực đã, tần số quét cao, phản hồi nhanh, phù hợp chơi game và giải trí chuyên sâu.|Màn hình máy tính
+38|Áo thun nam cổ tròn Basic|Chất cotton 100% thấm hút mồ hôi tốt, form regular dễ mặc, đường may chắc chắn. Phù hợp mặc hằng ngày hoặc đi chơi.|Áo thun & sơ mi nam
+39|Áo sơ mi nam kẻ caro dài tay|Phong cách trẻ trung, form slimfit, phối được với quần jean hoặc kaki. Chất vải mềm, không nhăn.|Áo thun & sơ mi nam
+40|Giày sneaker trắng nam thời trang|Mũi tròn, kiểu dáng basic dễ phối đồ. Lót êm, đế cao su chống trượt, phù hợp đi học, đi chơi.|Giày dép nam
+41|Dép quai ngang EVA siêu nhẹ|Chất liệu nhựa EVA bền bỉ, chống thấm nước, đế chống trơn trượt. Thích hợp dùng đi trong nhà, phòng gym hoặc đi biển.|Giày dép nam
+42|Balo laptop chống nước 15.6 inch|Ngăn laptop riêng biệt, nhiều ngăn tiện lợi, quai đeo êm ái, chống nước nhẹ. Thiết kế hiện đại, phù hợp đi học và đi làm.|Balo & Túi xách nam
+43|Túi đeo chéo nam phong cách Hàn|Dây đeo bản to điều chỉnh linh hoạt, chất vải bố chắc chắn. Gọn nhẹ, tiện lợi đựng ví, điện thoại, đồ dùng cá nhân.|Balo & Túi xách nam
+44|Nón lưỡi trai cotton thêu logo|Chất liệu mềm mại, thấm hút mồ hôi tốt, dây khóa điều chỉnh phù hợp nhiều kích cỡ đầu. Thời trang năng động.|Phụ kiện thời trang nam
+45|Dây nịt da bò bản 3.5cm|Mặt khóa hợp kim sáng bóng, da thật 1 lớp, độ bền cao. Thích hợp mặc cùng quần tây hoặc jeans.|Phụ kiện thời trang nam
+46|Đầm suông tay lỡ họa tiết hoa|Form suông nhẹ, chất voan mềm mại, thoáng mát, hoa văn nữ tính. Dễ mặc trong nhiều dịp: đi chơi, dạo phố.|Đầm & Váy
+47|Váy công sở body phối nút sang trọng|Thiết kế tôn dáng, màu trơn thanh lịch, chất liệu thun co giãn nhẹ, phù hợp đi làm hoặc dự tiệc nhẹ.|Đầm & Váy
+48|Áo croptop tay phồng cổ vuông|Phong cách Hàn Quốc, chất vải voan lụa nhẹ nhàng, phù hợp phối chân váy hoặc quần jean lưng cao.|Áo kiểu nữ
+49|Áo thun nữ cổ tim dáng ôm nhẹ|Mềm mịn, co giãn tốt, đường may chắc chắn. Màu sắc dễ phối đồ, phù hợp mặc đi học hoặc dạo phố.|Áo kiểu nữ
+50|Chân váy chữ A ngắn lưng cao|Thiết kế basic, chất vải dày dặn đứng form, phối được với nhiều kiểu áo. Có túi ẩn và khóa kéo sau.|Chân váy & quần nữ
+51|Quần suông nữ lưng thun phối cúc|Form ống rộng, chất vải tuyết mưa mềm nhẹ, lưng thun co giãn, thoải mái khi di chuyển.|Chân váy & quần nữ
+52|Giày cao gót mũi nhọn 5cm màu nude|Dễ phối đồ, kiểu dáng thanh lịch, đế êm chân, phù hợp đi tiệc hoặc đi làm.|Giày cao gót & sneaker nữ
+53|Giày sneaker nữ trắng đế bằng|Phong cách năng động, dây buộc truyền thống, đế cao su chống trượt, chất liệu da PU dễ lau chùi.|Giày cao gót & sneaker nữ
+54|Túi xách tay nữ da PU kèm quai đeo|Thiết kế hiện đại, 3 ngăn tiện dụng, chất da mềm mịn, đường may tinh tế. Có thể đeo chéo hoặc xách tay.|Túi xách nữ
+55|Túi tote nữ in họa tiết vintage|Chất vải canvas bền đẹp, kích thước lớn đựng được laptop, sách vở. Phù hợp với sinh viên, dân văn phòng.|Túi xách nữ
+56|Son môi lì lâu trôi True Matte|Màu sắc chuẩn, chất son mềm mịn, lên màu chỉ với một lần lướt. Bám màu suốt 6-8 tiếng, không làm khô môi.|Dụng cụ bếp & nấu ăn
+57|Phấn nước cushion che khuyết điểm|Lớp nền mịn màng, có độ che phủ tốt. Tích hợp chống nắng SPF50+, không gây bí da, phù hợp da dầu & hỗn hợp.|Dụng cụ bếp & nấu ăn
+58|Sữa rửa mặt tạo bọt dịu nhẹ 150ml|Làm sạch sâu, không gây khô da, phù hợp cho mọi loại da kể cả da nhạy cảm. Hương trà xanh thư giãn.|Đồ nội thất
+59|Serum Vitamin C sáng da mờ thâm|Chiết xuất từ thiên nhiên, hỗ trợ làm đều màu da, giảm thâm mụn và chống lão hóa. Thấm nhanh, không nhờn rít.|Đồ nội thất
+60|Máy rửa mặt silicon mini sạc USB|Làm sạch sâu bụi bẩn, dầu thừa. Thiết kế nhỏ gọn, nhiều chế độ rung, chống nước tiêu chuẩn IPX7.|Đèn & thiết bị chiếu sáng
+61|Bộ cọ trang điểm chuyên nghiệp 10 món|Lông mềm mịn, cán gỗ chắc tay. Bao gồm cọ nền, cọ mắt, má hồng và cọ chân mày, tiện lợi khi trang điểm.|Đèn & thiết bị chiếu sáng
+62|Viên uống Collagen + Vitamin C (60 viên)|Hỗ trợ làm đẹp da, tăng độ đàn hồi, làm sáng da tự nhiên. Sản phẩm nhập khẩu chính hãng, an toàn.|Trang trí nhà cửa
+63|Viên uống bổ sung Omega 3-6-9|Cải thiện trí nhớ, tốt cho tim mạch, da và tóc. Hộp 100 viên, dùng trong 1-2 tháng.|Trang trí nhà cửa
+64|Dầu gội thảo dược ngăn rụng tóc 500ml|Chiết xuất từ bưởi & hà thủ ô, giúp làm sạch và nuôi dưỡng da đầu. Không chứa paraben và sulfate.|Vệ sinh nhà cửa
+65|Sữa tắm dưỡng ẩm tinh chất sữa dê 900ml|Thơm dịu nhẹ, dưỡng da mịn màng, có thể dùng cho cả người lớn và trẻ nhỏ. Dạng vòi tiện lợi.|Vệ sinh nhà cửa
+66|Bộ nồi inox 3 chiếc cao cấp|Chất liệu inox 304 an toàn, truyền nhiệt nhanh, tay cầm chống nóng.|Tivi & Smart TV
+67|Chảo chống dính sâu lòng 26cm|Lớp phủ ceramic chống dính cao, tay cầm gỗ chống trơn.|Tivi & Smart TV
+68|Kệ sách gỗ 5 tầng kiểu đỉnh|Kết cấu vững chắc, thiết kế tối giản, dễ lắp ráp.|Loa & Dàn âm thanh
+69|Bàn làm việc gỗ MDF chống thấm|Mặt bàn rộng 120cm, chân sắt sợi tỉnh điện.|Loa & Dàn âm thanh
+70|Đèn bàn LED chống cận cám ứng|3 chế độ sáng, cổng xoay linh hoạt, cổng sạc USB tiện lợi.|Thiết bị đeo thông minh
+71|Đèn trần LED ốp trần 24W|Ánh sáng trắng tự nhiên, tiết kiệm điện, tuổi thọ 25.000 giờ.|Thiết bị đeo thông minh
+72|Dèn tường vintage treo đồng hồ|Phong cách âu châu, làm từ kim loại sọc và gỗ cao cấp.|Máy ảnh & Camera hành trình
+73|Cây giả trang trí phong thủy|Tác dụng trang trí bàn làm việc, tăng sinh khí, mang lại may mắn.|Máy ảnh & Camera hành trình
+74|Bộ cây lau nhà xoay 360° có bàn đạp|Thiết kế thông minh, tiết kiệm công sức, thích hợp nhà ở chật.|Thiết bị truyền hình
+75|Chổi quét nhà cán dài tách rời rọc bụi|Dễ thu gờn bụi bẫn, lông mềm không trây sứn.|Thiết bị truyền hình
+76|Smart TV 50 inch 4K|Hỗ trợ HDR10, hệ điều hành thông minh, tích hợp trợ lý ảo và kho ứng dụng phong phú, phù hợp giải trí gia đình.|Tivi & Smart TV
+77|Tivi LED 32 inch HD|Thiết kế nhỏ gọn, hình ảnh sắc nét, hỗ trợ nhiều cổng kết nối, phù hợp phòng nhỏ hoặc phòng trọ.|Tivi & Smart TV
+78|Smart TV 43 inch Full HD|Giao diện mượt mà, tích hợp các ứng dụng phổ biến như YouTube, Netflix, hỗ trợ trình chiếu từ điện thoại.|Tivi & Smart TV
+79|Loa kéo di động 300W|Công suất lớn, micro không dây đi kèm, pin dùng 6-8 giờ, thích hợp dã ngoại và sự kiện nhỏ.|Loa & Dàn âm thanh
+80|Soundbar Bluetooth 2.1|Âm thanh vòm sống động, hỗ trợ kết nối không dây, thiết kế thanh mảnh dễ bố trí dưới tivi.|Loa & Dàn âm thanh
+81|Loa mini bluetooth chống nước|Kích thước nhỏ gọn, chuẩn chống nước IPX5, thời lượng pin 10 giờ, phù hợp mang theo khi đi du lịch.|Loa & Dàn âm thanh
+82|Smartwatch màn hình AMOLED|Chống nước IP68, đo nhịp tim, theo dõi giấc ngủ và vận động, pin 7 ngày, màn hình cảm ứng mượt mà.|Thiết bị đeo thông minh
+83|Vòng tay sức khỏe thông minh|Theo dõi bước đi, đếm calo, cảnh báo ngồi lâu, sạc pin từ tính nhanh chóng, thiết kế nhỏ gọn phù hợp cổ tay nữ.|Thiết bị đeo thông minh
+84|Smartwatch dây kim loại thời trang|Chức năng đếm bước, đo nồng độ oxy, thông báo cuộc gọi và tin nhắn, mặt đồng hồ đa dạng.|Thiết bị đeo thông minh
+85|Máy ảnh kỹ thuật số 20MP|Tự động lấy nét nhanh, hỗ trợ quay video Full HD, zoom quang học 5x, màn hình xoay lật.|Máy ảnh & Camera hành trình
+86|Camera hành trình gắn xe ô tô|Ghi hình Full HD, cảm biến va chạm, hỗ trợ thẻ nhớ 128GB, dễ dàng lắp đặt và sử dụng.|Máy ảnh & Camera hành trình
+87|Action camera chống rung 4K|Phù hợp thể thao mạo hiểm, chống nước 30m, đi kèm nhiều phụ kiện gắn mũ, tay lái.|Máy ảnh & Camera hành trình
+88|Android TV Box 4K|Hệ điều hành Android 10, hỗ trợ Google Play, trình chiếu video 4K sắc nét, có điều khiển giọng nói.|Thiết bị truyền hình
+89|Set top box truyền hình kỹ thuật số|Bắt sóng DVB-T2, cổng HDMI và AV, xem hàng chục kênh miễn phí, dễ sử dụng với người lớn tuổi.|Thiết bị truyền hình
+90|Android TV Stick mini|Biến TV thường thành Smart TV, kết nối không dây, hỗ trợ điều khiển qua điện thoại và giọng nói.|Thiết bị truyền hình
+91|Tã quần siêu thấm ban đêm|Tã có thiết kế chống tràn với lớp lõi thấm hút kép, giúp bé ngủ ngon cả đêm.|Tã, bỉm & khăn ướt
+92|Bỉm dán sơ sinh size NB|Dành riêng cho bé mới chào đời, vách chống trào và chất liệu mềm mại.|Tã, bỉm & khăn ướt
+93|Khăn ướt không mùi cho bé|Sản phẩm không chứa cồn, không paraben, an toàn cho làn da nhạy cảm của trẻ sơ sinh.|Tã, bỉm & khăn ướt
+94|Sữa bột Dielac Alpha Gold Step 2|Giúp hỗ trợ phát triển trí não và hệ tiêu hóa cho bé từ 6–12 tháng.|Sữa & thực phẩm cho bé
+95|Cháo ăn liền vị gà rau củ|Dễ tiêu hóa, hương vị thơm ngon phù hợp với khẩu vị của trẻ nhỏ.|Sữa & thực phẩm cho bé
+96|Bột ăn dặm Nestlé vị gạo sữa|Cung cấp chất xơ và dưỡng chất thiết yếu cho bé trong giai đoạn ăn dặm.|Sữa & thực phẩm cho bé
+97|Nôi em bé đa năng 3 trong 1|Thiết kế an toàn, có thể dùng làm giường, nôi và bập bênh.|Đồ dùng sơ sinh
+98|Bình sữa cổ rộng PP cao cấp|Chất liệu an toàn, không BPA, giúp bé bú dễ dàng và chống sặc.|Đồ dùng sơ sinh
+99|Ghế ăn dặm gấp gọn điều chỉnh được|Thiết kế chắc chắn, dễ vệ sinh và có thể gấp lại tiện lợi.|Đồ dùng sơ sinh
+100|Đồ chơi lắp ghép hình khối nhiều màu|Giúp bé phát triển tư duy logic và nhận biết màu sắc.|Đồ chơi cho bé
+101|Đồ chơi phát nhạc hình thú|Sản phẩm phát nhạc vui nhộn, giúp bé phát triển thính giác và vận động.|Đồ chơi cho bé
+102|Sách vải mềm cho trẻ sơ sinh|Chất liệu an toàn, có thể gặm được, khuyến khích bé ham đọc.|Đồ chơi cho bé
+103|Dầu dưỡng rạn da cho mẹ bầu|Chiết xuất thiên nhiên giúp dưỡng ẩm và làm mềm da hiệu quả.|Chăm sóc mẹ bầu
+104|Gối ôm bà bầu hình chữ U|Hỗ trợ nâng đỡ bụng và lưng giúp mẹ bầu ngủ ngon hơn.|Chăm sóc mẹ bầu
+105|Bộ đồ sau sinh cotton co giãn|Mềm mại, thoáng khí, phù hợp cho mẹ trong thời kỳ ở cữ.|Chăm sóc mẹ bầu
+106|Bộ học đếm số cho bé|Gồm bảng đếm và thẻ số từ 1 đến 100, giúp bé làm quen với các con số thông qua trò chơi, kích thích khả năng toán học từ sớm.|Tã, bỉm & khăn ướt
+107|Hộp bút chì màu và tranh tô|Bộ gồm 24 màu chì và 20 tranh tô hình động vật, phát triển kỹ năng cầm bút và khả năng sáng tạo mỹ thuật cho bé.|Tã, bỉm & khăn ướt
+108|Mô hình khủng long Jurassic World|Mô hình tỉ lệ 1:20 bằng nhựa cao cấp, thiết kế chân tay linh hoạt, giúp bé khám phá thế giới khủng long sinh động.|Sữa & thực phẩm cho bé
+109|LEGO Creator 3-in-1: Nhà gỗ đa năng|Bộ LEGO có thể lắp thành 3 kiểu nhà khác nhau, khuyến khích sáng tạo và chơi độc lập.|Sữa & thực phẩm cho bé
+110|Cờ cá ngựa nhựa cao cấp|Bộ cờ truyền thống bằng nhựa, kèm nắp đậy tiện dụng, phù hợp cho 2–4 người chơi ở mọi lứa tuổi.|Đồ dùng sơ sinh
+111|Board game Ma Sói Deluxe|Bản mở rộng với 30 lá bài vai trò và hướng dẫn tiếng Việt, phù hợp cho nhóm bạn từ 6–20 người.|Đồ dùng sơ sinh
+112|Máy bay trực thăng điều khiển từ xa|Thiết kế mini, pin sạc lithium, dễ điều khiển trong nhà và ngoài trời, thích hợp cho bé từ 6 tuổi trở lên.|Đồ chơi cho bé
+113|Xe tăng điều khiển bắn đạn xốp|Hiệu ứng âm thanh, ánh sáng sống động, bắn đạn xốp an toàn, điều khiển bằng remote 2.4GHz.|Đồ chơi cho bé
+114|Bộ bóng rổ treo cửa cho bé|Gồm bảng rổ, vòng và bóng mềm, dễ lắp đặt trên cửa phòng, giúp trẻ vận động linh hoạt.|Chăm sóc mẹ bầu
+115|Bộ bóng đá mini trong nhà|Gồm khung thành và bóng nhẹ, phù hợp chơi trong nhà, tăng cường vận động và tinh thần đồng đội.|Chăm sóc mẹ bầu
+116|Trà xanh đóng chai 500ml|Hương vị thanh mát, ít đường, phù hợp giải khát hằng ngày và hỗ trợ tiêu hóa.|Đồ chơi giáo dục
+117|Nước suối khoáng thiên nhiên 1.5L|Sản phẩm từ nguồn nước khoáng thiên nhiên, thích hợp sử dụng cho gia đình và văn phòng.|Đồ chơi giáo dục
+118|Mì gói Hảo Hảo tôm chua cay (5 gói)|Vị chua cay đậm đà, sợi mì dai ngon, tiện lợi khi dùng trong các bữa ăn nhanh.|Mô hình & Lego
+119|Cháo ăn liền thịt bằm Vifon (70g)|Dễ dàng chuẩn bị, thơm ngon, phù hợp cho bữa sáng hoặc khi cần ăn nhanh.|Mô hình & Lego
+120|Nước mắm Nam Ngư 500ml|Chiết xuất từ cá cơm, mùi vị đậm đà, dùng nấu ăn hoặc làm nước chấm.|Board game & cờ
+121|Dầu ăn Neptune 1L|Giàu vitamin A, D và E, thích hợp dùng chiên, xào hoặc trộn salad.|Board game & cờ
+122|Khô gà lá chanh gói 100g|Vị cay nhẹ, thơm mùi lá chanh, thích hợp làm món nhậu hoặc ăn vặt trong ngày.|Đồ chơi điều khiển
+123|Snack rong biển vị kim chi (30g)|Rong biển giòn rụm, vị kim chi cay nồng, giàu khoáng chất và chất xơ.|Đồ chơi điều khiển
+124|Thức ăn hạt cho mèo vị cá hồi (1kg)|Giàu protein và Omega 3, giúp lông mèo mềm mượt, chắc khỏe.|Đồ chơi thể thao
+125|Đồ chơi nhai gặm cho chó hình xương|Chất liệu cao su dẻo, hỗ trợ vệ sinh răng miệng và giảm stress cho chó.|Đồ chơi thể thao

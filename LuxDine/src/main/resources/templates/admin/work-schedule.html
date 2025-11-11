@@ -1,0 +1,2812 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Quản lí lịch làm việc - LuxDine</title>
+
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <th:block
+            th:replace="~{admin/fragments/admin-header :: adminStyles}"
+        ></th:block>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Inter", sans-serif;
+                margin: 0;
+                padding: 0;
+                background: var(--color-bg);
+            }
+
+            .main-content {
+                padding: 32px;
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                margin-bottom: 24px;
+            }
+
+            .page-title {
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 8px;
+                color: var(--color-text);
+            }
+
+            .page-subtitle {
+                color: var(--color-text-muted);
+                margin-bottom: 24px;
+            }
+
+            /* Controls */
+            .controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+
+            .controls-left {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex: 1;
+            }
+
+            .controls-right {
+                display: flex;
+                gap: 12px;
+            }
+
+            .search-box {
+                position: relative;
+                flex: 0 1 300px;
+            }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 14px;
+            }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 3px rgba(10, 10, 35, 0.1);
+            }
+
+            .week-nav {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: white;
+                padding: 6px;
+                border-radius: 8px;
+                border: 1px solid var(--color-border);
+            }
+
+            .week-nav button {
+                width: 32px;
+                height: 32px;
+                border: none;
+                background: transparent;
+                border-radius: 6px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--color-text);
+                transition: all 0.2s;
+            }
+
+            .week-nav button:hover {
+                background: var(--color-bg);
+            }
+
+            .week-nav span {
+                font-weight: 600;
+                font-size: 14px;
+                padding: 0 12px;
+                color: var(--color-text);
+            }
+
+            .btn {
+                padding: 10px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-primary {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: #1a1a3a;
+            }
+
+            .btn-secondary {
+                background: var(--color-bg);
+                color: var(--color-text);
+                border: 1px solid var(--color-border);
+            }
+
+            .btn-secondary:hover {
+                background: var(--color-border);
+            }
+
+            /* Schedule Table */
+            .schedule-table {
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                border: 1px solid var(--color-border);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+
+            .table-wrapper {
+                overflow-x: auto;
+            }
+
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                min-width: 1000px;
+            }
+
+            thead {
+                background: var(--color-bg);
+                border-bottom: 2px solid var(--color-border);
+            }
+
+            th {
+                padding: 16px 12px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 13px;
+                color: var(--color-text);
+                white-space: nowrap;
+            }
+
+            th:first-child {
+                padding-left: 24px;
+                width: 200px;
+            }
+
+            tbody tr {
+                border-bottom: 1px solid var(--color-border);
+            }
+
+            tbody tr:hover {
+                background: #fafafa;
+            }
+
+            td {
+                padding: 16px 12px;
+                vertical-align: top;
+            }
+
+            td:first-child {
+                padding-left: 24px;
+            }
+
+            .employee-cell {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .employee-name {
+                font-weight: 600;
+                font-size: 14px;
+                color: var(--color-text);
+            }
+
+            .employee-code {
+                font-size: 12px;
+                color: var(--color-text-muted);
+            }
+
+            .day-cell {
+                min-height: 80px;
+                position: relative;
+                padding: 8px;
+            }
+
+            .day-cell:hover {
+                background: #f8f9fa;
+            }
+
+            .day-cell.empty {
+                cursor: pointer;
+            }
+
+            .shift-badge {
+                display: inline-block;
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                margin-bottom: 4px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .shift-badge:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+
+            .shift-morning {
+                background: #fef3c7;
+                color: #92400e;
+            }
+
+            .shift-afternoon {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            .shift-evening {
+                background: #e0e7ff;
+                color: #4338ca;
+            }
+
+            .shift-custom {
+                background: #f3e8ff;
+                color: #7c3aed;
+            }
+
+            .add-shift-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 100%;
+                min-height: 60px;
+                border-radius: 6px;
+                border: 2px dashed var(--color-border);
+                background: white;
+                color: var(--color-text-muted);
+                font-size: 20px;
+                cursor: pointer;
+                transition: all 0.25s ease;
+                font-weight: 600;
+            }
+
+            .add-shift-btn:hover {
+                border-color: var(--color-primary);
+                color: var(--color-primary);
+                background: rgba(10, 10, 35, 0.03);
+                transform: scale(1.02);
+                border-style: solid;
+            }
+
+            .add-shift-btn:active {
+                transform: scale(0.98);
+            }
+
+            /* Modal */
+            .modal {
+                display: none;
+                position: fixed;
+                z-index: 9999;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                -webkit-backdrop-filter: blur(4px);
+                backdrop-filter: blur(4px);
+                overflow: auto;
+            }
+
+            .modal-content {
+                background-color: white;
+                margin: 5% auto;
+                padding: 0;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 600px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            .modal-header {
+                padding: 24px 32px;
+                border-bottom: 1px solid var(--color-border);
+                position: relative;
+            }
+
+            .modal-header h2 {
+                margin: 0 0 4px 0;
+                font-size: 24px;
+                font-weight: 700;
+            }
+
+            .modal-header p {
+                margin: 0;
+                color: var(--color-text-muted);
+                font-size: 14px;
+            }
+
+            .modal-close {
+                position: absolute;
+                top: 24px;
+                right: 32px;
+                background: none;
+                border: none;
+                font-size: 28px;
+                cursor: pointer;
+                color: var(--color-text-muted);
+                transition: color 0.2s;
+            }
+
+            .modal-close:hover {
+                color: var(--color-text);
+            }
+
+            .modal-body {
+                padding: 24px 32px;
+            }
+
+            .form-group {
+                margin-bottom: 16px;
+            }
+
+            .form-group:last-child {
+                margin-bottom: 0;
+            }
+
+            .form-group label {
+                display: block;
+                font-size: 14px;
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: var(--color-text);
+            }
+
+            .form-group input,
+            .form-group select,
+            .form-group textarea,
+            .form-control {
+                width: 100%;
+                padding: 12px 14px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 14px;
+                transition: all 0.2s;
+                background: white;
+                font-family: "Inter", sans-serif;
+            }
+
+            .form-group input:focus,
+            .form-group select:focus,
+            .form-group textarea:focus,
+            .form-control:focus {
+                outline: none;
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 3px rgba(10, 10, 35, 0.1);
+            }
+
+            .form-group textarea {
+                resize: vertical;
+                min-height: 80px;
+            }
+
+            .shifts-group {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+
+            .shift-checkbox {
+                display: flex;
+                align-items: flex-start;
+                gap: 12px;
+                padding: 12px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .shift-checkbox:hover {
+                background: var(--color-bg);
+            }
+
+            .shift-checkbox input[type="checkbox"] {
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+                margin-top: 2px;
+            }
+
+            .shift-info {
+                flex: 1;
+            }
+
+            .shift-name {
+                font-weight: 600;
+                font-size: 14px;
+                color: var(--color-text);
+            }
+
+            .shift-time {
+                font-size: 12px;
+                color: var(--color-text-muted);
+            }
+
+            /* Toggle Switch - LuxDine Design System */
+            .toggle-wrapper {
+                margin-bottom: 18px;
+            }
+
+            .toggle-container {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 14px 18px;
+                background: white;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            .toggle-container:hover {
+                border-color: #a0a0a0;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+            }
+
+            .toggle-content {
+                flex: 1;
+                margin-right: 20px;
+                margin-bottom: 3px;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+            }
+
+            .toggle-title {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--color-text);
+                margin: 0;
+                line-height: 1.4;
+            }
+
+            .toggle-subtitle {
+                font-size: 13px;
+                color: var(--color-text-muted);
+                line-height: 1.5;
+                margin: 0;
+            }
+
+            .toggle-switch {
+                position: relative;
+                width: 36px;
+                height: 20px;
+                background: #e5e7eb;
+                border-radius: 10px;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                flex-shrink: 0;
+            }
+
+            .toggle-switch::after {
+                content: "";
+                position: absolute;
+                width: 16px;
+                height: 16px;
+                background: white;
+                border-radius: 50%;
+                top: 2px;
+                left: 2px;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15),
+                    0 1px 2px rgba(0, 0, 0, 0.1);
+            }
+
+            input[type="checkbox"].toggle-input {
+                display: none;
+            }
+
+            input[type="checkbox"]:checked + .toggle-container .toggle-switch {
+                background: var(--color-primary);
+            }
+
+            input[type="checkbox"]:checked
+                + .toggle-container
+                .toggle-switch::after {
+                left: 18px;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2),
+                    0 1px 2px rgba(0, 0, 0, 0.15);
+            }
+
+            input[type="checkbox"]:checked + .toggle-container {
+                border-color: var(--color-primary);
+                background: rgba(10, 10, 35, 0.02);
+            }
+
+            /* Active/Press state */
+            .toggle-container:active .toggle-switch::after {
+                width: 20px;
+            }
+
+            input[type="checkbox"]:checked
+                + .toggle-container:active
+                .toggle-switch::after {
+                left: 14px;
+            }
+
+            /* Weekday Selection */
+            .weekday-selection {
+                margin-top: 16px;
+                padding: 16px;
+                background: white;
+                border: 1px solid var(--color-border);
+                border-radius: 8px;
+                display: none;
+            }
+
+            .weekday-selection.show {
+                display: block;
+            }
+
+            .weekday-label {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--color-text);
+                margin-bottom: 12px;
+                display: block;
+            }
+
+            .weekday-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 8px;
+                margin-bottom: 12px;
+            }
+
+            .weekday-btn {
+                padding: 10px 12px;
+                background: white;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 13px;
+                font-weight: 500;
+                color: var(--color-text);
+                cursor: pointer;
+                transition: all 0.2s;
+                text-align: center;
+            }
+
+            .weekday-btn:hover {
+                border-color: var(--color-primary);
+                background: rgba(10, 10, 35, 0.03);
+            }
+
+            .weekday-btn.active {
+                background: var(--color-primary);
+                border-color: var(--color-primary);
+                color: white;
+                font-weight: 600;
+            }
+
+            .weekday-btn.select-all {
+                grid-column: span 2;
+                background: var(--color-bg);
+                border-color: var(--color-primary);
+                color: var(--color-primary);
+            }
+
+            .weekday-btn.select-all:hover {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .weekday-btn.select-all.active {
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .repeat-info {
+                margin-top: 12px;
+                padding: 12px;
+                background: #eff6ff;
+                border-left: 3px solid #3b82f6;
+                border-radius: 6px;
+                font-size: 13px;
+                color: #1e40af;
+                display: none;
+            }
+
+            .repeat-info.show {
+                display: block;
+            }
+
+            .repeat-info strong {
+                font-weight: 600;
+            }
+
+            /* End Date Field */
+            .end-date-field {
+                margin-top: 16px;
+                display: none;
+            }
+
+            .end-date-field.show {
+                display: block;
+            }
+
+            /* Employee Selection */
+            .employee-selection {
+                margin-top: 16px;
+                display: none;
+            }
+
+            .employee-selection.show {
+                display: block;
+            }
+
+            .employee-search {
+                margin-bottom: 12px;
+            }
+
+            .employee-list {
+                max-height: 220px;
+                overflow-y: auto;
+                border: 1px solid var(--color-border);
+                border-radius: 8px;
+                padding: 8px;
+                background: white;
+            }
+
+            .employee-checkbox {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                padding: 10px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+
+            .employee-checkbox:hover {
+                background: var(--color-bg);
+            }
+
+            .employee-checkbox input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+                accent-color: var(--color-primary);
+            }
+
+            .employee-checkbox label {
+                cursor: pointer;
+                font-size: 14px;
+                color: var(--color-text);
+                flex: 1;
+                margin: 0;
+            }
+
+            .modal-actions {
+                display: flex;
+                gap: 12px;
+                justify-content: flex-end;
+                padding: 20px 32px 24px 32px;
+                border-top: 1px solid var(--color-border);
+                margin-top: 0;
+            }
+
+            .btn-danger {
+                background: #ef4444;
+                color: white;
+            }
+
+            .btn-danger:hover {
+                background: #dc2626;
+            }
+
+            .btn-add-shift {
+                padding: 6px 12px;
+                border-radius: 6px;
+                border: 1.5px dashed var(--color-primary);
+                background: white;
+                color: var(--color-primary);
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                transition: all 0.2s;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .btn-add-shift:hover {
+                background: var(--color-primary);
+                color: white;
+                border-style: solid;
+            }
+
+            /* Toast */
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: -400px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                padding: 16px 20px;
+                min-width: 320px;
+                z-index: 10000;
+                transition: right 0.3s ease;
+                border-left: 4px solid;
+            }
+
+            .toast.show {
+                right: 20px;
+            }
+
+            .toast.success {
+                border-left-color: #22c55e;
+            }
+
+            .toast.error {
+                border-left-color: #ef4444;
+            }
+
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .toast-icon {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+            }
+
+            .toast.success .toast-icon {
+                background: #22c55e;
+                color: white;
+            }
+
+            .toast.error .toast-icon {
+                background: #ef4444;
+                color: white;
+            }
+
+            .toast-message {
+                flex: 1;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--color-text);
+            }
+
+            /* Loading State */
+            .loading {
+                text-align: center;
+                padding: 48px;
+                color: var(--color-text-muted);
+            }
+
+            /* Empty State */
+            .empty-state {
+                text-align: center;
+                padding: 48px;
+                color: var(--color-text-muted);
+            }
+        </style>
+    </head>
+
+    <body>
+        <header
+            th:replace="~{admin/fragments/admin-header :: adminHeader}"
+        ></header>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Lịch làm việc nhân viên</h1>
+                <p class="page-subtitle">Quản lý lịch làm việc theo tuần</p>
+            </div>
+
+            <div class="controls">
+                <div class="controls-left">
+                    <div
+                        class="form-group"
+                        style="margin-bottom: 0; min-width: 200px"
+                    >
+                        <select
+                            id="viewMode"
+                            class="form-control"
+                            onchange="changeViewMode()"
+                            title="Chế độ xem"
+                            aria-label="Chọn chế độ xem lịch"
+                        >
+                            <option value="employee">Xem theo nhân viên</option>
+                            <option value="shift">Xem theo ca</option>
+                        </select>
+                    </div>
+
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            id="searchEmployee"
+                            placeholder="Tìm kiếm theo tên nhân viên"
+                        />
+                    </div>
+
+                    <div class="week-nav">
+                        <button onclick="previousWeek()" title="Tuần trước">
+                            ‹
+                        </button>
+                        <span id="weekDisplay">Tuần này</span>
+                        <button onclick="nextWeek()" title="Tuần sau">›</button>
+                    </div>
+
+                    <button class="btn btn-secondary" onclick="goToThisWeek()">
+                        Tuần này
+                    </button>
+                </div>
+
+                <div class="controls-right">
+                    <button class="btn btn-primary" onclick="openAddScheduleModalGeneral()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        <span>Thêm ca làm việc</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="schedule-table">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Nhân viên</th>
+                                <th>Thứ 2</th>
+                                <th>Thứ 3</th>
+                                <th>Thứ 4</th>
+                                <th>Thứ 5</th>
+                                <th>Thứ 6</th>
+                                <th>Thứ 7</th>
+                                <th>Chủ nhật</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleTableBody">
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Schedule Modal -->
+        <div id="addScheduleModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Thêm lịch làm việc</h2>
+                    <p id="modalSubtitle">Chọn ca làm việc</p>
+                    <button class="modal-close" onclick="closeModal()">
+                        ×
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addScheduleForm">
+                        <input type="hidden" id="modalEmployeeId" />
+                        <input type="hidden" id="modalDate" />
+
+                        <!-- Employee Selection (shown when opened from general button) -->
+                        <div class="form-group" id="employeeSelectionField" style="display: none;">
+                            <label>Chọn nhân viên *</label>
+                            <select id="employeeSelect" class="form-control">
+                                <option value="">-- Chọn nhân viên --</option>
+                                <!-- Will be populated by JavaScript -->
+                            </select>
+                        </div>
+
+                        <!-- Date Selection (shown when opened from general button) -->
+                        <div class="form-group" id="dateSelectionField" style="display: none;">
+                            <label>Ngày làm việc *</label>
+                            <input type="date" id="dateSelect" class="form-control" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Chọn ca làm việc *</label>
+                            <div class="shifts-group">
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="shift"
+                                        value="MORNING"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca sáng</div>
+                                        <div class="shift-time">
+                                            08:00 - 12:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="shift"
+                                        value="AFTERNOON"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca chiều</div>
+                                        <div class="shift-time">
+                                            13:00 - 17:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="shift"
+                                        value="EVENING"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca tối</div>
+                                        <div class="shift-time">
+                                            18:00 - 22:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox" id="customShiftCheckbox">
+                                    <input
+                                        type="checkbox"
+                                        name="shift"
+                                        value="CUSTOM"
+                                        onchange="toggleCustomShiftFields()"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca tùy chỉnh</div>
+                                        <div class="shift-time">
+                                            Tự định nghĩa
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Custom Shift Fields -->
+                        <div class="form-group" id="customShiftFields" style="display: none;">
+                            <label>Thông tin ca tùy chỉnh</label>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                                <div>
+                                    <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Tên ca *</label>
+                                    <input
+                                        type="text"
+                                        id="customShiftName"
+                                        class="form-control"
+                                        placeholder="VD: Ca đêm, Ca trưa..."
+                                    />
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Giờ bắt đầu *</label>
+                                        <input
+                                            type="time"
+                                            id="customStartTime"
+                                            class="form-control"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Giờ kết thúc *</label>
+                                        <input
+                                            type="time"
+                                            id="customEndTime"
+                                            class="form-control"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle: Lặp lại hằng tuần -->
+                        <div class="form-group">
+                            <div class="toggle-wrapper">
+                                <input
+                                    type="checkbox"
+                                    id="repeatWeekly"
+                                    class="toggle-input"
+                                    onchange="toggleRepeatWeekly()"
+                                />
+                                <label
+                                    for="repeatWeekly"
+                                    class="toggle-container"
+                                >
+                                    <div class="toggle-content">
+                                        <span class="toggle-title"
+                                            >Lặp lại hằng tuần</span
+                                        >
+                                        <span class="toggle-subtitle"
+                                            >Lịch làm việc sẽ được tự động lặp
+                                            lại vào các ngày trong tuần</span
+                                        >
+                                    </div>
+                                    <div class="toggle-switch"></div>
+                                </label>
+
+                                <!-- Weekday Selection -->
+                                <div
+                                    class="weekday-selection"
+                                    id="weekdaySelection"
+                                >
+                                    <span class="weekday-label"
+                                        >Chọn các ngày trong tuần</span
+                                    >
+                                    <div class="weekday-grid">
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="2"
+                                            onclick="toggleWeekday(this, 2)"
+                                        >
+                                            Thứ 2
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="3"
+                                            onclick="toggleWeekday(this, 3)"
+                                        >
+                                            Thứ 3
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="4"
+                                            onclick="toggleWeekday(this, 4)"
+                                        >
+                                            Thứ 4
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="5"
+                                            onclick="toggleWeekday(this, 5)"
+                                        >
+                                            Thứ 5
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="6"
+                                            onclick="toggleWeekday(this, 6)"
+                                        >
+                                            Thứ 6
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="7"
+                                            onclick="toggleWeekday(this, 7)"
+                                        >
+                                            Thứ 7
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="1"
+                                            onclick="toggleWeekday(this, 1)"
+                                        >
+                                            CN
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn select-all"
+                                            onclick="toggleAllWeekdays(this)"
+                                        >
+                                            Chọn tất cả
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="repeat-info"
+                                        id="repeatInfo"
+                                    ></div>
+                                </div>
+
+                                <!-- End Date -->
+                                <div class="end-date-field" id="endDateField">
+                                    <label>Kết thúc lặp lại</label>
+                                    <input
+                                        type="date"
+                                        id="endDate"
+                                        class="form-control"
+                                        onchange="updateRepeatInfo()"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle: Thêm cho nhân viên khác -->
+                        <div class="form-group">
+                            <div class="toggle-wrapper">
+                                <input
+                                    type="checkbox"
+                                    id="addForOthers"
+                                    class="toggle-input"
+                                    onchange="toggleEmployeeList()"
+                                />
+                                <label
+                                    for="addForOthers"
+                                    class="toggle-container"
+                                >
+                                    <div class="toggle-content">
+                                        <span class="toggle-title"
+                                            >Thêm lịch tương tự cho nhân viên
+                                            khác</span
+                                        >
+                                        <span class="toggle-subtitle"
+                                            >Lịch làm việc sẽ được áp dụng cho
+                                            các nhân viên được chọn</span
+                                        >
+                                    </div>
+                                    <div class="toggle-switch"></div>
+                                </label>
+
+                                <!-- Employee Selection -->
+                                <div
+                                    class="employee-selection"
+                                    id="employeeSelection"
+                                >
+                                    <div class="employee-search">
+                                        <input
+                                            type="text"
+                                            id="searchEmployeeModal"
+                                            class="form-control"
+                                            placeholder="Tìm kiếm nhân viên..."
+                                        />
+                                    </div>
+                                    <div
+                                        class="employee-list"
+                                        id="employeeList"
+                                    >
+                                        <!-- Will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeModal()"
+                    >
+                        Bỏ qua
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="saveSchedule()"
+                    >
+                        Lưu lịch
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Schedule Modal -->
+        <div id="editScheduleModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Sửa lịch làm việc</h2>
+                    <p id="editModalSubtitle">Chỉnh sửa ca làm việc</p>
+                    <button class="modal-close" onclick="closeModal()">
+                        ×
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="editScheduleForm">
+                        <input type="hidden" id="editEmployeeId" />
+                        <input type="hidden" id="editDate" />
+
+                        <div class="form-group">
+                            <label>Chọn ca làm việc *</label>
+                            <div class="shifts-group">
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="editShift"
+                                        value="MORNING"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca sáng</div>
+                                        <div class="shift-time">
+                                            08:00 - 12:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="editShift"
+                                        value="AFTERNOON"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca chiều</div>
+                                        <div class="shift-time">
+                                            13:00 - 17:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox">
+                                    <input
+                                        type="checkbox"
+                                        name="editShift"
+                                        value="EVENING"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca tối</div>
+                                        <div class="shift-time">
+                                            18:00 - 22:00
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="shift-checkbox" id="editCustomShiftCheckbox">
+                                    <input
+                                        type="checkbox"
+                                        name="editShift"
+                                        value="CUSTOM"
+                                        onchange="toggleEditCustomShiftFields()"
+                                    />
+                                    <div class="shift-info">
+                                        <div class="shift-name">Ca tùy chỉnh</div>
+                                        <div class="shift-time">
+                                            Tự định nghĩa
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Custom Shift Fields for Edit -->
+                        <div class="form-group" id="editCustomShiftFields" style="display: none;">
+                            <label>Thông tin ca tùy chỉnh</label>
+                            <div style="display: grid; grid-template-columns: 1fr; gap: 12px;">
+                                <div>
+                                    <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Tên ca *</label>
+                                    <input
+                                        type="text"
+                                        id="editCustomShiftName"
+                                        class="form-control"
+                                        placeholder="VD: Ca đêm, Ca trưa..."
+                                    />
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                    <div>
+                                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Giờ bắt đầu *</label>
+                                        <input
+                                            type="time"
+                                            id="editCustomStartTime"
+                                            class="form-control"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label style="font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block;">Giờ kết thúc *</label>
+                                        <input
+                                            type="time"
+                                            id="editCustomEndTime"
+                                            class="form-control"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Toggle: Lặp lại hằng tuần -->
+                        <div class="form-group">
+                            <div class="toggle-wrapper">
+                                <input
+                                    type="checkbox"
+                                    id="editRepeatWeekly"
+                                    class="toggle-input"
+                                    onchange="toggleEditRepeatWeekly()"
+                                />
+                                <label
+                                    for="editRepeatWeekly"
+                                    class="toggle-container"
+                                >
+                                    <div class="toggle-content">
+                                        <span class="toggle-title"
+                                            >Lặp lại hằng tuần</span
+                                        >
+                                        <span class="toggle-subtitle"
+                                            >Lịch làm việc sẽ được tự động lặp
+                                            lại vào các ngày trong tuần</span
+                                        >
+                                    </div>
+                                    <div class="toggle-switch"></div>
+                                </label>
+
+                                <!-- Weekday Selection -->
+                                <div
+                                    class="weekday-selection"
+                                    id="editWeekdaySelection"
+                                >
+                                    <span class="weekday-label"
+                                        >Chọn các ngày trong tuần</span
+                                    >
+                                    <div class="weekday-grid">
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="2"
+                                            onclick="toggleEditWeekday(this, 2)"
+                                        >
+                                            Thứ 2
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="3"
+                                            onclick="toggleEditWeekday(this, 3)"
+                                        >
+                                            Thứ 3
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="4"
+                                            onclick="toggleEditWeekday(this, 4)"
+                                        >
+                                            Thứ 4
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="5"
+                                            onclick="toggleEditWeekday(this, 5)"
+                                        >
+                                            Thứ 5
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="6"
+                                            onclick="toggleEditWeekday(this, 6)"
+                                        >
+                                            Thứ 6
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="7"
+                                            onclick="toggleEditWeekday(this, 7)"
+                                        >
+                                            Thứ 7
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn"
+                                            data-day="1"
+                                            onclick="toggleEditWeekday(this, 1)"
+                                        >
+                                            CN
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="weekday-btn select-all"
+                                            onclick="toggleAllEditWeekdays(this)"
+                                        >
+                                            Chọn tất cả
+                                        </button>
+                                    </div>
+                                    <div
+                                        class="repeat-info"
+                                        id="editRepeatInfo"
+                                    ></div>
+                                </div>
+
+                                <!-- End Date -->
+                                <div
+                                    class="end-date-field"
+                                    id="editEndDateField"
+                                >
+                                    <label>Kết thúc lặp lại</label>
+                                    <input
+                                        type="date"
+                                        id="editEndDate"
+                                        class="form-control"
+                                        onchange="updateEditRepeatInfo()"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="btn btn-danger"
+                        onclick="deleteSchedule()"
+                    >
+                        Xóa lịch
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeModal()"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        onclick="updateSchedule()"
+                    >
+                        Lưu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">
+            <div class="toast-content">
+                <div class="toast-icon"></div>
+                <div class="toast-message"></div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="modal">
+            <div class="modal-content" style="max-width: 400px">
+                <div class="modal-header">
+                    <h2>Xác nhận</h2>
+                    <button class="modal-close" onclick="closeConfirmModal()">
+                        ×
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p
+                        id="confirmMessage"
+                        style="
+                            margin: 0;
+                            color: var(--color-text);
+                            line-height: 1.6;
+                        "
+                    ></p>
+                </div>
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeConfirmModal()"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-primary"
+                        id="confirmButton"
+                        onclick="executeConfirm()"
+                    >
+                        Xác nhận
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            let weekScheduleData = /*[[${weekSchedule}]]*/ {};
+            let employeesData = /*[[${employees}]]*/ [];
+
+            // Parse week start date correctly
+            let currentWeekStart = weekScheduleData.weekStartDate
+                ? new Date(weekScheduleData.weekStartDate)
+                : new Date();
+
+            // Get CSRF token
+            const csrfToken = /*[[${_csrf.token}]]*/ "";
+            const csrfHeader = /*[[${_csrf.headerName}]]*/ "";
+
+            // Confirmation modal state
+            let confirmCallback = null;
+
+            // Initialize
+            document.addEventListener("DOMContentLoaded", function () {
+                renderScheduleTable();
+                updateWeekDisplay();
+                
+                // Add event listener for employee selection change
+                const employeeSelect = document.getElementById("employeeSelect");
+                if (employeeSelect) {
+                    employeeSelect.addEventListener("change", function() {
+                        // If "Add for others" is checked, refresh the employee list
+                        if (document.getElementById("addForOthers").checked) {
+                            populateEmployeeList();
+                        }
+                    });
+                }
+            });
+
+            function showConfirm(message, callback) {
+                document.getElementById("confirmMessage").textContent = message;
+                confirmCallback = callback;
+                document.getElementById("confirmModal").style.display = "block";
+            }
+
+            function closeConfirmModal() {
+                document.getElementById("confirmModal").style.display = "none";
+                confirmCallback = null;
+            }
+
+            function executeConfirm() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                closeConfirmModal();
+            }
+
+            // Toggle functions for Add Modal
+            let selectedWeekdays = [];
+
+            function toggleRepeatWeekly() {
+                const isChecked =
+                    document.getElementById("repeatWeekly").checked;
+                const weekdaySelection =
+                    document.getElementById("weekdaySelection");
+                const endDateField = document.getElementById("endDateField");
+
+                if (isChecked) {
+                    weekdaySelection.classList.add("show");
+                    endDateField.classList.add("show");
+
+                    // Set default end date to 2 months from now
+                    const defaultEndDate = new Date();
+                    defaultEndDate.setMonth(defaultEndDate.getMonth() + 2);
+                    document.getElementById("endDate").value =
+                        formatDate(defaultEndDate);
+                } else {
+                    weekdaySelection.classList.remove("show");
+                    endDateField.classList.remove("show");
+                    document
+                        .getElementById("repeatInfo")
+                        .classList.remove("show");
+
+                    // Reset selections
+                    document
+                        .querySelectorAll("#weekdaySelection .weekday-btn")
+                        .forEach((btn) => {
+                            btn.classList.remove("active");
+                        });
+                    selectedWeekdays = [];
+                }
+            }
+
+            function toggleWeekday(button, day) {
+                button.classList.toggle("active");
+
+                const index = selectedWeekdays.indexOf(day);
+                if (index > -1) {
+                    selectedWeekdays.splice(index, 1);
+                } else {
+                    selectedWeekdays.push(day);
+                }
+
+                updateRepeatInfo();
+            }
+
+            function toggleAllWeekdays(button) {
+                const allButtons = document.querySelectorAll(
+                    "#weekdaySelection .weekday-btn[data-day]"
+                );
+                const allSelected = selectedWeekdays.length === 7;
+
+                if (allSelected) {
+                    allButtons.forEach((btn) => btn.classList.remove("active"));
+                    selectedWeekdays = [];
+                    button.classList.remove("active");
+                } else {
+                    selectedWeekdays = [];
+                    allButtons.forEach((btn) => {
+                        btn.classList.add("active");
+                        const day = parseInt(btn.getAttribute("data-day"));
+                        selectedWeekdays.push(day);
+                    });
+                    button.classList.add("active");
+                }
+
+                updateRepeatInfo();
+            }
+
+            function updateRepeatInfo() {
+                const repeatInfo = document.getElementById("repeatInfo");
+
+                if (selectedWeekdays.length > 0) {
+                    const dayNames = {
+                        1: "Chủ nhật",
+                        2: "Thứ 2",
+                        3: "Thứ 3",
+                        4: "Thứ 4",
+                        5: "Thứ 5",
+                        6: "Thứ 6",
+                        7: "Thứ 7",
+                    };
+
+                    const sortedDays = [...selectedWeekdays].sort((a, b) => {
+                        if (a === 1) return 1;
+                        if (b === 1) return -1;
+                        return a - b;
+                    });
+
+                    const dayList = sortedDays
+                        .map((d) => dayNames[d])
+                        .join(", ");
+                    
+                    // Calculate and display actual end date
+                    const endDateValue = document.getElementById("endDate").value;
+                    let endDateText = "";
+                    if (endDateValue) {
+                        endDateText = ` đến ${formatDateDisplay(endDateValue)}`;
+                    } else {
+                        endDateText = " (chưa chọn ngày kết thúc)";
+                    }
+                    
+                    repeatInfo.innerHTML = `<strong>Lặp lại:</strong> ${dayList} hằng tuần${endDateText}`;
+                    repeatInfo.classList.add("show");
+                } else {
+                    repeatInfo.classList.remove("show");
+                }
+            }
+
+            // Toggle Employee List
+            function toggleEmployeeList() {
+                const isChecked =
+                    document.getElementById("addForOthers").checked;
+                const employeeSelection =
+                    document.getElementById("employeeSelection");
+
+                if (isChecked) {
+                    employeeSelection.classList.add("show");
+                    populateEmployeeList();
+                } else {
+                    employeeSelection.classList.remove("show");
+                }
+            }
+
+            function populateEmployeeList() {
+                const employeeList = document.getElementById("employeeList");
+                
+                // Get current employee ID from hidden field or dropdown
+                let currentEmployeeId = parseInt(
+                    document.getElementById("modalEmployeeId").value
+                );
+                
+                if (!currentEmployeeId) {
+                    const selectValue = document.getElementById("employeeSelect").value;
+                    currentEmployeeId = selectValue ? parseInt(selectValue) : null;
+                }
+
+                employeeList.innerHTML = "";
+
+                const filteredEmployees = employeesData.filter(
+                    (emp) => emp.id !== currentEmployeeId
+                );
+
+                if (filteredEmployees.length === 0) {
+                    employeeList.innerHTML = `
+                        <div style="text-align: center; padding: 16px; color: var(--color-text-muted);">
+                            ${currentEmployeeId ? 'Không có nhân viên khác' : 'Vui lòng chọn nhân viên chính trước'}
+                        </div>
+                    `;
+                    return;
+                }
+
+                filteredEmployees.forEach((emp) => {
+                    const div = document.createElement("div");
+                    div.className = "employee-checkbox";
+                    div.innerHTML = `
+                        <input type="checkbox" id="emp_${emp.id}" value="${emp.id}" name="otherEmployees">
+                        <label for="emp_${emp.id}">${emp.fullName} (${emp.code})</label>
+                    `;
+                    employeeList.appendChild(div);
+                });
+
+                // Add search functionality
+                const searchInput = document.getElementById(
+                    "searchEmployeeModal"
+                );
+                searchInput.value = "";
+                searchInput.oninput = function (e) {
+                    const searchText = e.target.value.toLowerCase();
+                    const items =
+                        employeeList.querySelectorAll(".employee-checkbox");
+                    items.forEach((item) => {
+                        const label = item
+                            .querySelector("label")
+                            .textContent.toLowerCase();
+                        item.style.display = label.includes(searchText)
+                            ? ""
+                            : "none";
+                    });
+                };
+            }
+
+            // Toggle functions for Edit Modal
+            let selectedEditWeekdays = [];
+
+            function toggleEditRepeatWeekly() {
+                const isChecked =
+                    document.getElementById("editRepeatWeekly").checked;
+                const weekdaySelection = document.getElementById(
+                    "editWeekdaySelection"
+                );
+                const endDateField =
+                    document.getElementById("editEndDateField");
+
+                if (isChecked) {
+                    weekdaySelection.classList.add("show");
+                    endDateField.classList.add("show");
+
+                    // Set default end date to 2 months from now
+                    const defaultEndDate = new Date();
+                    defaultEndDate.setMonth(defaultEndDate.getMonth() + 2);
+                    document.getElementById("editEndDate").value =
+                        formatDate(defaultEndDate);
+                } else {
+                    weekdaySelection.classList.remove("show");
+                    endDateField.classList.remove("show");
+                    document
+                        .getElementById("editRepeatInfo")
+                        .classList.remove("show");
+
+                    // Reset selections
+                    document
+                        .querySelectorAll("#editWeekdaySelection .weekday-btn")
+                        .forEach((btn) => {
+                            btn.classList.remove("active");
+                        });
+                    selectedEditWeekdays = [];
+                }
+            }
+
+            function toggleEditWeekday(button, day) {
+                button.classList.toggle("active");
+
+                const index = selectedEditWeekdays.indexOf(day);
+                if (index > -1) {
+                    selectedEditWeekdays.splice(index, 1);
+                } else {
+                    selectedEditWeekdays.push(day);
+                }
+
+                updateEditRepeatInfo();
+            }
+
+            function toggleAllEditWeekdays(button) {
+                const allButtons = document.querySelectorAll(
+                    "#editWeekdaySelection .weekday-btn[data-day]"
+                );
+                const allSelected = selectedEditWeekdays.length === 7;
+
+                if (allSelected) {
+                    allButtons.forEach((btn) => btn.classList.remove("active"));
+                    selectedEditWeekdays = [];
+                    button.classList.remove("active");
+                } else {
+                    selectedEditWeekdays = [];
+                    allButtons.forEach((btn) => {
+                        btn.classList.add("active");
+                        const day = parseInt(btn.getAttribute("data-day"));
+                        selectedEditWeekdays.push(day);
+                    });
+                    button.classList.add("active");
+                }
+
+                updateEditRepeatInfo();
+            }
+
+            function updateEditRepeatInfo() {
+                const repeatInfo = document.getElementById("editRepeatInfo");
+
+                if (selectedEditWeekdays.length > 0) {
+                    const dayNames = {
+                        1: "Chủ nhật",
+                        2: "Thứ 2",
+                        3: "Thứ 3",
+                        4: "Thứ 4",
+                        5: "Thứ 5",
+                        6: "Thứ 6",
+                        7: "Thứ 7",
+                    };
+
+                    const sortedDays = [...selectedEditWeekdays].sort(
+                        (a, b) => {
+                            if (a === 1) return 1;
+                            if (b === 1) return -1;
+                            return a - b;
+                        }
+                    );
+
+                    const dayList = sortedDays
+                        .map((d) => dayNames[d])
+                        .join(", ");
+                    
+                    // Calculate and display actual end date
+                    const endDateValue = document.getElementById("editEndDate").value;
+                    let endDateText = "";
+                    if (endDateValue) {
+                        endDateText = ` đến ${formatDateDisplay(endDateValue)}`;
+                    } else {
+                        endDateText = " (chưa chọn ngày kết thúc)";
+                    }
+                    
+                    repeatInfo.innerHTML = `<strong>Lặp lại:</strong> ${dayList} hằng tuần${endDateText}`;
+                    repeatInfo.classList.add("show");
+                } else {
+                    repeatInfo.classList.remove("show");
+                }
+            }
+
+            function renderScheduleTable() {
+                const tbody = document.getElementById("scheduleTableBody");
+                tbody.innerHTML = "";
+
+                if (!weekScheduleData.employeeSchedules) return;
+
+                weekScheduleData.employeeSchedules.forEach((empSchedule) => {
+                    const tr = document.createElement("tr");
+
+                    // Employee cell
+                    const employeeCell = document.createElement("td");
+                    employeeCell.innerHTML = `
+                        <div class="employee-cell">
+                            <div class="employee-name">${
+                                empSchedule.employeeName || ""
+                            }</div>
+                            <div class="employee-code">Mã NV: ${
+                                empSchedule.employeeCode || ""
+                            }</div>
+                        </div>
+                    `;
+                    tr.appendChild(employeeCell);
+
+                    // Day cells (Monday to Sunday)
+                    const weekStart = new Date(weekScheduleData.weekStartDate);
+                    for (let i = 0; i < 7; i++) {
+                        const currentDate = new Date(weekStart);
+                        currentDate.setDate(weekStart.getDate() + i);
+                        const dateStr = formatDate(currentDate);
+
+                        const dayCell = document.createElement("td");
+                        dayCell.className = "day-cell";
+
+                        const schedules =
+                            empSchedule.dailySchedules[dateStr] || [];
+
+                        if (schedules.length > 0) {
+                            schedules.forEach((schedule) => {
+                                const badge = document.createElement("div");
+                                badge.className = `shift-badge shift-${schedule.shiftType.toLowerCase()}`;
+                                
+                                // Display custom shift name if available
+                                if (schedule.shiftType === 'CUSTOM' && schedule.customShiftName) {
+                                    badge.textContent = schedule.customShiftName;
+                                } else {
+                                    badge.textContent = schedule.shiftDisplayName || schedule.shiftType;
+                                }
+                                
+                                badge.onclick = () =>
+                                    openEditModal(
+                                        empSchedule.employeeId,
+                                        empSchedule.employeeName,
+                                        dateStr,
+                                        schedules
+                                    );
+                                dayCell.appendChild(badge);
+                            });
+                        } else {
+                            dayCell.classList.add("empty");
+                            const addBtn = document.createElement("button");
+                            addBtn.className = "add-shift-btn";
+                            addBtn.innerHTML =
+                                '<span style="font-size: 24px;">+</span>';
+                            addBtn.title = "Thêm ca làm việc";
+                            addBtn.onclick = () =>
+                                openAddModal(
+                                    empSchedule.employeeId,
+                                    empSchedule.employeeName,
+                                    dateStr
+                                );
+                            dayCell.appendChild(addBtn);
+                        }
+
+                        tr.appendChild(dayCell);
+                    }
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            /**
+             * Mở modal thêm ca từ ô trống trong bảng
+             */
+            function openAddModal(employeeId, employeeName, date) {
+                // Hide employee and date selection fields
+                document.getElementById("employeeSelectionField").style.display = "none";
+                document.getElementById("dateSelectionField").style.display = "none";
+                
+                document.getElementById("modalEmployeeId").value = employeeId;
+                document.getElementById("modalDate").value = date;
+                document.getElementById(
+                    "modalSubtitle"
+                ).textContent = `${employeeName} - ${formatDateDisplay(date)}`;
+
+                // Reset form
+                resetAddScheduleForm();
+
+                document.getElementById("addScheduleModal").style.display = "block";
+            }
+
+            /**
+             * Mở modal thêm ca từ nút tổng quát
+             */
+            function openAddScheduleModalGeneral() {
+                // Show employee and date selection fields
+                document.getElementById("employeeSelectionField").style.display = "block";
+                document.getElementById("dateSelectionField").style.display = "block";
+                
+                // Clear hidden fields
+                document.getElementById("modalEmployeeId").value = "";
+                document.getElementById("modalDate").value = "";
+                
+                // Populate employee dropdown
+                populateEmployeeDropdown();
+                
+                // Set default date to today
+                const today = new Date();
+                document.getElementById("dateSelect").value = formatDate(today);
+                document.getElementById("dateSelect").min = formatDate(today);
+                
+                document.getElementById("modalSubtitle").textContent = "Chọn nhân viên và ngày làm việc";
+
+                // Reset form
+                resetAddScheduleForm();
+
+                document.getElementById("addScheduleModal").style.display = "block";
+            }
+
+            /**
+             * Populate employee dropdown
+             */
+            function populateEmployeeDropdown() {
+                const select = document.getElementById("employeeSelect");
+                select.innerHTML = '<option value="">-- Chọn nhân viên --</option>';
+                
+                employeesData.forEach(emp => {
+                    const option = document.createElement("option");
+                    option.value = emp.id;
+                    option.textContent = `${emp.fullName} (${emp.code})`;
+                    select.appendChild(option);
+                });
+            }
+
+            /**
+             * Reset add schedule form
+             */
+            function resetAddScheduleForm() {
+                // Reset shift checkboxes
+                document
+                    .querySelectorAll('#addScheduleForm input[name="shift"]')
+                    .forEach((cb) => (cb.checked = false));
+
+                // Reset toggles
+                document.getElementById("repeatWeekly").checked = false;
+                document.getElementById("addForOthers").checked = false;
+                document
+                    .getElementById("weekdaySelection")
+                    .classList.remove("show");
+                document
+                    .getElementById("endDateField")
+                    .classList.remove("show");
+                document
+                    .getElementById("employeeSelection")
+                    .classList.remove("show");
+                document.getElementById("repeatInfo").classList.remove("show");
+
+                // Reset weekday selections
+                document
+                    .querySelectorAll("#weekdaySelection .weekday-btn")
+                    .forEach((btn) => {
+                        btn.classList.remove("active");
+                    });
+                selectedWeekdays = [];
+
+                // Reset custom shift fields
+                document.getElementById("customShiftFields").style.display = "none";
+                document.getElementById("customShiftName").value = "";
+                document.getElementById("customStartTime").value = "";
+                document.getElementById("customEndTime").value = "";
+            }
+
+            /**
+             * Toggle custom shift fields
+             */
+            function toggleCustomShiftFields() {
+                const customCheckbox = document.querySelector('input[name="shift"][value="CUSTOM"]');
+                const customFields = document.getElementById("customShiftFields");
+                
+                if (customCheckbox && customCheckbox.checked) {
+                    customFields.style.display = "block";
+                } else {
+                    customFields.style.display = "none";
+                    // Reset custom fields when unchecked
+                    document.getElementById("customShiftName").value = "";
+                    document.getElementById("customStartTime").value = "";
+                    document.getElementById("customEndTime").value = "";
+                }
+            }
+
+            function openEditModal(employeeId, employeeName, date, schedules) {
+                document.getElementById("editEmployeeId").value = employeeId;
+                document.getElementById("editDate").value = date;
+                document.getElementById(
+                    "editModalSubtitle"
+                ).textContent = `${employeeName} - ${formatDateDisplay(date)}`;
+
+                // Check existing shifts
+                document
+                    .querySelectorAll(
+                        '#editScheduleForm input[name="editShift"]'
+                    )
+                    .forEach((cb) => {
+                        cb.checked = schedules.some(
+                            (s) => s.shiftType === cb.value
+                        );
+                    });
+
+                // Reset custom shift fields first
+                document.getElementById("editCustomShiftFields").style.display = "none";
+                document.getElementById("editCustomShiftName").value = "";
+                document.getElementById("editCustomStartTime").value = "";
+                document.getElementById("editCustomEndTime").value = "";
+
+                // If has custom shift, populate fields
+                const customShift = schedules.find(s => s.shiftType === 'CUSTOM');
+                if (customShift) {
+                    document.getElementById("editCustomShiftFields").style.display = "block";
+                    document.getElementById("editCustomShiftName").value = customShift.customShiftName || "";
+                    document.getElementById("editCustomStartTime").value = customShift.startTime || "";
+                    document.getElementById("editCustomEndTime").value = customShift.endTime || "";
+                }
+
+                // Reset edit toggle
+                document.getElementById("editRepeatWeekly").checked = false;
+                document
+                    .getElementById("editWeekdaySelection")
+                    .classList.remove("show");
+                document
+                    .getElementById("editRepeatInfo")
+                    .classList.remove("show");
+                document
+                    .getElementById("editEndDateField")
+                    .classList.remove("show");
+
+                // Reset weekday selections
+                document
+                    .querySelectorAll("#editWeekdaySelection .weekday-btn")
+                    .forEach((btn) => {
+                        btn.classList.remove("active");
+                    });
+                selectedEditWeekdays = [];
+
+                document.getElementById("editScheduleModal").style.display =
+                    "block";
+            }
+
+            /**
+             * Toggle edit custom shift fields
+             */
+            function toggleEditCustomShiftFields() {
+                const customCheckbox = document.querySelector('input[name="editShift"][value="CUSTOM"]');
+                const customFields = document.getElementById("editCustomShiftFields");
+                
+                if (customCheckbox && customCheckbox.checked) {
+                    customFields.style.display = "block";
+                } else {
+                    customFields.style.display = "none";
+                    // Reset custom fields when unchecked
+                    document.getElementById("editCustomShiftName").value = "";
+                    document.getElementById("editCustomStartTime").value = "";
+                    document.getElementById("editCustomEndTime").value = "";
+                }
+            }
+
+            function closeModal() {
+                document.getElementById("addScheduleModal").style.display =
+                    "none";
+                document.getElementById("editScheduleModal").style.display =
+                    "none";
+            }
+
+            async function saveSchedule() {
+                // Get employee ID from dropdown or hidden field
+                let employeeId = document.getElementById("modalEmployeeId").value;
+                if (!employeeId) {
+                    employeeId = document.getElementById("employeeSelect").value;
+                }
+                
+                // Get work date from date picker or hidden field
+                let workDate = document.getElementById("modalDate").value;
+                if (!workDate) {
+                    workDate = document.getElementById("dateSelect").value;
+                }
+
+                const shiftTypes = Array.from(
+                    document.querySelectorAll(
+                        '#addScheduleForm input[name="shift"]:checked'
+                    )
+                ).map((cb) => cb.value);
+                const repeatWeekly =
+                    document.getElementById("repeatWeekly").checked;
+                const additionalEmployeeIds = document.getElementById(
+                    "addForOthers"
+                ).checked
+                    ? Array.from(
+                          document.querySelectorAll(
+                              '#employeeList input[name="otherEmployees"]:checked'
+                          )
+                      ).map((cb) => parseInt(cb.value))
+                    : null;
+
+                // Get custom shift info
+                const customShiftName = document.getElementById("customShiftName").value;
+                const customStartTime = document.getElementById("customStartTime").value;
+                const customEndTime = document.getElementById("customEndTime").value;
+
+                // Validation
+                if (!employeeId) {
+                    showToast("Vui lòng chọn nhân viên", "error");
+                    return;
+                }
+
+                if (!workDate) {
+                    showToast("Vui lòng chọn ngày làm việc", "error");
+                    return;
+                }
+
+                if (shiftTypes.length === 0) {
+                    showToast("Vui lòng chọn ít nhất một ca làm việc", "error");
+                    return;
+                }
+
+                // Validate custom shift if selected
+                if (shiftTypes.includes("CUSTOM")) {
+                    if (!customShiftName || !customShiftName.trim()) {
+                        showToast("Vui lòng nhập tên ca tùy chỉnh", "error");
+                        return;
+                    }
+                    if (!customStartTime) {
+                        showToast("Vui lòng chọn giờ bắt đầu ca tùy chỉnh", "error");
+                        return;
+                    }
+                    if (!customEndTime) {
+                        showToast("Vui lòng chọn giờ kết thúc ca tùy chỉnh", "error");
+                        return;
+                    }
+                }
+
+                if (repeatWeekly && selectedWeekdays.length === 0) {
+                    showToast(
+                        "Vui lòng chọn ít nhất một ngày trong tuần",
+                        "error"
+                    );
+                    return;
+                }
+
+                try {
+                    const headers = {
+                        "Content-Type": "application/json",
+                    };
+                    if (csrfHeader && csrfToken) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    const endDate = document.getElementById("endDate").value;
+
+                    if (!repeatWeekly || selectedWeekdays.length === 0) {
+                        // Simple case: no repeat
+                        const requestBody = {
+                            employeeId: parseInt(employeeId),
+                            workDate: workDate,
+                            shiftTypes: shiftTypes,
+                            repeatWeekly: false,
+                            additionalEmployeeIds: additionalEmployeeIds,
+                            customShiftName: customShiftName || null,
+                            customStartTime: customStartTime || null,
+                            customEndTime: customEndTime || null,
+                        };
+
+                        const response = await fetch("/api/work-schedule", {
+                            method: "POST",
+                            headers: headers,
+                            body: JSON.stringify(requestBody),
+                        });
+
+                        if (response.ok) {
+                            showToast("Thêm lịch thành công", "success");
+                            closeModal();
+                            setTimeout(() => location.reload(), 500);
+                        } else {
+                            const error = await response.json();
+                            showToast(
+                                error.error || "Có lỗi xảy ra khi thêm lịch",
+                                "error"
+                            );
+                        }
+                    } else {
+                        // Repeat weekly: create for each selected weekday
+                        const baseDate = new Date(workDate);
+                        const baseDayOfWeek = baseDate.getDay();
+
+                        let successCount = 0;
+                        let errorMessage = null;
+
+                        for (const selectedDay of selectedWeekdays) {
+                            const targetJsDay =
+                                selectedDay === 1 ? 0 : selectedDay - 1;
+                            let targetDate = new Date(baseDate);
+                            const dayDiff = targetJsDay - baseDayOfWeek;
+
+                            if (dayDiff < 0) {
+                                targetDate.setDate(
+                                    targetDate.getDate() + (7 + dayDiff)
+                                );
+                            } else if (dayDiff > 0) {
+                                targetDate.setDate(
+                                    targetDate.getDate() + dayDiff
+                                );
+                            }
+
+                            const requestBody = {
+                                employeeId: parseInt(employeeId),
+                                workDate: formatDate(targetDate),
+                                shiftTypes: shiftTypes,
+                                repeatWeekly: true,
+                                endDate: endDate,
+                                additionalEmployeeIds: additionalEmployeeIds,
+                                customShiftName: customShiftName || null,
+                                customStartTime: customStartTime || null,
+                                customEndTime: customEndTime || null,
+                            };
+
+                            const response = await fetch("/api/work-schedule", {
+                                method: "POST",
+                                headers: headers,
+                                body: JSON.stringify(requestBody),
+                            });
+
+                            if (response.ok) {
+                                successCount++;
+                            } else {
+                                const error = await response.json();
+                                errorMessage = error.error || "Có lỗi xảy ra";
+                                break;
+                            }
+                        }
+
+                        if (successCount === selectedWeekdays.length) {
+                            showToast(
+                                `Thêm lịch thành công cho ${successCount} ngày trong tuần`,
+                                "success"
+                            );
+                            closeModal();
+                            setTimeout(() => location.reload(), 500);
+                        } else {
+                            showToast(
+                                errorMessage ||
+                                    `Chỉ tạo được ${successCount}/${selectedWeekdays.length} lịch`,
+                                "error"
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast("Có lỗi xảy ra khi thêm lịch", "error");
+                }
+            }
+
+            async function updateSchedule() {
+                const employeeId =
+                    document.getElementById("editEmployeeId").value;
+                const workDate = document.getElementById("editDate").value;
+                const shiftTypes = Array.from(
+                    document.querySelectorAll(
+                        '#editScheduleForm input[name="editShift"]:checked'
+                    )
+                ).map((cb) => cb.value);
+                const repeatWeekly =
+                    document.getElementById("editRepeatWeekly").checked;
+
+                // Get custom shift info
+                const customShiftName = document.getElementById("editCustomShiftName").value;
+                const customStartTime = document.getElementById("editCustomStartTime").value;
+                const customEndTime = document.getElementById("editCustomEndTime").value;
+
+                if (shiftTypes.length === 0) {
+                    showToast("Vui lòng chọn ít nhất một ca làm việc", "error");
+                    return;
+                }
+
+                // Validate custom shift if CUSTOM is selected
+                if (shiftTypes.includes("CUSTOM")) {
+                    if (!customShiftName || !customStartTime || !customEndTime) {
+                        showToast("Vui lòng điền đầy đủ thông tin ca tùy chỉnh", "error");
+                        return;
+                    }
+                }
+
+                if (repeatWeekly && selectedEditWeekdays.length === 0) {
+                    showToast(
+                        "Vui lòng chọn ít nhất một ngày trong tuần",
+                        "error"
+                    );
+                    return;
+                }
+
+                try {
+                    const headers = {
+                        "Content-Type": "application/json",
+                    };
+                    if (csrfHeader && csrfToken) {
+                        headers[csrfHeader] = csrfToken;
+                    }
+
+                    const endDate =
+                        document.getElementById("editEndDate").value;
+
+                    if (!repeatWeekly || selectedEditWeekdays.length === 0) {
+                        // Simple case: no repeat
+                        const requestBody = {
+                            workDate: workDate,
+                            shiftTypes: shiftTypes,
+                            repeatWeekly: false,
+                        };
+
+                        // Add custom shift info if CUSTOM is selected
+                        if (shiftTypes.includes("CUSTOM")) {
+                            requestBody.customShiftName = customShiftName;
+                            requestBody.customStartTime = customStartTime;
+                            requestBody.customEndTime = customEndTime;
+                        }
+
+                        const response = await fetch(
+                            `/api/work-schedule/employee/${employeeId}/date/${workDate}`,
+                            {
+                                method: "PUT",
+                                headers: headers,
+                                body: JSON.stringify(requestBody),
+                            }
+                        );
+
+                        if (response.ok) {
+                            showToast("Cập nhật lịch thành công", "success");
+                            closeModal();
+                            setTimeout(() => location.reload(), 500);
+                        } else {
+                            const error = await response.json();
+                            showToast(
+                                error.error ||
+                                    "Có lỗi xảy ra khi cập nhật lịch",
+                                "error"
+                            );
+                        }
+                    } else {
+                        // Repeat weekly: update for each selected weekday
+                        const baseDate = new Date(workDate);
+                        const baseDayOfWeek = baseDate.getDay();
+
+                        let successCount = 0;
+                        let errorMessage = null;
+
+                        for (const selectedDay of selectedEditWeekdays) {
+                            const targetJsDay =
+                                selectedDay === 1 ? 0 : selectedDay - 1;
+                            let targetDate = new Date(baseDate);
+                            const dayDiff = targetJsDay - baseDayOfWeek;
+
+                            if (dayDiff < 0) {
+                                targetDate.setDate(
+                                    targetDate.getDate() + (7 + dayDiff)
+                                );
+                            } else if (dayDiff > 0) {
+                                targetDate.setDate(
+                                    targetDate.getDate() + dayDiff
+                                );
+                            }
+
+                            const requestBody = {
+                                workDate: formatDate(targetDate),
+                                shiftTypes: shiftTypes,
+                                repeatWeekly: true,
+                                endDate: endDate,
+                            };
+
+                            // Add custom shift info if CUSTOM is selected
+                            if (shiftTypes.includes("CUSTOM")) {
+                                requestBody.customShiftName = customShiftName;
+                                requestBody.customStartTime = customStartTime;
+                                requestBody.customEndTime = customEndTime;
+                            }
+
+                            const response = await fetch(
+                                `/api/work-schedule/employee/${employeeId}/date/${formatDate(
+                                    targetDate
+                                )}`,
+                                {
+                                    method: "PUT",
+                                    headers: headers,
+                                    body: JSON.stringify(requestBody),
+                                }
+                            );
+
+                            if (response.ok) {
+                                successCount++;
+                            } else {
+                                const error = await response.json();
+                                errorMessage = error.error || "Có lỗi xảy ra";
+                                break;
+                            }
+                        }
+
+                        if (successCount === selectedEditWeekdays.length) {
+                            showToast(
+                                `Cập nhật lịch thành công cho ${successCount} ngày trong tuần`,
+                                "success"
+                            );
+                            closeModal();
+                            setTimeout(() => location.reload(), 500);
+                        } else {
+                            showToast(
+                                errorMessage ||
+                                    `Chỉ cập nhật được ${successCount}/${selectedEditWeekdays.length} lịch`,
+                                "error"
+                            );
+                        }
+                    }
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast("Có lỗi xảy ra khi cập nhật lịch", "error");
+                }
+            }
+
+            async function deleteSchedule() {
+                showConfirm(
+                    "Bạn có chắc chắn muốn xóa lịch này?",
+                    async function () {
+                        const employeeId =
+                            document.getElementById("editEmployeeId").value;
+                        const workDate =
+                            document.getElementById("editDate").value;
+
+                        try {
+                            const headers = {};
+                            if (csrfHeader && csrfToken) {
+                                headers[csrfHeader] = csrfToken;
+                            }
+
+                            const response = await fetch(
+                                `/api/work-schedule/employee/${employeeId}/date/${workDate}`,
+                                {
+                                    method: "DELETE",
+                                    headers: headers,
+                                }
+                            );
+
+                            if (response.ok) {
+                                showToast("Xóa lịch thành công", "success");
+                                closeModal();
+                                setTimeout(() => location.reload(), 500);
+                            } else {
+                                const error = await response.json();
+                                showToast(
+                                    error.error || "Có lỗi xảy ra khi xóa lịch",
+                                    "error"
+                                );
+                            }
+                        } catch (error) {
+                            console.error("Error:", error);
+                            showToast("Có lỗi xảy ra khi xóa lịch", "error");
+                        }
+                    }
+                );
+            }
+
+            function formatDate(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                return `${year}-${month}-${day}`;
+            }
+
+            function formatDateDisplay(dateStr) {
+                const date = new Date(dateStr);
+                const day = date.getDate();
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
+            function previousWeek() {
+                currentWeekStart = new Date(currentWeekStart);
+                currentWeekStart.setDate(currentWeekStart.getDate() - 7);
+                navigateToWeek();
+            }
+
+            function nextWeek() {
+                currentWeekStart = new Date(currentWeekStart);
+                currentWeekStart.setDate(currentWeekStart.getDate() + 7);
+                navigateToWeek();
+            }
+
+            function goToThisWeek() {
+                currentWeekStart = new Date();
+                navigateToWeek();
+            }
+
+            function navigateToWeek() {
+                const weekStartStr = formatDate(currentWeekStart);
+                window.location.href = `/admin/work-schedule?weekStart=${weekStartStr}`;
+            }
+
+            function updateWeekDisplay() {
+                const start = new Date(weekScheduleData.weekStartDate);
+                const end = new Date(start);
+                end.setDate(start.getDate() + 6);
+
+                document.getElementById(
+                    "weekDisplay"
+                ).textContent = `${formatDateDisplay(
+                    formatDate(start)
+                )} - ${formatDateDisplay(formatDate(end))}`;
+            }
+
+            function showToast(message, type) {
+                const toast = document.getElementById("toast");
+                const toastMessage = toast.querySelector(".toast-message");
+                const toastIcon = toast.querySelector(".toast-icon");
+
+                toastMessage.textContent = message;
+                toast.className = `toast ${type}`;
+
+                if (type === "success") {
+                    toastIcon.textContent = "✓";
+                } else {
+                    toastIcon.textContent = "✕";
+                }
+
+                toast.classList.add("show");
+
+                setTimeout(() => {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+
+            function changeViewMode() {
+                const viewMode = document.getElementById("viewMode").value;
+
+                if (viewMode === "shift") {
+                    renderShiftView();
+                } else {
+                    renderScheduleTable();
+                }
+            }
+
+            function renderShiftView() {
+                const tbody = document.getElementById("scheduleTableBody");
+                tbody.innerHTML = "";
+
+                if (!weekScheduleData.employeeSchedules) return;
+
+                // Group schedules by shift type - now dynamic to support custom shifts
+                const shiftGroups = {};
+
+                const weekStart = new Date(weekScheduleData.weekStartDate);
+
+                // Process each employee's schedules
+                weekScheduleData.employeeSchedules.forEach((empSchedule) => {
+                    // For each day in the week
+                    for (let i = 0; i < 7; i++) {
+                        const currentDate = new Date(weekStart);
+                        currentDate.setDate(weekStart.getDate() + i);
+                        const dateStr = formatDate(currentDate);
+
+                        const schedules =
+                            empSchedule.dailySchedules[dateStr] || [];
+
+                        schedules.forEach((schedule) => {
+                            const shiftType = schedule.shiftType;
+                            
+                            // Create shift group if not exists
+                            if (!shiftGroups[shiftType]) {
+                                let shiftName = schedule.shiftDisplayName;
+                                // For custom shifts, use customShiftName if available
+                                if (shiftType === 'CUSTOM' && schedule.customShiftName) {
+                                    shiftName = schedule.customShiftName;
+                                }
+                                shiftGroups[shiftType] = { 
+                                    name: shiftName, 
+                                    employees: [],
+                                    isCustom: shiftType === 'CUSTOM'
+                                };
+                            }
+                            
+                            if (!shiftGroups[shiftType].employees[i]) {
+                                shiftGroups[shiftType].employees[i] = [];
+                            }
+                            shiftGroups[shiftType].employees[i].push({
+                                name: empSchedule.employeeName,
+                                code: empSchedule.employeeCode,
+                                id: empSchedule.employeeId,
+                            });
+                        });
+                    }
+                });
+
+                // Sort shift types: MORNING, AFTERNOON, EVENING first, then CUSTOM
+                const sortedShiftTypes = Object.keys(shiftGroups).sort((a, b) => {
+                    const order = { 'MORNING': 1, 'AFTERNOON': 2, 'EVENING': 3, 'CUSTOM': 4 };
+                    return (order[a] || 999) - (order[b] || 999);
+                });
+
+                // Render each shift type as a row
+                sortedShiftTypes.forEach((shiftType) => {
+                    const shift = shiftGroups[shiftType];
+                    const tr = document.createElement("tr");
+
+                    // Shift name cell
+                    const shiftCell = document.createElement("td");
+                    shiftCell.innerHTML = `
+                        <div class="employee-cell">
+                            <div class="employee-name">${shift.name}</div>
+                            <div class="employee-code">${shiftType}</div>
+                        </div>
+                    `;
+                    tr.appendChild(shiftCell);
+
+                    // Day cells (Monday to Sunday)
+                    for (let i = 0; i < 7; i++) {
+                        const dayCell = document.createElement("td");
+                        dayCell.className = "day-cell";
+
+                        const employees = shift.employees[i] || [];
+
+                        if (employees.length > 0) {
+                            employees.forEach((emp) => {
+                                const badge = document.createElement("div");
+                                badge.className = `shift-badge shift-${shiftType.toLowerCase()}`;
+                                badge.textContent = emp.name;
+                                badge.style.cursor = "pointer";
+                                badge.style.marginBottom = "4px";
+                                dayCell.appendChild(badge);
+                            });
+                        } else {
+                            dayCell.innerHTML = `<span style="color: #ccc; font-size: 12px;">—</span>`;
+                        }
+
+                        tr.appendChild(dayCell);
+                    }
+
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // Close modal on outside click
+            window.onclick = function (event) {
+                const addModal = document.getElementById("addScheduleModal");
+                const editModal = document.getElementById("editScheduleModal");
+                const confirmModal = document.getElementById("confirmModal");
+
+                if (event.target == addModal || event.target == editModal) {
+                    closeModal();
+                } else if (event.target == confirmModal) {
+                    closeConfirmModal();
+                }
+            };
+
+            // Search employees in table
+            document
+                .getElementById("searchEmployee")
+                .addEventListener("input", function (e) {
+                    const searchText = e.target.value.toLowerCase();
+                    const rows = document.querySelectorAll(
+                        "#scheduleTableBody tr"
+                    );
+                    const viewMode = document.getElementById("viewMode").value;
+
+                    rows.forEach((row) => {
+                        if (viewMode === "shift") {
+                            // In shift view, search in shift badges (employee names)
+                            const badges = row.querySelectorAll(".shift-badge");
+                            let hasMatch = false;
+
+                            badges.forEach((badge) => {
+                                if (
+                                    badge.textContent
+                                        .toLowerCase()
+                                        .includes(searchText)
+                                ) {
+                                    hasMatch = true;
+                                }
+                            });
+
+                            // Also check shift name
+                            const shiftName =
+                                row
+                                    .querySelector(".employee-name")
+                                    ?.textContent.toLowerCase() || "";
+                            if (shiftName.includes(searchText)) {
+                                hasMatch = true;
+                            }
+
+                            row.style.display =
+                                hasMatch || searchText === "" ? "" : "none";
+                        } else {
+                            // In employee view, search by employee name/code
+                            const employeeName =
+                                row
+                                    .querySelector(".employee-name")
+                                    ?.textContent.toLowerCase() || "";
+                            const employeeCode =
+                                row
+                                    .querySelector(".employee-code")
+                                    ?.textContent.toLowerCase() || "";
+
+                            if (
+                                employeeName.includes(searchText) ||
+                                employeeCode.includes(searchText)
+                            ) {
+                                row.style.display = "";
+                            } else {
+                                row.style.display = "none";
+                            }
+                        }
+                    });
+                });
+            /*]]>*/
+        </script>
+    </body>
+</html>

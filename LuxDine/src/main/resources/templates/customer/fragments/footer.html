@@ -1,0 +1,151 @@
+<!-- customer/fragments/footer.html -->
+<!-- customer/fragments/footer.html -->
+<th:block th:fragment="styles">
+    <style>
+        /* Mọi rule đều scope trong footer để không rò rỉ */
+        footer.site-footer {
+            margin-top: var(--space-12);
+            background: #0b0b1e;
+            color: #e5e7eb;
+            padding: var(--space-10) 0;
+            font-family: var(
+                --font,
+                Inter,
+                system-ui,
+                -apple-system,
+                Segoe UI,
+                Roboto,
+                Helvetica,
+                Arial
+            );
+        }
+        footer.site-footer .container_footer {
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+            padding: 0 var(--space-7, 24px);
+        }
+        footer.site-footer .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: var(--space-8, 32px);
+        }
+
+        /* Brand trong footer: KHÔNG dùng class .brand để tránh đụng header */
+        footer.site-footer .footer-brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-4, 12px);
+            font-weight: 800;
+        }
+        footer.site-footer .footer-brand .brand__logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                var(--color-primary, #0a0a23) 0%,
+                #1a1a3a 50%,
+                #0f0f23 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 900;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(10, 10, 35, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        footer.site-footer .footer-brand .brand__logo::before {
+            content: "🍽️";
+            position: absolute;
+            font-size: 24px;
+            z-index: 2;
+        }
+
+        /* Cột link: đổi tên .footer -> .footer-col để tránh đụng */
+        footer.site-footer .footer-col h4 {
+            margin: 0;
+            font-weight: 700;
+        }
+        footer.site-footer .footer-col ul {
+            list-style: none;
+            padding: 0;
+            margin: 12px 0 0 0;
+            display: grid;
+            gap: 8px;
+        }
+        footer.site-footer .footer-col a {
+            color: #e5e7eb;
+            text-decoration: none;
+        }
+        footer.site-footer .footer-col a:hover {
+            text-decoration: underline;
+        }
+
+        footer.site-footer .copyright {
+            margin-top: var(--space-8, 32px);
+            color: #9ca3af;
+            font-size: var(--small-size, 14px);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            footer.site-footer .footer-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</th:block>
+
+<th:block th:fragment="footer">
+    <footer class="site-footer">
+        <div class="container_footer">
+            <div class="footer-grid">
+                <div>
+                    <div class="footer-brand">
+                        <span class="brand__logo" aria-hidden="true"></span>
+                        <span>LuxDine</span>
+                    </div>
+                    <p class="hint" style="margin-top: 12px; max-width: 52ch">
+                        Ẩm thực tinh tế, nguyên liệu tươi mới mỗi ngày. Đặt bàn
+                        và thưởng thức thực đơn đặc sắc của chúng tôi.
+                    </p>
+                </div>
+
+                <!-- Đổi .footer -> .footer-col -->
+                <nav class="footer-col" aria-label="Khám phá">
+                    <h4>Khám phá</h4>
+                    <ul>
+                        <li><a th:href="@{/menu}">Menu</a></li>
+                        <li><a th:href="@{/reservations}">Reservations</a></li>
+                        <li><a th:href="@{/order}">Order Online</a></li>
+                    </ul>
+                </nav>
+
+                <nav class="footer-col" aria-label="Thông tin">
+                    <h4>Thông tin</h4>
+                    <ul>
+                        <li><a th:href="@{/contact}">Liên hệ</a></li>
+                        <li><a th:href="@{/privacy}">Privacy</a></li>
+                        <li><a th:href="@{/terms}">Terms</a></li>
+                    </ul>
+                </nav>
+            </div>
+
+            <p class="copyright">
+                © <span id="year"></span> LuxDine. All rights reserved.
+            </p>
+        </div>
+    </footer>
+</th:block>
+
+<th:block th:fragment="scripts">
+    <script th:inline="javascript">
+        document.addEventListener("DOMContentLoaded", function () {
+            var y = document.getElementById("year");
+            if (y) y.textContent = new Date().getFullYear();
+        });
+    </script>
+</th:block>

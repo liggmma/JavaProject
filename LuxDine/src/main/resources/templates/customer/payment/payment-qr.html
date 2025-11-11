@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Quét QR để thanh toán — LuxDine</title>
+
+    <!-- Inter -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --bg: #F9FAFB;
+            --surface: #FFFFFF;
+            --border: #E5E7EB;
+            --text: #111827;
+            --muted: #6B7280;
+            --primary: #0A0A23;
+            --radius: 12px;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .05)
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Inter, system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0
+        }
+
+        .wrap {
+            max-width: 880px;
+            margin: 0 auto;
+            padding: 32px 16px
+        }
+
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 24px
+        }
+
+        .grid {
+            display: grid;
+            gap: 16px
+        }
+
+        @media (min-width: 900px) {
+            .grid {
+                grid-template-columns:300px 1fr
+            }
+        }
+
+        .qr {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--border);
+            border-radius: 10px;
+            padding: 12px
+        }
+
+        .qr img {
+            width: 260px;
+            height: 260px
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns:1fr auto;
+            gap: 10px 16px
+        }
+
+        .kv dt {
+            color: var(--muted)
+        }
+
+        .kv dd {
+            margin: 0;
+            font-weight: 600
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 16px
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            height: 42px;
+            padding: 0 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .status {
+            display: inline-block;
+            padding: 6px 10px;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            min-width: 96px;
+            text-align: center
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace
+        }
+    </style>
+</head>
+<body>
+<main class="wrap">
+    <h2>Quét QR để thanh toán</h2>
+
+    <section class="grid card">
+        <div>
+            <div class="qr">
+                <img th:src="${qrUrl}" alt="Mã QR thanh toán"/>
+            </div>
+            <p class="muted" style="margin-top:8px">Mở ứng dụng ngân hàng hoặc ví điện tử để quét. Đừng đóng trang
+                này.</p>
+        </div>
+
+        <div>
+            <dl class="kv">
+                <dt>Payment ID</dt>
+                <dd th:text="${payment.id}">0</dd>
+
+                <dt>Số tiền</dt>
+                <dd th:text="${#numbers.formatDecimal(payment.amount, 0, 'DEFAULT', 0, 'DEFAULT')} + ' ₫'">0 ₫</dd>
+
+                <dt>Phương thức</dt>
+                <dd th:text="${payment.method}">QR</dd>
+
+                <dt>Trạng thái</dt>
+                <dd><span id="statusText" class="status" th:text="${payment.status}">PENDING</span></dd>
+
+                <dt>Hết hạn sau</dt>
+                <dd><span id="countdown">05:00</span></dd>
+
+                <dt>Nội dung (reference)</dt>
+                <dd class="muted mono" th:text="${payment.referenceCode}">—</dd>
+            </dl>
+        </div>
+    </section>
+</main>
+
+<!-- WS libs -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.1.4/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    (function () {
+        // Dữ liệu từ model
+        const paymentId = /*[[${payment.id}]]*/ 0;
+        const topic = /*[[${topic}]]*/ '';
+        const expiresAt = /*[[${expiresAt}]]*/ 0;
+
+        const statusEl = document.getElementById('statusText');
+        const countdownEl = document.getElementById('countdown');
+        const go = (url) => window.location.replace(url);
+
+        // Đếm ngược
+        function fmt(ms) {
+            const t = Math.max(0, ms);
+            const m = Math.floor(t / 60000);
+            const s = Math.floor((t % 60000) / 1000);
+            return (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        function tick() {
+            countdownEl.textContent = fmt(expiresAt - Date.now());
+        }
+
+        tick();
+        setInterval(tick, 1000);
+
+        // WebSocket: subscribe đúng topic do controller cung cấp: /topic/payments/{referenceCode}
+        const sock = new SockJS('/ws');
+        const stomp = Stomp.over(sock);
+        stomp.debug = null;
+
+        stomp.connect({}, () => {
+            if (!topic) return;
+            stomp.subscribe(topic, (frame) => {
+                const msg = JSON.parse(frame.body || '{}');
+
+                // Cập nhật trạng thái tức thời
+                if (msg && msg.status) {
+                    statusEl.textContent = msg.status;
+
+                    if (msg.status === 'COMPLETED') {
+                        // Hợp nhất: success theo paymentId
+                        go(`/payment/success?paymentId=${paymentId}`);
+                    } else if (msg.status === 'FAILED' || msg.status === 'EXPIRED' || msg.reason === 'TIMEOUT') {
+                        const reason = encodeURIComponent(msg.reason || msg.status);
+                        go(`/payment/failed?paymentId=${paymentId}&error=${reason}`);
+                    }
+                }
+            });
+        });
+    })();
+    /*]]>*/
+</script>
+</body>
+</html>

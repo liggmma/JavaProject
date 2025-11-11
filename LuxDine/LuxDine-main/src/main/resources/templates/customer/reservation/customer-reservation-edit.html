@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Chỉnh sửa đặt bàn — LuxDine</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_parameter" th:content="${_csrf.parameterName}"/>
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-accent: #F97316;
+            --color-bg: #FAFAFA;
+            --color-surface: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-muted: #6B7280;
+            --radius: 16px;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text)
+        }
+
+        main.container {
+            display: flex;
+            justify-content: center;
+            padding: 80px 16px 60px
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .05);
+            padding: 40px;
+            width: 100%;
+            max-width: 800px
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            text-align: center;
+            margin: 0 0 32px;
+            color: var(--color-primary)
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns:repeat(2, 1fr);
+            gap: 20px
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns:1fr
+            }
+        }
+
+        .editable-field, .editable-select {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 100%;
+            background: #F9FAFB;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin: 0;
+            font: inherit;
+            color: var(--color-text);
+            transition: border-color .2s, box-shadow .2s
+        }
+
+        .editable-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right .5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem
+        }
+
+        .editable-field:focus, .editable-select:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(249, 115, 22, .1)
+        }
+
+        textarea.editable-field {
+            resize: vertical
+        }
+
+        .hint {
+            color: var(--color-muted);
+            font-size: .875em;
+            margin-top: 4px
+        }
+
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-top: 32px;
+            flex-wrap: wrap
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background .2s, border-color .2s, color .2s
+        }
+
+        .btn--primary {
+            background: var(--color-primary);
+            color: #fff;
+            border: 1px solid var(--color-primary)
+        }
+
+        .btn--primary:hover {
+            background: #1a1a40
+        }
+
+        .btn--secondary {
+            background: #fff;
+            color: var(--color-accent);
+            border: 1px solid var(--color-accent)
+        }
+
+        .btn--secondary:hover {
+            background: #FFF7ED
+        }
+
+        .btn--ghost {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            color: #374151
+        }
+
+        .alert-warn {
+            background: #FEF3C7;
+            color: #92400E;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #FDE68A;
+            font-weight: 500
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            border: 1px solid #FCA5A5;
+            font-weight: 500
+        }
+
+        .preorder {
+            margin-top: 20px;
+            border-top: 1px solid var(--color-border);
+            padding-top: 16px
+        }
+
+        .preorder-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px
+        }
+
+        .preorder-summary {
+            min-height: 24px;
+            color: #374151
+        }
+
+        .preorder-summary--muted {
+            color: var(--color-muted)
+        }
+
+        .summary-chip {
+            display: inline-block;
+            background: #F3F4F6;
+            border: 1px solid var(--color-border);
+            border-radius: 999px;
+            padding: 6px 10px;
+            margin: 6px 6px 0 0;
+            font-size: 14px
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .35);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 50
+        }
+
+        .modal {
+            background: #fff;
+            width: min(1000px, 92vw);
+            border-radius: 16px;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, .15);
+            overflow: hidden
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #F9FAFB;
+            border-bottom: 1px solid var(--color-border)
+        }
+
+        .modal-title {
+            font-weight: 700;
+            color: var(--color-primary)
+        }
+
+        .modal-body {
+            padding: 16px 20px
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            padding: 14px 20px;
+            border-top: 1px solid var(--color-border);
+            background: #FAFAFA
+        }
+
+        .searchbar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: #F9FAFB;
+            padding: 8px 12px;
+            margin-bottom: 12px
+        }
+
+        .searchbar input {
+            border: none;
+            background: transparent;
+            outline: none;
+            flex: 1;
+            font: inherit
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse
+        }
+
+        .table th, .table td {
+            border-bottom: 1px solid var(--color-border);
+            padding: 12px 10px;
+            text-align: left;
+            font-size: 14px
+        }
+
+        .table thead th {
+            background: #EEF2F7;
+            color: #111827;
+            font-weight: 700
+        }
+
+        .qty {
+            display: inline-flex;
+            align-items: center;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden
+        }
+
+        .qty button {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #F3F4F6;
+            cursor: pointer
+        }
+
+        .qty input {
+            width: 40px;
+            border: none;
+            text-align: center;
+            outline: none;
+            background: #fff
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer
+        }
+
+        .text-right {
+            text-align: right
+        }
+
+        .hide {
+            display: none !important
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+</head>
+<body>
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main class="container">
+    <div class="card">
+        <h1>Chỉnh sửa đặt bàn</h1>
+
+        <!-- Error từ query param -->
+        <div class="alert-error" th:if="${param.error}">
+            <strong>Lỗi:</strong> <span th:text="${param.error[0]}">Có lỗi xảy ra</span>
+        </div>
+
+        <!-- Form EDIT -->
+        <form id="reservationEditForm" method="post"
+              th:action="@{'/reservations/' + ${reservation.id}}"
+              th:attr="data-current-deposit=${reservation.depositAmount != null ? reservation.depositAmount : 0},
+                   data-reservation-id=${reservation.id}">
+            <div id="client-validation-error" style="display:none"></div>
+
+            <div class="grid">
+                <div>
+                    <label for="date">Ngày</label>
+                    <input class="editable-field" id="date" name="date" required
+                           th:value="${reservation.reservationDate != null ? #temporals.format(reservation.reservationDate,'yyyy-MM-dd') : ''}"
+                           type="date"/>
+                </div>
+
+                <div>
+                    <label for="time">Giờ</label>
+                    <input class="editable-field" id="time" max="22:00" min="09:00" name="time" required
+                           th:value="${reservation.reservationDate != null ? #temporals.format(reservation.reservationDate,'HH:mm') : ''}"
+                           type="time"/>
+                    <div class="hint">Nhà hàng mở cửa từ 9:00 đến 22:00</div>
+                </div>
+
+                <!-- hidden ODT (OffsetDateTime) -->
+                <input id="reservationDateOdt" name="reservationDate" type="hidden"/>
+
+                <div>
+                    <label for="numberOfGuests">Số khách</label>
+                    <select class="editable-select" id="numberOfGuests" name="numberOfGuests" required>
+                        <option th:each="n : ${#numbers.sequence(1,10)}" th:selected="${reservation.numberOfGuests == n}" th:text="${n}"
+                                th:value="${n}"></option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tableId">Bàn</label>
+                    <select class="editable-select" disabled id="tableId" name="tableId" required
+                            th:attr="data-current-table-id=${reservation.tableId},
+                           data-current-table-name=${reservation.tableName}">
+                        <option th:text="${reservation.tableName != null ? 'Đang chọn: ' + reservation.tableName : 'Vui lòng chọn ngày, giờ và số khách trước'}">
+                            Vui lòng chọn ngày, giờ và số khách trước
+                        </option>
+                    </select>
+                    <div class="hint" id="tableLoading" style="display:none">Đang tìm bàn phù hợp...</div>
+                </div>
+
+                <div style="grid-column:1/-1">
+                    <label for="notes">Ghi chú</label>
+                    <textarea class="editable-field" id="notes" name="notes" placeholder="Yêu cầu đặc biệt (nếu có)"
+                              rows="3" th:text="${reservation.notes}"></textarea>
+                </div>
+            </div>
+
+            <!-- Preorder -->
+            <section class="preorder">
+                <div class="preorder-header">
+                    <label style="margin:0">Món đặt trước</label>
+                    <button class="btn btn--secondary" id="btnOpenPreorder" type="button"><span>＋ Thêm món</span>
+                    </button>
+                </div>
+
+                <div class="preorder-summary preorder-summary--muted" id="preorderSummary">Chưa có món nào.</div>
+                <div id="preorderHiddenInputs"></div>
+
+                <!-- Seed từ server: it.itemId, it.itemName, it.quantity -->
+                <ul hidden id="serverItemsSeed" th:if="${reservation.items != null}">
+                    <li th:data-id="${it.itemId}"
+                        th:data-name="${it.itemName}"
+                        th:data-qty="${it.quantity}"
+                        th:each="it : ${reservation.items}">
+                    </li>
+                </ul>
+            </section>
+
+            <div class="actions">
+                <button class="btn btn--primary" type="submit">Lưu thay đổi</button>
+                <a class="btn btn--ghost" th:href="@{'/reservations/' + ${reservation.id}}">Quay lại</a>
+            </div>
+        </form>
+    </div>
+</main>
+
+<!-- Modal: Thêm món -->
+<div aria-hidden="true" class="modal-backdrop" id="preorderModal">
+    <div aria-labelledby="preorderModalTitle" aria-modal="true" class="modal" role="dialog">
+        <div class="modal-header">
+            <div class="modal-title" id="preorderModalTitle">Thêm món cho bàn đặt</div>
+            <button aria-label="Đóng" class="icon-btn" id="btnCloseModal" type="button">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="searchbar">🔎<input id="menuSearch" placeholder="Tìm hàng hóa theo mã hoặc tên" type="text">
+            </div>
+
+            <div style="overflow:auto;max-height:48vh;border:1px solid var(--color-border);border-radius:12px">
+                <table class="table" id="menuTable">
+                    <thead>
+                    <tr>
+                        <th style="width:120px">Mã hàng</th>
+                        <th>Tên hàng</th>
+                        <th class="text-right" style="width:120px">Giá bán</th>
+                        <th style="width:160px">Số lượng</th>
+                        <th style="width:80px">Xóa</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:data-id="${m.id}"
+                        th:data-name="${m.name}"
+                        th:data-price="${m.price}"
+                        th:each="m : ${menuItems}">
+                        <td th:text="${'SP' + #numbers.formatInteger(m.id,6)}">SP000001</td>
+                        <td th:text="${m.name}">Tên món</td>
+                        <td class="text-right" th:text="${#numbers.formatDecimal(m.price,0,'COMMA',0,'POINT')}">
+                            120,000
+                        </td>
+                        <td>
+                            <div class="qty">
+                                <button class="btn-qty-dec" type="button">−</button>
+                                <input class="qty-input" inputmode="numeric" type="text" value="0"/>
+                                <button class="btn-qty-inc" type="button">＋</button>
+                            </div>
+                        </td>
+                        <td>
+                            <button class="icon-btn btn-row-remove" title="Xóa dòng" type="button">🗑</button>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="hint">Món đặt trước sẽ tự động thêm vào đơn khi nhận khách.</div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn--ghost" id="btnCancelModal" type="button">Bỏ qua</button>
+            <button class="btn btn--primary" id="btnSavePreorder" type="button">Lưu</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Yêu cầu nạp thêm tiền cọc -->
+<div aria-hidden="true" class="modal-backdrop" id="depositModal">
+    <div aria-labelledby="depositModalTitle" aria-modal="true" class="modal" role="dialog">
+        <div class="modal-header">
+            <div class="modal-title" id="depositModalTitle">Yêu cầu nạp thêm tiền cọc</div>
+            <button aria-label="Đóng" class="icon-btn" id="btnCloseDeposit" type="button">✕</button>
+        </div>
+        <div class="modal-body">
+            <p style="margin:0 0 8px">Tiền cọc hiện tại: <strong id="depCurrent">0 VND</strong></p>
+            <p style="margin:0 0 8px">Tiền cọc mới: <strong id="depNew">0 VND</strong></p>
+            <p class="hint" style="margin-top:8px">Bạn cần nạp thêm: <strong id="depDelta">0 VND</strong></p>
+            <div class="hint" style="margin-top:12px">Nhấn “Tiếp tục thanh toán” để chuyển tới trang thanh toán phần
+                chênh lệch.
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn--ghost" id="btnCancelDeposit" type="button">Hủy</button>
+            <button class="btn btn--primary" id="btnTopUpProceed" type="button">Tiếp tục thanh toán</button>
+        </div>
+    </div>
+</div>
+
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<script>
+    /* ===========================
+       LuxDine — Edit Reservation
+       Controller-compatible JS
+       =========================== */
+
+    const byId = (id) => document.getElementById(id);
+    const qs = (s) => document.querySelector(s);
+    const $$ = (s) => Array.from(document.querySelectorAll(s));
+    const fmtVND = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(Number(n || 0))) + ' VND';
+
+    // CSRF helpers
+    function getCsrf() {
+        const p = qs('meta[name="_csrf_parameter"]')?.content;
+        const t = qs('meta[name="_csrf"]')?.content;
+        return (p && t) ? {param: p, token: t} : null;
+    }
+
+    function hiddenInput(parent, name, value) {
+        const i = document.createElement('input');
+        i.type = 'hidden';
+        i.name = name;
+        i.value = value ?? '';
+        parent.appendChild(i);
+    }
+
+    function buildOdt(dateStr, timeStr, offset = '+07:00') {
+        if (!dateStr || !timeStr) return '';
+        const hhmm = timeStr.length === 5 ? `${timeStr}:00` : timeStr;
+        return `${dateStr}T${hhmm}${offset}`;
+    }
+
+    // Elements
+    const formEl = byId('reservationEditForm');
+    const dateEl = byId('date');
+    const timeEl = byId('time');
+    const guestsEl = byId('numberOfGuests');
+    const tableEl = byId('tableId');
+    const tableLoading = byId('tableLoading');
+    const clientErrBox = byId('client-validation-error');
+
+    const btnProceedCheckout = byId('btnProceedCheckout');
+
+    const preorderModal = byId('preorderModal');
+    const preorderSummary = byId('preorderSummary');
+    const preorderHidden = byId('preorderHiddenInputs');
+    const menuTbody = qs('#menuTable tbody');
+    const menuSearch = byId('menuSearch');
+
+    const depositModal = byId('depositModal');
+    const depCurrentEl = byId('depCurrent');
+    const depNewEl = byId('depNew');
+    const depDeltaEl = byId('depDelta');
+    const btnTopUpProceed = byId('btnTopUpProceed');
+
+    // State: items
+    let selected = new Map(); // itemId -> {id,name,price,qty}
+    let draft = new Map();
+
+    // ---------- UI error ----------
+    function showValidationError(msg) {
+        if (!clientErrBox) return;
+        clientErrBox.className = 'alert-warn';
+        clientErrBox.style.display = 'block';
+        clientErrBox.textContent = msg;
+    }
+
+    function clearValidationError() {
+        if (!clientErrBox) return;
+        clientErrBox.style.display = 'none';
+        clientErrBox.textContent = '';
+        clientErrBox.className = '';
+    }
+
+    // ---------- Validation ----------
+    function validateDateTime() {
+        if (!dateEl || !timeEl || !formEl) return true;
+        const submitBtn = formEl.querySelector('button[type="submit"]');
+
+        if (!dateEl.value || !timeEl.value) return true;
+
+        const sel = new Date(dateEl.value);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        if (sel < today) {
+            showValidationError('Không thể chỉnh sửa sang ngày trong quá khứ. Vui lòng chọn từ hôm nay trở đi.');
+            if (submitBtn) submitBtn.disabled = true;
+            return false;
+        }
+        const [h, m] = timeEl.value.split(':').map(Number);
+        const t = h * 60 + m, open = 9 * 60, close = 22 * 60;
+        if (t < open || t > close) {
+            showValidationError('Nhà hàng chỉ mở cửa từ 9:00 đến 22:00. Vui lòng chọn giờ trong khoảng này.');
+            if (submitBtn) submitBtn.disabled = true;
+            return false;
+        }
+        clearValidationError();
+        if (submitBtn) submitBtn.disabled = false;
+        return true;
+    }
+
+    // ---------- Tables ----------
+    async function loadAvailableTables(trySelectCurrent = false) {
+        if (!tableEl || !dateEl || !timeEl || !guestsEl) return;
+        const date = dateEl.value, time = timeEl.value, guests = guestsEl.value;
+        if (!date || !time || !guests) {
+            tableEl.innerHTML = '<option value="">Vui lòng chọn ngày, giờ và số khách trước</option>';
+            tableEl.disabled = true;
+            return;
+        }
+        tableLoading && (tableLoading.style.display = 'block');
+        tableEl.disabled = true;
+        tableEl.innerHTML = '<option value="">Đang tải...</option>';
+
+        const currentId = tableEl.dataset.currentTableId || '';
+        const currentName = tableEl.dataset.currentTableName || '';
+        try {
+            const res = await fetch(`/api/available-tables-old?date=${encodeURIComponent(date)}&time=${encodeURIComponent(time)}&numberOfGuests=${encodeURIComponent(guests)}`);
+            const tables = await res.json();
+            tableEl.innerHTML = '<option value="">Chọn bàn</option>';
+            if (!Array.isArray(tables) || tables.length === 0) {
+                tableEl.innerHTML = '<option value="">Không có bàn phù hợp</option>';
+            } else {
+                for (const t of tables) {
+                    const o = document.createElement('option');
+                    o.value = t.id;
+                    o.textContent = `${t.tableName} (${t.capacity} chỗ) - Cọc ${new Intl.NumberFormat('vi-VN').format(Math.round(t.depositAmount || 0))}`;
+                    if (trySelectCurrent) {
+                        if (currentId && String(t.id) === String(currentId)) o.selected = true;
+                        else if (!currentId && currentName && t.tableName === currentName) o.selected = true;
+                    }
+                    tableEl.appendChild(o);
+                }
+            }
+        } catch (e) {
+            tableEl.innerHTML = '<option value="">Lỗi khi tải danh sách bàn</option>';
+        } finally {
+            tableEl.disabled = false;
+            tableLoading && (tableLoading.style.display = 'none');
+        }
+    }
+
+    // ---------- Preorder ----------
+    function renderSummary() {
+        if (!preorderSummary) return;
+        preorderSummary.innerHTML = '';
+        if (selected.size === 0) {
+            preorderSummary.classList.add('preorder-summary--muted');
+            preorderSummary.textContent = 'Chưa có món nào.';
+            return;
+        }
+        preorderSummary.classList.remove('preorder-summary--muted');
+        selected.forEach(v => {
+            const chip = document.createElement('span');
+            chip.className = 'summary-chip';
+            chip.textContent = `${v.name} x ${v.qty}`;
+            preorderSummary.appendChild(chip);
+        });
+    }
+
+    function rebuildHiddenInputs() {
+        if (!preorderHidden) return;
+        preorderHidden.innerHTML = '';
+        let idx = 0;
+        selected.forEach(v => {
+            if (!v || !v.id || !v.qty) return;
+            hiddenInput(preorderHidden, `items[${idx}].itemId`, v.id);
+            hiddenInput(preorderHidden, `items[${idx}].quantity`, v.qty);
+            idx++;
+        });
+    }
+
+    function seedFromServer() {
+        const nodes = $$('#serverItemsSeed li');
+        if (!nodes.length) return;
+        nodes.forEach(li => {
+            const id = Number(li.dataset.id);
+            const qty = Number(li.dataset.qty || 0);
+            const nameFromServer = li.dataset.name || '';
+            if (!id || qty <= 0) return;
+            const row = $$('#menuTable tbody tr').find(tr => Number(tr.dataset.id) === id);
+            const name = nameFromServer || row?.dataset.name || '';
+            const price = Number(row?.dataset.price) || 0;
+            selected.set(id, {id, name, price, qty});
+        });
+        renderSummary();
+        rebuildHiddenInputs();
+    }
+
+    function openPreorderModal() {
+        if (!preorderModal) return;
+        draft = new Map(JSON.parse(JSON.stringify(Array.from(selected))));
+        $$('#menuTable tbody tr').forEach(tr => {
+            const id = Number(tr.dataset.id);
+            const input = tr.querySelector('.qty-input');
+            input && (input.value = draft.get(id)?.qty || 0);
+        });
+        preorderModal.style.display = 'flex';
+        preorderModal.setAttribute('aria-hidden', 'false');
+        if (menuSearch) {
+            menuSearch.value = '';
+            filterRows('');
+        }
+    }
+
+    function closePreorderModal() {
+        if (!preorderModal) return;
+        preorderModal.style.display = 'none';
+        preorderModal.setAttribute('aria-hidden', 'true');
+    }
+
+    function commitDraft() {
+        selected = new Map();
+        draft.forEach((v, k) => {
+            if (v.qty > 0) selected.set(k, v);
+        });
+        renderSummary();
+        rebuildHiddenInputs();
+        closePreorderModal();
+    }
+
+    function filterRows(q) {
+        const kw = (q || '').trim().toLowerCase();
+        $$('#menuTable tbody tr').forEach(tr => {
+            const code = (`SP${String(tr.dataset.id).padStart(6, '0')}`).toLowerCase();
+            const name = (tr.dataset.name || '').toLowerCase();
+            tr.classList.toggle('hide', !(code.includes(kw) || name.includes(kw)));
+        });
+    }
+
+    function onMenuTableClick(e) {
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const id = Number(tr.dataset.id), name = tr.dataset.name, price = Number(tr.dataset.price) || 0;
+        const input = tr.querySelector('.qty-input');
+        const set = (v) => {
+            input && (input.value = v);
+        };
+        if (e.target.classList.contains('btn-qty-inc')) {
+            const v = Math.min(999, Number(input?.value || 0) + 1);
+            set(v);
+            draft.set(id, {id, name, price, qty: v});
+        }
+        if (e.target.classList.contains('btn-qty-dec')) {
+            const v = Math.max(0, Number(input?.value || 0) - 1);
+            set(v);
+            if (v === 0) draft.delete(id); else draft.set(id, {id, name, price, qty: v});
+        }
+        if (e.target.classList.contains('btn-row-remove')) {
+            set(0);
+            draft.delete(id);
+        }
+    }
+
+    function onMenuTableInput(e) {
+        if (!e.target.classList.contains('qty-input')) return;
+        const tr = e.target.closest('tr');
+        if (!tr) return;
+        const id = Number(tr.dataset.id), name = tr.dataset.name, price = Number(tr.dataset.price) || 0;
+        let v = parseInt(String(e.target.value).replace(/\D/g, ''), 10);
+        if (isNaN(v)) v = 0;
+        v = Math.max(0, Math.min(999, v));
+        e.target.value = v;
+        if (v === 0) draft.delete(id); else draft.set(id, {id, name, price, qty: v});
+    }
+
+    // ---------- Deposit modal ----------
+    function openDepositModal() {
+        if (!depositModal) return;
+        depositModal.style.display = 'flex';
+        depositModal.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeDepositModal() {
+        if (!depositModal) return;
+        depositModal.style.display = 'none';
+        depositModal.setAttribute('aria-hidden', 'true');
+    }
+
+    // ---------- POST to /payment/customer/checkout ----------
+    function appendReservationCreateRequest(form) {
+        const date = dateEl?.value || '';
+        const time = timeEl?.value || '';
+        const odt = buildOdt(date, time);
+        const guests = guestsEl?.value || '';
+        const tableId = tableEl?.value || '';
+        const notes = byId('notes')?.value || '';
+
+        hiddenInput(form, 'reservationDate', odt);
+        hiddenInput(form, 'numberOfGuests', guests);
+        hiddenInput(form, 'tableId', tableId);
+        hiddenInput(form, 'notes', notes);
+
+        // items[]
+        let idx = 0;
+        selected.forEach(v => {
+            if (v && v.id && v.qty > 0) {
+                hiddenInput(form, `items[${idx}].itemId`, v.id);
+                hiddenInput(form, `items[${idx}].quantity`, v.qty);
+                idx++;
+            }
+        });
+    }
+
+    // NEW_DEPOSIT: forward full ReservationCreateRequest
+    function proceedToCheckout() {
+        if (!validateDateTime()) return;
+        if (!dateEl?.value || !timeEl?.value || !guestsEl?.value || !tableEl?.value) {
+            showValidationError('Vui lòng chọn đủ Ngày, Giờ, Số khách và Bàn trước khi tiếp tục thanh toán.');
+            return;
+        }
+        // sync hidden items (nếu cần dùng lại)
+        rebuildHiddenInputs();
+
+        const f = document.createElement('form');
+        f.method = 'post';
+        f.action = '/payment/customer/checkout';
+
+        const csrf = getCsrf();
+        if (csrf) hiddenInput(f, csrf.param, csrf.token);
+
+        // Mục đích có thể để mặc định, nhưng set rõ:
+        hiddenInput(f, 'paymentPurpose', 'NEW_DEPOSIT');
+
+        appendReservationCreateRequest(f);
+
+        document.body.appendChild(f);
+        f.submit();
+    }
+
+    // TOP_UP: chỉ gửi delta + id, NHƯNG forward kèm ReservationCreateRequest để view hiển thị đẹp
+    function postExtraDepositToCheckout(reservationId, extraDeposit) {
+        const f = document.createElement('form');
+        f.method = 'post';
+        f.action = '/payment/customer/checkout';
+
+        const csrf = getCsrf();
+        if (csrf) hiddenInput(f, csrf.param, csrf.token);
+
+        hiddenInput(f, 'paymentPurpose', 'DEPOSIT_TOP_UP');
+        hiddenInput(f, 'reservationId', String(reservationId));
+        hiddenInput(f, 'extraDeposit', String(extraDeposit)); // chỉ gửi 100 thay vì 400
+
+        appendReservationCreateRequest(f); // forward req để trang checkout render tổng quan
+
+        document.body.appendChild(f);
+        f.submit();
+    }
+
+    // ---------- Intercept SAVE (tính delta) ----------
+    async function onFormSubmit(e) {
+        if (!validateDateTime()) {
+            e.preventDefault();
+            return;
+        }
+        rebuildHiddenInputs();
+
+        const date = dateEl?.value, time = timeEl?.value, guests = guestsEl?.value, tableId = Number(tableEl?.value);
+        if (!date || !time || !guests || !tableId) return; // HTML5 required lo
+
+        e.preventDefault(); // chặn để tính cọc
+
+        const itemsPayload = [];
+        selected.forEach(v => {
+            if (v && v.id && v.qty > 0) itemsPayload.push({itemId: Number(v.id), quantity: Number(v.qty)});
+        });
+
+        try {
+            const res = await fetch('/api/reservations/calculate-deposit', {
+                method: 'POST', headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({tableId, items: itemsPayload})
+            });
+            if (!res.ok) throw new Error('API tính tiền cọc lỗi');
+
+            const data = await res.json();
+            const newDeposit = Math.round(Number(data.depositAmount || 0));
+            const currentDeposit = Math.round(Number(formEl.dataset.currentDeposit || 0));
+            const delta = Math.max(0, newDeposit - currentDeposit);
+
+            if (delta > 0) {
+                depCurrentEl && (depCurrentEl.textContent = fmtVND(currentDeposit));
+                depNewEl && (depNewEl.textContent = fmtVND(newDeposit));
+                depDeltaEl && (depDeltaEl.textContent = fmtVND(delta));
+                openDepositModal();
+
+                const rid = formEl.dataset.reservationId;
+                if (btnTopUpProceed) {
+                    btnTopUpProceed.onclick = () => postExtraDepositToCheckout(rid, delta);
+                }
+                return; // không submit form edit lúc này
+            }
+
+            // Không cần nạp thêm: submit form EDIT
+            const odtHidden = byId('reservationDateOdt');
+            if (odtHidden) odtHidden.value = buildOdt(date, time);
+            formEl.submit();
+
+        } catch (err) {
+            console.error(err);
+            showValidationError('Không thể tính tiền cọc hiện tại. Vui lòng thử lại sau.');
+        }
+    }
+
+    // ---------- Init ----------
+    document.addEventListener('DOMContentLoaded', () => {
+        // Min date = hôm nay
+        if (dateEl) {
+            const t = new Date();
+            const y = t.getFullYear(), m = String(t.getMonth() + 1).padStart(2, '0'),
+                d = String(t.getDate()).padStart(2, '0');
+            dateEl.setAttribute('min', `${y}-${m}-${d}`);
+        }
+
+        dateEl?.addEventListener('change', () => {
+            validateDateTime();
+            loadAvailableTables();
+        });
+        timeEl?.addEventListener('change', () => {
+            validateDateTime();
+            loadAvailableTables();
+        });
+        guestsEl?.addEventListener('change', loadAvailableTables);
+
+        validateDateTime();
+        loadAvailableTables(true);
+        seedFromServer();
+
+        byId('btnOpenPreorder')?.addEventListener('click', openPreorderModal);
+        byId('btnCloseModal')?.addEventListener('click', closePreorderModal);
+        byId('btnCancelModal')?.addEventListener('click', closePreorderModal);
+        byId('btnSavePreorder')?.addEventListener('click', commitDraft);
+        menuSearch?.addEventListener('input', (e) => filterRows(e.target.value));
+        preorderModal?.addEventListener('click', (e) => {
+            if (e.target === preorderModal) closePreorderModal();
+        });
+
+        menuTbody?.addEventListener('click', onMenuTableClick);
+        menuTbody?.addEventListener('input', onMenuTableInput);
+
+        byId('btnCloseDeposit')?.addEventListener('click', closeDepositModal);
+        byId('btnCancelDeposit')?.addEventListener('click', closeDepositModal);
+        depositModal?.addEventListener('click', (e) => {
+            if (e.target === depositModal) closeDepositModal();
+        });
+
+        // Lưu thay đổi (EDIT)
+        formEl?.addEventListener('submit', onFormSubmit);
+
+        // Tiếp tục thanh toán (NEW_DEPOSIT)
+        btnProceedCheckout?.addEventListener('click', proceedToCheckout);
+    });
+</script>
+</body>
+</html>

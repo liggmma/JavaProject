@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Chi tiết đơn hàng | LuxDine</title>
+
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --color-bg: #F9FAFB;
+            --color-border: #E5E7EB;
+            --color-text-gray: #6B7280;
+            --color-success: #22C55E;
+            --color-warning: #FACC15;
+            --color-error: #EF4444;
+
+            --font-family: 'Inter', 'Poppins', system-ui, sans-serif;
+
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+
+            --spacing-sm: 8px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--color-bg);
+            color: #111827;
+            margin: 0;
+            padding: 0;
+            line-height: 1.5;
+        }
+
+        /* Container chính với chiều rộng tối đa 1000px */
+        .main-container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        /* Header và footer full width */
+        header, footer {
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-primary);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        h3 {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--color-primary);
+            margin-top: var(--spacing-xl);
+            margin-bottom: var(--spacing-md);
+        }
+
+        /* ===== 📦 KHUNG CHI TIẾT ===== */
+        .detail-box {
+            background-color: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: var(--spacing-lg);
+        }
+
+        .detail-box p {
+            margin: var(--spacing-sm) 0;
+            color: var(--color-text-gray);
+            font-size: 16px;
+        }
+
+        .detail-box b {
+            color: var(--color-primary);
+        }
+
+        /* ===== 🧾 BẢNG DANH SÁCH ===== */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        th {
+            background-color: var(--color-primary);
+            color: #fff;
+            text-align: left;
+            padding: 12px;
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--color-border);
+            color: #111827;
+        }
+
+        tr:hover {
+            background-color: #F3F4F6;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .total {
+            font-weight: bold;
+            color: var(--color-secondary);
+            font-size: 18px;
+        }
+
+        /* ===== 🔙 NÚT QUAY LẠI ===== */
+        .back {
+            display: inline-block;
+            margin-top: var(--spacing-lg);
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            background-color: #fff;
+            color: var(--color-secondary);
+            border: 1px solid var(--color-secondary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .back:hover {
+            background-color: var(--color-secondary);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* ===== ⭐ ĐÁNH GIÁ (FEEDBACK) ===== */
+        .feedback-box {
+            background-color: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-lg);
+            margin-top: var(--spacing-lg);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .feedback-box p {
+            color: var(--color-text-gray);
+            font-size: 16px;
+            margin: 8px 0;
+        }
+
+        .rating {
+            font-weight: bold;
+            color: var(--color-success);
+        }
+
+        .no-feedback {
+            font-style: italic;
+            color: var(--color-text-gray);
+        }
+
+        /* ===== STAR RATING STYLES ===== */
+        .star-rating {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            direction: rtl;
+            gap: 10px;
+            margin: 15px auto;
+            width: 100%;
+        }
+
+        .star-rating input {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 40px;
+            color: #E5E7EB;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #FFD700;
+            transform: scale(1.1);
+        }
+
+        .feedback-box textarea {
+            display: block;
+            width: 200px;
+            resize: none;
+            margin: 0 auto;
+            padding: 10px 14px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 16px;
+            line-height: 1.5;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .feedback-box textarea:focus {
+            border-color: #F97316;
+            outline: none;
+            box-shadow: 0 0 6px rgba(249, 115, 22, 0.3);
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 20px auto;
+                padding: 0 15px;
+            }
+
+            h2 {
+                font-size: 24px;
+            }
+
+            table, th, td {
+                font-size: 14px;
+            }
+
+            .detail-box, .feedback-box {
+                padding: var(--spacing-md);
+            }
+        }
+    </style>
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+</head>
+<body>
+<!-- Header full width -->
+<header>
+    <th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+</header>
+
+<!-- Nội dung chính trong container -->
+<div class="main-container">
+    <h2>Chi tiết đơn hàng</h2>
+
+    <div class="detail-box">
+        <p><b>Mã đơn hàng:</b> <span th:text="${order.id}"></span></p>
+        <p><b>Bàn:</b> <span th:text="${order.reservation != null ? order.reservation.table.tableName : 'N/A'}"></span></p>
+        <p><b>Trạng thái:</b> <span th:text="${order.status}"></span></p>
+        <p><b>Tổng phụ:</b> <span
+                th:text="${#numbers.formatDecimal(order.subTotal, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span></p>
+        <p><b>Thuế:</b> <span th:text="${order.tax} + ' VNĐ'"></span></p>
+        <p><b>Phí phục vụ:</b> <span th:text="${order.serviceCharge} + ' VNĐ'"></span></p>
+        <p><b>Tổng thanh toán:</b> <span class="total"
+                                         th:text="${#numbers.formatDecimal(order.amountDue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></span>
+        </p>
+        <p><b>Ngày tạo:</b> <span th:text="${#dates.format(order.createdDate, 'yyyy-MM-dd HH:mm')}"></span></p>
+    </div>
+
+    <h3>Các món đã gọi</h3>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Tên món</th>
+            <th class="right">Số lượng</th>
+            <th class="right">Đơn giá (VNĐ)</th>
+            <th class="right">Thành tiền (VNĐ)</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="g : ${grouped}">
+            <td th:text="${g.name}"></td>
+            <td class="right" th:text="${g.quantity}"></td>
+            <td class="right"
+                th:text="${#numbers.formatDecimal(g.unitPrice, 0, 'COMMA', 0, 'POINT')}"></td>
+            <td class="right"
+                th:text="${#numbers.formatDecimal(g.lineTotal, 0, 'COMMA', 0, 'POINT')}"></td>
+        </tr>
+        </tbody>
+
+        <tfoot>
+        <tr>
+            <td colspan="3" class="right total">Tổng cộng:</td>
+            <td class="right total"
+                th:text="${#numbers.formatDecimal(order.amountDue, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'"></td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <h3>Đánh giá của bạn</h3>
+
+    <div class="feedback-box" th:if="${order.feedBacks != null}">
+        <p><b>Điểm đánh giá:</b>
+            <span class="stars">
+                    <span th:each="i : ${#numbers.sequence(1,5)}"
+                          th:text="'★'"
+                          th:style="'color:' + (${i} <= ${order.feedBacks.rating} ? '#FFD700' : '#E5E7EB')">
+                    </span>
+                </span>
+        </p>
+
+        <p><b>Bình luận:</b> <span th:text="${order.feedBacks.comments}"></span></p>
+        <p><b>Thời gian tạo:</b>
+            <span th:text="${#temporals.format(
+                  order.feedBacks.createdDate.atZone(T(java.time.ZoneId).of('Asia/Ho_Chi_Minh')),
+                  'yyyy-MM-dd HH:mm')}"></span>
+        </p>
+
+        <div th:if="${canEditFeedback}">
+            <hr>
+            <h4>📝 Chỉnh sửa đánh giá (trong 24h)</h4>
+            <form th:action="@{'/orders/' + ${order.id} + '/feedback/edit'}" method="post" style="margin-top:10px;">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+                <div class="star-rating">
+                    <input type="radio" id="star5" name="rating" value="5"
+                           th:checked="${order.feedBacks.rating == 5}"/><label for="star5">★</label>
+                    <input type="radio" id="star4" name="rating" value="4"
+                           th:checked="${order.feedBacks.rating == 4}"/><label for="star4">★</label>
+                    <input type="radio" id="star3" name="rating" value="3"
+                           th:checked="${order.feedBacks.rating == 3}"/><label for="star3">★</label>
+                    <input type="radio" id="star2" name="rating" value="2"
+                           th:checked="${order.feedBacks.rating == 2}"/><label for="star2">★</label>
+                    <input type="radio" id="star1" name="rating" value="1"
+                           th:checked="${order.feedBacks.rating == 1}"/><label for="star1">★</label>
+                </div>
+
+                <br>
+                <label><b>Nội dung bình luận:</b></label><br>
+                <textarea name="comments" rows="3" required
+                          th:text="${order.feedBacks.comments}"
+                          style="width:100%; padding:2px; border-radius:8px;"></textarea>
+
+                <br><br>
+                <button type="submit"
+                        style="background-color:#F97316; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                    Cập nhật đánh giá
+                </button>
+            </form>
+        </div>
+
+        <p th:if="${!canEditFeedback}"
+           style="color:#9CA3AF; font-style:italic; margin-top:8px;">
+            ⏰ Bạn không thể chỉnh sửa đánh giá sau 24 giờ.
+        </p>
+    </div>
+
+    <div class="feedback-box" th:if="${order.feedBacks == null}">
+        <p>📝 Bạn chưa gửi đánh giá cho đơn hàng này. Hãy chọn số sao và chia sẻ cảm nhận của bạn!</p>
+
+        <form th:action="@{'/orders/' + ${order.id} + '/feedback'}" method="post" style="margin-top:10px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+            <div class="star-rating">
+                <input type="radio" id="newStar5" name="rating" value="5"/><label for="newStar5">★</label>
+                <input type="radio" id="newStar4" name="rating" value="4"/><label for="newStar4">★</label>
+                <input type="radio" id="newStar3" name="rating" value="3"/><label for="newStar3">★</label>
+                <input type="radio" id="newStar2" name="rating" value="2"/><label for="newStar2">★</label>
+                <input type="radio" id="newStar1" name="rating" value="1"/><label for="newStar1">★</label>
+            </div>
+
+            <br>
+            <label><b>Nội dung bình luận:</b></label><br>
+            <textarea name="comments" rows="4" required
+                      placeholder="Hãy chia sẻ cảm nhận của bạn..."
+                      style="width:100%; padding:8px; border-radius:8px;"></textarea>
+
+            <br><br>
+            <button type="submit"
+                    style="background-color:#F97316; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:bold;">
+                Gửi đánh giá
+            </button>
+        </form>
+    </div>
+
+    <a href="/orders" class="back">← Quay lại lịch sử đơn hàng</a>
+</div>
+
+<!-- Footer full width -->
+<footer>
+    <th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+</footer>
+
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+</body>
+</html>

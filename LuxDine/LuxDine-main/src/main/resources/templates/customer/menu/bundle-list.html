@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title th:text="${bundleType == 'TASTING_MENU' ? 'Thực đơn Tasting | LuxDine' : 'Combo | LuxDine'}">
+        Thực đơn Tasting | LuxDine
+    </title>
+
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Header/Footer design tokens & scoped rules -->
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ========= Page scope ========= */
+        .bundles-page {
+            font-family: var(--font, Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial);
+            background: var(--color-bg, #F9FAFB);
+            color: var(--color-text, #111827);
+        }
+
+        /* Hero */
+        .bundles-page .hero {
+            background: linear-gradient(135deg, var(--color-primary, #0A0A23), #1a1a3a);
+            color: #fff;
+            text-align: center;
+            padding: var(--space-12, 64px) var(--space-7, 24px);
+        }
+
+        .bundles-page .hero__title {
+            font-size: 32px;
+            line-height: 1.2;
+            font-weight: 800;
+            margin: 0 0 8px;
+        }
+
+        .bundles-page .hero__subtitle {
+            font-size: 16px;
+            line-height: 1.6;
+            opacity: .9;
+            margin: 0 auto;
+            max-width: 70ch;
+        }
+
+        /* Container */
+        .bundles-page .container {
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+            padding: var(--space-10, 48px) var(--space-7, 24px);
+        }
+
+        /* Section heading */
+        .bundles-page .section-title {
+            text-align: center;
+            margin-bottom: var(--space-8, 32px);
+        }
+
+        .bundles-page .section-title h2 {
+            font-size: 24px;
+            line-height: 1.3;
+            font-weight: 700;
+            color: var(--color-primary, #0A0A23);
+            margin: 0 0 8px;
+        }
+
+        .bundles-page .section-title p {
+            color: var(--color-text-muted, #6B7280);
+            margin: 0;
+        }
+
+        /* Grid: tối đa 3 cột */
+        .bundles-page .grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: var(--space-8, 32px);
+        }
+
+        @media (max-width: 1024px) {
+            .bundles-page .grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 640px) {
+            .bundles-page .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card */
+        .bundles-page .bundle-card {
+            background: #fff;
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            overflow: hidden;
+            cursor: pointer;
+            transform: translateY(0);
+            transition: transform .25s ease, box-shadow .25s ease;
+            opacity: 0;
+            animation: fadeInUp .6s ease-out forwards;
+        }
+
+        .bundles-page .bundle-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, .08);
+        }
+
+        .bundles-page .bundle-image {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+            display: block;
+            background: #f3f4f6;
+        }
+
+        .bundles-page .bundle-content {
+            padding: var(--space-6, 20px);
+            display: grid;
+            gap: 10px;
+        }
+
+        .bundles-page .bundle-card__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            min-height: 50px;
+        }
+
+        .bundles-page .bundle-title {
+            font-size: 20px;
+            line-height: 1.4;
+            font-weight: 700;
+            margin: 0;
+            color: var(--color-primary, #0A0A23);
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+
+        /* Giá VND */
+        .bundles-page .bundle-price {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--color-secondary, #F97316);
+            white-space: nowrap;
+        }
+
+        /* Mô tả 3 dòng + … */
+        .bundles-page .bundle-desc {
+            color: #555;
+            line-height: 1.5;
+            margin: 2px 0 6px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: calc(1.5em * 3); /* giữ chiều cao 3 dòng */
+        }
+
+        /* Meta: số lượng món — kiểu chữ, không nền/viền */
+        .bundles-page .bundle-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--color-text-muted, #6B7280);
+            font-size: 14px;
+        }
+
+        .bundles-page .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .bundles-page .meta-item svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            opacity: .9;
+        }
+
+        .bundles-page .meta-item b {
+            color: var(--color-primary, #0A0A23);
+        }
+
+        /* Nút */
+        .bundles-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            transition: background .2s, transform .02s;
+            width: max-content;
+        }
+
+        .bundles-page .btn:active {
+            transform: translateY(1px);
+        }
+
+        .bundles-page .btn--primary {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+        }
+
+        .bundles-page .btn--primary:hover {
+            filter: brightness(1.08);
+        }
+
+        /* Empty */
+        .bundles-page .empty {
+            text-align: center;
+            color: var(--color-text-muted, #6B7280);
+            padding: var(--space-12, 64px) var(--space-7, 24px);
+        }
+
+        .bundles-page .empty h3 {
+            margin: 0 0 8px;
+            color: var(--color-primary, #0A0A23);
+        }
+
+        /* Motion */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bundles-page .bundle-card {
+                animation: none;
+                opacity: 1;
+            }
+
+            .bundles-page .bundle-card:hover {
+                transform: none;
+            }
+        }
+    </style>
+</head>
+
+<body class="bundles-page">
+<!-- Header -->
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<!-- Hero -->
+<section class="hero">
+    <h1 class="hero__title"
+        th:text="${bundleType == 'TASTING_MENU' ? 'Thực đơn Tasting' : 'Combo ưu đãi'}">Thực đơn Tasting</h1>
+    <p class="hero__subtitle"
+       th:text="${bundleType == 'TASTING_MENU'
+         ? 'Trải nghiệm thực đơn Tasting được bếp trưởng tuyển chọn kỹ lưỡng – mỗi set là một câu chuyện hương vị.'
+         : 'Khám phá các combo chia sẻ giá trị, tuyển chọn bởi bếp trưởng – tiết kiệm mà vẫn đậm chất LuxDine.'}">
+        Trải nghiệm thực đơn Tasting được bếp trưởng tuyển chọn kỹ lưỡng – mỗi set là một câu chuyện hương vị.
+    </p>
+</section>
+
+<!-- Content -->
+<main aria-labelledby="section-heading" class="container">
+    <div class="section-title">
+        <h2 id="section-heading"
+            th:text="${bundleType == 'TASTING_MENU' ? 'Các set Tasting nổi bật' : 'Các combo nổi bật'}">
+            Các set nổi bật
+        </h2>
+        <p th:text="${bundleType == 'TASTING_MENU'
+        ? 'Bản hòa tấu hương vị do đội ngũ bếp trưởng của chúng tôi sáng tạo.'
+        : 'Chọn combo yêu thích để cùng chia sẻ bữa ăn trọn vẹn.'}">
+            Bản hòa tấu hương vị do đội ngũ bếp trưởng của chúng tôi sáng tạo.
+        </p>
+    </div>
+
+    <!-- Grid -->
+    <section class="grid" th:if="${!#lists.isEmpty(bundles)}">
+        <article aria-label="Xem chi tiết set/bundle"
+                 class="bundle-card"
+                 role="button"
+                 tabindex="0"
+                 th:data-slug="${bundle.slug}"
+                 th:each="bundle,iter : ${bundles}"
+                 th:onclick="|window.location.href='/browse/bundle/' + this.dataset.slug|"
+                 th:style="|animation-delay: ${iter.index * 0.08}s|">
+            <img class="bundle-image"
+                 decoding="async"
+                 loading="lazy" onerror="this.src='https://via.placeholder.com/640x360?text=No+Image';"
+                 th:alt="${bundle.name}"
+                 th:src="${bundle.imageUrl != null ? bundle.imageUrl : 'https://images.unsplash.com/photo-1604908812770-32a87e24e0e0'}"/>
+
+            <div class="bundle-content" onclick="event.stopPropagation();">
+                <div class="bundle-card__head">
+                    <h3 class="bundle-title" th:text="${bundle.name}">Tên set</h3>
+                    <!-- Giá VND bằng JS -->
+                    <div class="bundle-price price-vnd" th:attr="data-price=${bundle.price}">0 VND</div>
+                </div>
+
+                <!-- Mô tả 3 dòng -->
+                <p class="bundle-desc" th:text="${bundle.description}">
+                    Mô tả ngắn gọn về set/bundle, hiển thị tối đa 3 dòng…
+                </p>
+
+                <!-- Meta: số lượng món (không nền/viền) -->
+                <div aria-label="Thông tin set" class="bundle-meta">
+            <span class="meta-item" title="Số lượng món trong set">
+              <!-- icon list -->
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+              <b th:text="${bundle.items != null ? bundle.items.size() : 0}">0</b>
+              <span>món</span>
+            </span>
+                </div>
+
+                <button class="btn btn--primary"
+                        th:attr="onclick=|window.location.href='/browse/bundle/${bundle.slug}'|"
+                        type="button">
+                    Xem chi tiết
+                </button>
+            </div>
+        </article>
+    </section>
+
+    <!-- Empty state -->
+    <div class="empty" th:if="${#lists.isEmpty(bundles)}">
+        <h3>Chưa có set phù hợp</h3>
+        <p>Chúng tôi đang cập nhật danh sách. Vui lòng quay lại sau!</p>
+        <a class="btn btn--primary"
+           style="background:#fff; color:var(--color-primary,#0A0A23); border:1px solid var(--color-primary,#0A0A23);"
+           th:href="@{/browse/menu}">
+            Xem thực đơn thường →
+        </a>
+    </div>
+</main>
+
+<!-- Footer -->
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<script>
+    // Định dạng VND theo yêu cầu
+    function formatPriceVND(price) {
+        return new Intl.NumberFormat('vi-VN').format(Math.round(price)) + ' VND';
+    }
+
+    function applyVNDPrices() {
+        document.querySelectorAll('.price-vnd').forEach(el => {
+            const p = Number(el.getAttribute('data-price') || 0);
+            el.textContent = formatPriceVND(p);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', applyVNDPrices);
+</script>
+</body>
+</html>

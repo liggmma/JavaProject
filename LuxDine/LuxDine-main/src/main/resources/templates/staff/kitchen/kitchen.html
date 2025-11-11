@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <title>Màn hình bếp - LuxDine</title>
+
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <th:block th:replace="~{staff/fragments/staff-header :: staffStyles}"></th:block>
+
+    <style>
+        /* ========== Design Tokens ========== */
+        :root {
+            --color-primary: #0a0a23;
+            --color-secondary: #f97316;
+            --color-bg: #f9fafb;
+            --color-surface: #ffffff;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+            --color-success: #22c55e;
+            --color-warning: #facc15;
+            --color-error: #ef4444;
+            --color-info: #3b82f6;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.1);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            --h1-size: 32px;
+            --h1-lh: 1.2;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-lh: 1.3;
+            --h2-weight: 600;
+            --h3-size: 20px;
+            --h3-lh: 1.4;
+            --h3-weight: 500;
+            --body-size: 16px;
+            --body-lh: 1.5;
+            --body-weight: 400;
+            --small-size: 14px;
+            --small-lh: 1.4;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--body-size);
+            line-height: var(--body-lh);
+            font-weight: var(--body-weight);
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ========== Bố cục chính ========== */
+        .main-content {
+            padding: var(--space-lg);
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-xl);
+        }
+
+        .page-title {
+            font-size: var(--h1-size);
+            font-weight: var(--h1-weight);
+            line-height: var(--h1-lh);
+            color: var(--color-primary);
+            margin: 0;
+        }
+
+        .page-subtitle {
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+            margin: var(--space-xs) 0 0 0;
+        }
+
+        .current-time {
+            font-size: var(--h3-size);
+            font-weight: var(--h2-weight);
+            color: var(--color-primary);
+            background: var(--color-surface);
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border);
+        }
+
+        /* ========== Thẻ tổng quan ========== */
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: var(--space-lg);
+            margin-bottom: var(--space-xl);
+        }
+
+        .summary-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            box-shadow: var(--shadow-card);
+        }
+
+        .summary-card__content {
+            flex: 1;
+        }
+
+        .summary-card__count {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--color-primary);
+            line-height: 1;
+        }
+
+        .summary-card__label {
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .summary-card.pending {
+            border-left: 4px solid #f59e0b;
+        }
+
+        .summary-card.cooking {
+            border-left: 4px solid var(--color-secondary);
+        }
+
+        .summary-card.ready {
+            border-left: 4px solid var(--color-success);
+        }
+
+        /* ========== Lưới đơn ========== */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .order-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            box-shadow: var(--shadow-card);
+            transition: all 0.2s ease;
+        }
+
+        .order-card:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        .order-card.overdue {
+            border-left: 4px solid var(--color-error);
+        }
+
+        .order-card.all-ready {
+            border-left: 4px solid var(--color-success);
+        }
+
+        .order-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-md);
+        }
+
+        .order-table {
+            font-size: var(--h3-size);
+            font-weight: var(--h3-weight);
+            color: var(--color-primary);
+        }
+
+        .order-tags {
+            display: flex;
+            gap: var(--space-sm);
+        }
+
+        .tag {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .tag.priority-normal {
+            background: var(--color-border);
+            color: var(--color-text);
+        }
+
+        .tag.priority-high {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .tag.priority-urgent {
+            background: var(--color-error);
+            color: #fff;
+        }
+
+        .tag.overdue {
+            background: var(--color-error);
+            color: #fff;
+        }
+
+        .order-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: var(--space-sm);
+            margin-bottom: var(--space-md);
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+        }
+
+        .order-info-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .order-info-item strong {
+            color: var(--color-text);
+            font-weight: 500;
+        }
+
+        .order-notes {
+            margin-bottom: var(--space-md);
+        }
+
+        .note {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--small-size);
+            margin-bottom: var(--space-xs);
+        }
+
+        .note.allergy {
+            background: #fef2f2;
+            color: var(--color-error);
+            border: 1px solid #fecaca;
+        }
+
+        .note.info {
+            background: #eff6ff;
+            color: var(--color-info);
+            border: 1px solid #dbeafe;
+        }
+
+        .order-items {
+        }
+
+        .order-item {
+            background: #f9fafb;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .order-item-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-sm);
+        }
+
+        .order-item-name {
+            font-weight: 600;
+            color: var(--color-primary);
+        }
+
+        .order-item-status {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .status-tag {
+            padding: var(--space-xs) var(--space-sm);
+            border-radius: var(--radius-sm);
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .status-tag.pending {
+            background: var(--color-warning);
+            color: #fff;
+        }
+
+        .status-tag.cooking {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .status-tag.ready {
+            background: var(--color-success);
+            color: #fff;
+        }
+
+        .status-tag.served {
+            background: var(--color-info);
+            color: #fff;
+        }
+
+        .order-item-details {
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-sm);
+        }
+
+        .order-item-actions {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .cooking-time {
+            font-size: var(--small-size);
+            color: var(--color-text-muted);
+            font-weight: 500;
+        }
+
+        .action-button {
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-sm);
+            font-size: var(--small-size);
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all .2s ease;
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+        }
+
+        .action-button.primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .action-button.primary:hover {
+            background: #1a1a3a;
+        }
+
+        .action-button.secondary {
+            background: var(--color-border);
+            color: var(--color-text-muted);
+        }
+
+        .action-button.secondary:hover {
+            background: #d1d5db;
+        }
+
+        .action-button:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .order-actions {
+            padding: var(--space-sm) var(--space-md);
+            border-top: 1px solid var(--color-border);
+            background: #f8fafc;
+            border-radius: 0 0 var(--radius-md) var(--radius-md);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .ready-text {
+            color: var(--color-success);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .payment-text {
+            color: var(--color-info);
+            font-weight: 500;
+            font-size: 13px;
+            margin-top: var(--space-xs);
+        }
+
+        /* ========== Toast ========== */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--color-success);
+            color: #fff;
+            padding: var(--space-md) var(--space-lg);
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            transform: translateX(100%);
+            transition: transform .3s ease;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast.error {
+            background: var(--color-error);
+        }
+
+        .toast.warning {
+            background: var(--color-warning);
+        }
+
+        /* ========== Responsive ========== */
+        @media (max-width: 768px) {
+            .summary-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .orders-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .order-info {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--space-md);
+            }
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+
+<body>
+<!-- Header -->
+<div th:replace="~{staff/fragments/staff-header :: staffHeader}"></div>
+
+<!-- Nội dung chính -->
+<main class="main-content">
+    <!-- Tiêu đề trang -->
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Màn hình bếp (KDS)</h1>
+            <p class="page-subtitle">Quản lý đơn theo thời gian thực cho bộ phận bếp</p>
+        </div>
+        <div class="current-time" th:text="${currentTime}">22:27:02</div>
+    </div>
+
+    <!-- Thẻ tổng quan -->
+    <div class="summary-cards">
+        <div class="summary-card pending">
+            <div class="summary-card__content">
+                <div class="summary-card__count" th:text="${summary.pending}">2</div>
+                <div class="summary-card__label">Chờ chế biến</div>
+            </div>
+        </div>
+        <div class="summary-card cooking">
+            <div class="summary-card__content">
+                <div class="summary-card__count" th:text="${summary.cooking}">2</div>
+                <div class="summary-card__label">Đang chế biến</div>
+            </div>
+        </div>
+        <div class="summary-card ready">
+            <div class="summary-card__content">
+                <div class="summary-card__count" th:text="${summary.ready}">1</div>
+                <div class="summary-card__label">Sẵn sàng</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lưới đơn -->
+    <div class="orders-grid">
+        <div th:class="'order-card' + (${order.isOverdue} ? ' overdue' : '') + (${order.allReady} ? ' all-ready' : '')"
+             th:data-order-id="${order.orderId}"
+             th:each="order : ${orders}">
+
+            <!-- Header đơn -->
+            <div class="order-header">
+                <div class="order-table" th:text="'Bàn ' + ${order.tableName}">Bàn T-8</div>
+                <div class="order-tags">
+            <span th:class="'tag priority-' + ${order.priority.toLowerCase()}"
+                  th:text="${order.priority == 'URGENT' ? 'Khẩn cấp' : (order.priority == 'HIGH' ? 'Cao' : 'Thường')}">Khẩn cấp</span>
+                    <span class="tag overdue" th:if="${order.isOverdue}">Quá hạn</span>
+                </div>
+            </div>
+
+            <!-- Thông tin đơn -->
+            <div class="order-info">
+                <div class="order-info-item">
+                    <strong>Đơn:</strong>
+                    <span th:text="${order.orderCode}">ORD-004</span>
+                </div>
+                <div class="order-info-item">
+                    <strong>Thời gian:</strong>
+                    <span th:text="${#temporals.format(order.orderTime, 'HH:mm')}">19:00</span>
+                </div>
+                <div class="order-info-item">
+                    <strong>Nhân viên:</strong>
+                    <span th:text="${order.serverName}">Mike Wilson</span>
+                </div>
+                <div class="order-info-item">
+                    <strong>Đã trôi qua:</strong>
+                    <span th:text="${order.elapsedMinutes} + ' phút'">20 phút</span>
+                </div>
+            </div>
+
+            <!-- Cảnh báo & ghi chú -->
+            <div class="order-notes" th:if="${order.allergies != null and !order.allergies.empty}">
+                <div class="note allergy" th:each="allergy : ${order.allergies}" th:text="'Dị ứng: ' + ${allergy}">Dị
+                    ứng: Hải sản, Sữa
+                </div>
+            </div>
+            <div class="order-notes" th:if="${order.notes != null and !order.notes.empty}">
+                <div class="note info" th:text="'Ghi chú: ' + ${order.notes}">Ghi chú: Khách VIP - ưu tiên</div>
+            </div>
+
+            <!-- Món trong đơn -->
+            <div class="order-items">
+                <div class="order-item" th:each="item : ${order.orderItems}">
+                    <div class="order-item-header">
+                        <div class="order-item-name" th:text="${item.quantity} + 'x ' + ${item.itemName}">1x Cá hồi
+                        </div>
+                        <div class="order-item-status">
+                <span th:class="'status-tag ' + ${item.status.toLowerCase()}"
+                      th:text="${item.status == 'PENDING' ? 'Chờ' : (item.status == 'COOKING' ? 'Đang nấu' : (item.status == 'READY' ? 'Sẵn sàng' : 'Đã phục vụ'))}">Đang nấu</span>
+                        </div>
+                    </div>
+
+                    <div class="order-item-details" th:if="${item.notes != null and !item.notes.empty}">
+                        <div th:text="'Ghi chú: ' + ${item.notes}">Ghi chú: Chín kỹ</div>
+                    </div>
+                    <div class="order-item-details" th:if="${item.startedAt != null}">
+                        <div th:text="'Bắt đầu: ' + ${#temporals.format(item.startedAt, 'HH:mm')}">Bắt đầu: 19:02</div>
+                    </div>
+
+                    <div class="order-item-actions">
+                        <div class="cooking-time" th:text="${item.cookingMinutes} + ' phút'">18 phút</div>
+                        <button th:class="'action-button ' + (${item.status} == 'PENDING' ? 'primary' : 'secondary')"
+                                th:data-current-status="${item.status}"
+                                th:data-item-id="${item.itemId}"
+                                th:data-order-id="${order.orderId}"
+                                th:disabled="${item.status} == 'SERVED'"
+                                th:onclick="updateOrderItemStatus(this.dataset.itemId, this.dataset.currentStatus, this.dataset.orderId)"
+                                th:text="${item.status} == 'PENDING' ? 'Bắt đầu nấu' : (${item.status} == 'COOKING' ? 'Đánh dấu sẵn sàng' : (${item.status} == 'READY' ? 'Đánh dấu đã phục vụ' : 'Đã phục vụ'))">
+                            Bắt đầu nấu
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thông báo trạng thái đơn -->
+            <div class="order-actions" th:if="${order.allReady}">
+                <div class="ready-text">Tất cả món đã sẵn sàng để mang ra</div>
+                <div class="payment-text">Đơn sẽ tự ẩn sau khi thanh toán</div>
+            </div>
+
+        </div>
+    </div>
+</main>
+
+<script>
+    // Đồng hồ hiện tại (24h, vi-VN)
+    function updateCurrentTime() {
+        const now = new Date();
+        const timeString = now.toLocaleTimeString('vi-VN', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+        const box = document.querySelector('.current-time');
+        if (box) box.textContent = timeString;
+    }
+
+    updateCurrentTime();
+    setInterval(updateCurrentTime, 1000);
+
+    // Toast đơn giản
+    function showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 50);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => document.body.removeChild(toast), 300);
+        }, 3000);
+    }
+
+    // Cập nhật trạng thái món trong đơn
+    function updateOrderItemStatus(itemId, currentStatus, orderId) {
+        let newStatus;
+        if (currentStatus === 'PENDING') newStatus = 'COOKING';
+        else if (currentStatus === 'COOKING') newStatus = 'READY';
+        else if (currentStatus === 'READY') newStatus = 'SERVED';
+        else {
+            showToast('Món đã được phục vụ', 'warning');
+            return;
+        }
+
+        const button = document.querySelector(`[data-item-id="${itemId}"]`);
+        if (!button) {
+            showToast('Không tìm thấy nút thao tác', 'error');
+            return;
+        }
+
+        const originalText = button.textContent;
+        button.textContent = 'Đang cập nhật...';
+        button.disabled = true;
+
+        fetch(`/api/kitchen/orders/${orderId}/items/${itemId}/status`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({orderItemId: parseInt(itemId), status: newStatus})
+        })
+            .then((response) => {
+                if (response.ok) {
+                    showToast(`Đã cập nhật trạng thái thành ${newStatus}`, 'success');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    return response.text().then((text) => {
+                        throw new Error(`HTTP ${response.status}: ${text}`);
+                    });
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                showToast(`Lỗi cập nhật trạng thái: ${error.message}`, 'error');
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+    }
+</script>
+
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+</body>
+</html>

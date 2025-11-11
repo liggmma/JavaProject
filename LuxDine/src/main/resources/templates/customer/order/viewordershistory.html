@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lịch sử đơn hàng | LuxDine</title>
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --color-bg: #F9FAFB;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+            --color-success: #22C55E;
+            --color-warning: #FACC15;
+            --color-error: #EF4444;
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: Inter, Poppins, system-ui, sans-serif;
+            background: var(--color-bg);
+            color: var(--color-text);
+            margin: 0
+        }
+
+        main {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 var(--space-md) 100px
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.01em;
+            color: var(--color-primary);
+            margin: 0 0 var(--space-lg)
+        }
+
+        /* ===== Card wrapper for table ===== */
+        .table-card {
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .04), 0 2px 6px rgba(0, 0, 0, .05);
+            overflow: hidden;
+        }
+
+        .table-scroll {
+            overflow: auto
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            background: var(--color-primary);
+            color: #fff;
+            text-align: left;
+            padding: 14px 16px;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: .2px;
+        }
+
+        tbody td {
+            padding: 14px 16px;
+            border-top: 1px solid var(--color-border);
+            font-size: 15px;
+            color: var(--color-text)
+        }
+
+        tbody tr:hover {
+            background: #F8FAFC
+        }
+
+        .right {
+            text-align: right
+        }
+
+        /* ===== Badges / chips ===== */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: .2px;
+            border: 1px solid transparent;
+            user-select: none
+        }
+
+        .badge.rate-done {
+            background: rgba(34, 197, 94, .10);
+            color: #065F46;
+            border-color: rgba(34, 197, 94, .25)
+        }
+
+        .badge.rate-pending {
+            background: #F3F4F6;
+            color: #374151;
+            border-color: #E5E7EB
+        }
+
+        /* ===== Buttons ===== */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 14px;
+            border: 1px solid var(--color-primary);
+            color: #fff;
+            background: var(--color-primary);
+            transition: transform .05s ease, box-shadow .2s ease, background .2s ease, color .2s ease
+        }
+
+        .btn:hover {
+            background: var(--color-secondary);
+            border-color: var(--color-secondary);
+            box-shadow: 0 6px 18px rgba(249, 115, 22, .25)
+        }
+
+        .btn.secondary {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary)
+        }
+
+        .btn.secondary:hover {
+            background: var(--color-secondary);
+            color: #fff
+        }
+
+        /* ===== Pagination ===== */
+        .pagination-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            margin-top: 24px
+        }
+
+        .pagination {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap
+        }
+
+        .page-btn {
+            padding: 8px 14px;
+            border-radius: 10px;
+            background: #fff;
+            border: 1px solid var(--color-border);
+            color: var(--color-primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px
+        }
+
+        .page-btn:hover {
+            background: var(--color-secondary);
+            color: #fff;
+            border-color: var(--color-secondary)
+        }
+
+        .page-btn.active {
+            background: var(--color-primary);
+            color: #fff;
+            border-color: var(--color-primary)
+        }
+
+        .page-btn.disabled {
+            opacity: .45;
+            pointer-events: none
+        }
+
+        .pagination-info {
+            color: var(--color-text-muted);
+            font-size: 14px
+        }
+
+        /* ===== Responsive ===== */
+        @media (max-width: 768px) {
+            main {
+                margin: 24px auto
+            }
+
+            h2 {
+                font-size: 24px
+            }
+
+            thead th, tbody td {
+                padding: 12px 12px;
+                font-size: 14px
+            }
+
+            .btn {
+                padding: 8px 12px;
+                border-radius: 10px
+            }
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+<body>
+
+<!-- Header -->
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main>
+    <h2>Lịch sử ăn uống của bạn</h2>
+
+    <div class="table-card">
+        <div class="table-scroll">
+            <table aria-label="Lịch sử đơn hàng">
+                <thead>
+                <tr>
+                    <th style="min-width:120px">Mã đơn hàng</th>
+                    <th style="min-width:160px">Bàn</th>
+                    <!-- BỎ: Trạng thái -->
+                    <!-- BỎ: Tổng phụ (VNĐ) -->
+                    <th class="right" style="min-width:160px">Tổng thanh toán (VNĐ)</th>
+                    <th style="min-width:170px">Ngày tạo</th>
+                    <th style="min-width:150px">Đánh giá</th>
+                    <th style="min-width:140px">Hành động</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                <tr th:each="order : ${orders}">
+                    <td th:text="${order.id}">1001</td>
+
+                    <!-- Null-safe cho tên bàn -->
+                    <td th:text="${order.reservation != null and order.reservation.table != null ? order.reservation.table.tableName : 'N/A'}">
+                        Bàn A3
+                    </td>
+
+                    <!-- BỎ cột trạng thái -->
+
+                    <!-- BỎ cột tổng phụ -->
+
+                    <!-- Tổng thanh toán -->
+                    <td class="right"
+                        th:text="${#numbers.formatDecimal(order.amountDue, 0, 'COMMA', 0, 'POINT')}">0
+                    </td>
+
+                    <!-- Ngày tạo -->
+                    <td th:text="${#dates.format(order.createdDate, 'yyyy-MM-dd HH:mm')}">2025-11-04 12:00</td>
+
+                    <!-- Đánh giá: feedBacks == null ? Chưa đánh giá : Đã đánh giá -->
+                    <td>
+                        <span class="badge rate-pending" th:if="${order.feedBacks == null}">Chưa đánh giá</span>
+                        <span class="badge rate-done" th:if="${order.feedBacks != null}">Đã đánh giá</span>
+                    </td>
+
+                    <!-- Hành động -->
+                    <td>
+                        <a aria-label="Xem chi tiết đơn #" class="btn" th:attrappend="aria-label=${order.id}"
+                           th:href="@{'/orders/' + ${order.id}}">Xem chi tiết</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination-wrap">
+
+        <!-- « Trước -->
+        <span class="page-btn disabled" th:if="${currentPage == 0}">« Trước</span>
+        <a class="page-btn" th:href="@{/orders/history(page=${currentPage - 1}, size=${size})}"
+           th:if="${currentPage > 0}">« Trước</a>
+
+        <!-- Số trang -->
+        <span th:each="i : ${#numbers.sequence(0, totalPages - 1)}">
+      <a th:class="'page-btn ' + (${i} == ${currentPage} ? 'active' : '')"
+         th:href="@{/orders/history(page=${i}, size=${size})}"
+         th:text="${i + 1}"></a>
+    </span>
+
+        <!-- Sau » -->
+        <span class="page-btn disabled" th:if="${currentPage + 1 >= totalPages}">Sau »</span>
+        <a class="page-btn" th:href="@{/orders/history(page=${currentPage + 1}, size=${size})}"
+           th:if="${currentPage + 1 < totalPages}">Sau »</a>
+
+        <!-- Info -->
+        <div class="pagination-info" th:if="${totalPages > 0}">
+      <span th:text="${totalElements > 0} ?
+        ('Hiển thị ' + (${currentPage} * ${size} + 1) + ' – ' + (${currentPage} * ${size} + ${orders.size()}) + ' trong tổng ' + ${totalElements} + ' đơn hàng')
+        : 'Không có đơn hàng nào.'">
+      </span>
+        </div>
+    </div>
+
+    <a class="btn secondary" href="/home" style="margin-top:24px">← Quay lại trang chủ</a>
+</main>
+
+<!-- Footer -->
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<!-- AI Chatbot Widget -->
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+</body>
+</html>

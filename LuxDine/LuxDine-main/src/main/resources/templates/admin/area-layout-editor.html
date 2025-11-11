@@ -1,0 +1,1642 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Chỉnh sửa Layout Khu vực | LuxDine Admin</title>
+    <style>
+        :root {
+            --primary: #0A0A23;
+            --secondary: #F97316;
+            --bg: #F9FAFB;
+            --border: #E5E7EB;
+            --gray: #6B7280;
+            --white: #FFFFFF;
+            --radius: 8px;
+            --danger: #EF4444;
+            --success: #22C55E;
+            --warning: #FACC15;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: #1a1a3a;
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .btn-secondary:hover {
+            background: #ea580c;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: var(--white);
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .main-content {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        .sidebar {
+            width: 290px;
+            background: var(--white);
+            border-right: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .sidebar h3 {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .area-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .area-item {
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--white);
+        }
+
+        .area-item:hover {
+            border-color: var(--secondary);
+            background: #fef3e7;
+        }
+
+        .area-item.selected {
+            border-color: var(--secondary);
+            background: #fef3e7;
+            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+        }
+
+        .area-item h4 {
+            color: var(--primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .area-item p {
+            color: var(--gray);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: #f8fafc;
+            overflow: hidden;
+            display: flex;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: auto; /* Enable scrolling for expansion */
+            background: #f8fafc;
+            min-height: 600px;
+            cursor: grab; /* Show grab cursor */
+        }
+
+        .canvas-wrapper:active {
+            cursor: grabbing; /* Show grabbing cursor when dragging */
+        }
+
+        .canvas {
+            width: 1200px; /* Fixed width for expansion */
+            height: 800px; /* Fixed height for expansion */
+            min-width: 1200px;
+            min-height: 800px;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: var(--white);
+            border: 1px solid var(--border);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            transform-origin: top left;
+            transition: transform 0.2s ease;
+            margin: 20px;
+        }
+
+        .area-layout-shape {
+            position: absolute;
+            border: 2px solid var(--primary);
+            border-radius: 6px;
+            background: rgba(10, 10, 35, 0.1);
+            cursor: grab;
+            transition: 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--primary);
+            user-select: none;
+            text-align: center;
+            padding: 4px;
+            min-width: 100px;
+            min-height: 60px;
+        }
+
+        .area-layout-shape:hover {
+            background: rgba(10, 10, 35, 0.2);
+        }
+
+        .area-layout-shape.selected {
+            border: 2px dashed var(--secondary);
+            background: rgba(249, 115, 22, 0.2);
+        }
+
+        .area-layout-shape.selected .resize-handle {
+            display: block !important;
+            opacity: 1;
+        }
+
+        .area-layout-shape:active {
+            cursor: grabbing;
+        }
+
+        .empty-state {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            color: var(--gray);
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .instructions {
+            background: #e0f2fe;
+            border: 1px solid #81d4fa;
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .instructions h4 {
+            color: #0277bd;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .instructions ul {
+            color: #01579b;
+            font-size: 12px;
+            margin: 0;
+            padding-left: 16px;
+        }
+
+        .instructions li {
+            margin-bottom: 4px;
+        }
+
+        .action-buttons {
+            margin-bottom: 16px;
+        }
+
+        .action-buttons .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--gray);
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .close-btn:hover {
+            color: var(--primary);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* Removed invalid secondary overrides (undefined CSS variables) */
+
+        .properties-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .properties-panel h4 {
+            color: var(--primary);
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 14px;
+            background: var(--white);
+            color: var(--primary);
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+        }
+
+        .form-control:read-only {
+            background: #f9fafb;
+            color: var(--gray);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .form-actions .btn {
+            flex: 1;
+            padding: 8px 12px;
+            font-size: 12px;
+        }
+
+        /* Duplicate .area-layout-shape styles removed (already defined above) */
+
+        .resize-handle {
+            position: absolute;
+            bottom: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: var(--secondary);
+            cursor: se-resize;
+            border-radius: 50%;
+            border: 3px solid var(--white);
+            z-index: 1000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            pointer-events: auto !important;
+            transition: all 0.2s ease;
+            display: block !important;
+            opacity: 0.9;
+        }
+
+        .area-layout-shape:hover .resize-handle {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        .resize-handle:hover {
+            background: #ea580c;
+            transform: scale(1.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .resize-handle:active {
+            background: #c2410c;
+            transform: scale(1.2);
+        }
+
+        /* Edit Panel Styles - Always visible */
+        .edit-panel {
+            width: 290px;
+            background: var(--white);
+            border-left: 1px solid var(--border);
+            padding: 24px;
+            overflow-y: auto;
+            box-shadow: -4px 0 8px rgba(0, 0, 0, 0.1);
+            flex-shrink: 0;
+            display: block;
+        }
+
+        .edit-panel h3 {
+            color: var(--primary);
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 60px;
+        }
+
+        /* Zoom Controls */
+        .zoom-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 8px;
+            display: flex;
+            gap: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            z-index: 100;
+        }
+
+        .zoom-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--white);
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--primary);
+            transition: all 0.2s;
+        }
+
+        .zoom-btn:hover {
+            background: var(--secondary);
+            color: var(--white);
+        }
+
+        .zoom-level {
+            padding: 0 8px;
+            font-size: 12px;
+            color: var(--gray);
+            display: flex;
+            align-items: center;
+            min-width: 40px;
+            justify-content: center;
+        }
+
+        /* Removed unused canvas-size controls CSS */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 id="pageTitle">Chỉnh sửa Layout Khu vực - Tầng <span id="floorNumber">1</span> (<span id="totalTablesFloor">0</span> bàn)</h1>
+        <div class="header-actions">
+            <button class="btn btn-secondary" onclick="saveAreaLayout()">
+                💾 Lưu Layout Khu vực
+            </button>
+            <button class="btn btn-primary" onclick="goBack()">
+                ← Quay lại
+            </button>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="sidebar">
+            <h3>Danh sách Khu vực</h3>
+            
+            <div class="instructions">
+                <h4>Hướng dẫn:</h4>
+                <ul>
+                    <li>Kéo thả các khu vực để sắp xếp layout</li>
+                    <li>Click vào khu vực để chọn</li>
+                    <li>Kéo góc để thay đổi kích thước</li>
+                    <li>Chỉnh sửa tọa độ trong panel bên phải</li>
+                    <li>Bấm "Lưu Layout" để lưu thay đổi</li>
+                </ul>
+            </div>
+
+            <div class="action-buttons">
+                <button class="btn btn-primary" onclick="openCreateAreaModal()">
+                    ➕ Thêm Khu vực
+                </button>
+                
+                <div class="floor-selector" style="margin-top: 12px;">
+                    <label style="font-size: 12px; color: var(--gray); margin-bottom: 4px; display: block;">Chuyển tầng:</label>
+                    <select id="floorSelector" onchange="changeFloor()" style="width: 100%; padding: 8px; border: 1px solid var(--border); border-radius: var(--radius);">
+                        <!-- Options will be loaded dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <ul class="area-list" id="areaList">
+                <!-- Areas will be loaded here -->
+            </ul>
+        </div>
+
+        <div class="canvas-container">
+            <div class="canvas-wrapper">
+                <!-- Zoom Controls -->
+                <div class="zoom-controls">
+                    <button class="zoom-btn" onclick="zoomOut()" title="Thu nhỏ">−</button>
+                    <div class="zoom-level" id="zoomLevel">100%</div>
+                    <button class="zoom-btn" onclick="zoomIn()" title="Phóng to">+</button>
+                    <button class="zoom-btn" onclick="resetZoom()" title="Reset">⌂</button>
+                </div>
+                
+                
+                <div class="canvas" id="canvas">
+                    <div class="empty-state" id="emptyState">
+                        <h3>Chưa có khu vực nào</h3>
+                        <p>Vui lòng thêm khu vực trước khi chỉnh sửa layout</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Panel chỉnh sửa khu vực (cố định bên phải) -->
+            <div id="editAreaPanel" class="edit-panel">
+                <h3>Chỉnh sửa Khu vực</h3>
+                <div class="form-group">
+                    <label>Tên khu vực</label>
+                    <input type="text" id="editAreaName" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label>Tầng</label>
+                    <input type="number" id="editAreaFloor" class="form-control" readonly>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Vị trí X (px)</label>
+                        <input type="number" id="editAreaPositionX" class="form-control" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Vị trí Y (px)</label>
+                        <input type="number" id="editAreaPositionY" class="form-control" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Chiều rộng (px)</label>
+                        <input type="number" id="editAreaWidth" class="form-control" min="50" max="1000" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Chiều cao (px)</label>
+                        <input type="number" id="editAreaHeight" class="form-control" min="50" max="1000" step="0.1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Mô tả</label>
+                    <textarea id="editAreaDescription" class="form-control" rows="2" readonly></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="updateAreaFromForm()">Cập nhật</button>
+                <button class="btn btn-danger" onclick="deleteSelectedArea()">Xóa Khu vực</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiAreas = '/api/admin/areas';
+        let currentFloor = 1;
+        let areas = [];
+        let selectedArea = null;
+        let currentZoom = 1;
+        const minZoom = 0.25;
+        const maxZoom = 3;
+        const zoomStep = 0.25;
+        let availableFloors = [1, 2, 3, 4, 5]; // Default floors
+
+        // ========== KHỞI TẠO ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Get floor number from URL parameter
+            const urlParams = new URLSearchParams(window.location.search);
+            currentFloor = parseInt(urlParams.get('floor')) || 1;
+            
+            console.log('🏢 Current floor from URL:', currentFloor);
+            console.log('🔗 URL params:', window.location.search);
+            
+            document.getElementById('floorNumber').textContent = currentFloor;
+            
+            // Initialize canvas dragging
+            initCanvasDragging();
+            
+            // Load available floors first, then load areas
+            loadAvailableFloors().then(() => {
+                loadAreasForFloor();
+            });
+            
+            // Add real-time input listeners
+            setupRealTimeInputListeners();
+        });
+
+        // ========== REAL-TIME INPUT LISTENERS ==========
+        function setupRealTimeInputListeners() {
+            const inputs = [
+                'editAreaPositionX',
+                'editAreaPositionY', 
+                'editAreaWidth',
+                'editAreaHeight'
+            ];
+            
+            inputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('input', function() {
+                        if (selectedArea) {
+                            updateAreaFromFormRealTime();
+                        }
+                    });
+                }
+            });
+        }
+
+        // ========== FLOOR MANAGEMENT ==========
+        async function loadAvailableFloors() {
+            try {
+                console.log('📡 Loading available floors...');
+                const response = await fetch(`${apiAreas}/floors`);
+                console.log('📊 Floors API response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const floors = await response.json();
+                console.log('🏢 Available floors loaded:', floors);
+                
+                // Update global variable
+                availableFloors = floors;
+                
+                // Update floor selector
+                updateFloorSelector();
+                
+                console.log('✅ Successfully loaded available floors:', availableFloors);
+            } catch (error) {
+                console.error('❌ Error loading available floors:', error);
+                console.log('🔄 Using default floors:', availableFloors);
+                updateFloorSelector();
+            }
+        }
+
+        function updateFloorSelector() {
+            const floorSelector = document.getElementById('floorSelector');
+            if (!floorSelector) return;
+            
+            // Clear existing options
+            floorSelector.innerHTML = '';
+            
+            // Add options for available floors
+            availableFloors.forEach(floor => {
+                const option = document.createElement('option');
+                option.value = floor;
+                option.textContent = `Tầng ${floor}`;
+                floorSelector.appendChild(option);
+            });
+            
+            // Set current floor as selected
+            floorSelector.value = currentFloor;
+            
+            console.log('🎛️ Floor selector updated with floors:', availableFloors);
+        }
+
+        function changeFloor() {
+            const floorSelector = document.getElementById('floorSelector');
+            const newFloor = parseInt(floorSelector.value);
+            
+            console.log('🔄 Attempting to change floor from', currentFloor, 'to', newFloor);
+            
+            if (newFloor !== currentFloor) {
+                // Save current layout before switching
+                saveCurrentLayout().then(() => {
+                    // Switch to new floor
+                    currentFloor = newFloor;
+                    document.getElementById('floorNumber').textContent = currentFloor;
+                    
+                    // Clear current selection and form
+                    selectedArea = null;
+                    clearEditForm();
+                    
+                    // Clear canvas completely
+                    const canvas = document.getElementById('canvas');
+                    canvas.innerHTML = '';
+                    
+                    // Load areas for new floor
+                    console.log('📡 Calling loadAreasForFloor for new floor:', currentFloor);
+                    loadAreasForFloor();
+                }).catch(error => {
+                    console.error('❌ Error saving layout before floor change:', error);
+                    // Still proceed with floor change
+                    currentFloor = newFloor;
+                    document.getElementById('floorNumber').textContent = currentFloor;
+                    selectedArea = null;
+                    clearEditForm();
+                    const canvas = document.getElementById('canvas');
+                    canvas.innerHTML = '';
+                    loadAreasForFloor();
+                });
+            } else {
+                console.log('✅ Already on floor', newFloor, '. No change needed.');
+            }
+        }
+
+        async function saveCurrentLayout() {
+            if (areas.length === 0) {
+                console.log('📝 No areas to save for current floor');
+                return Promise.resolve();
+            }
+            
+            try {
+                console.log('💾 Saving current layout before floor change...');
+                const areaLayouts = [];
+                const areaElements = document.querySelectorAll('.area-layout-shape');
+                
+                areaElements.forEach(element => {
+                    const areaData = {
+                        name: element.dataset.areaName,
+                        positionX: parseFloat(element.style.left) || 0,
+                        positionY: parseFloat(element.style.top) || 0,
+                        width: parseFloat(element.style.width) || 100,
+                        height: parseFloat(element.style.height) || 100
+                    };
+                    areaLayouts.push(areaData);
+                });
+
+                const response = await fetch(`/api/admin/areas/layout/floor/${currentFloor}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(areaLayouts)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Layout saved successfully for floor', currentFloor);
+                } else {
+                    console.warn('⚠️ Failed to save layout for floor', currentFloor);
+                }
+            } catch (error) {
+                console.error('❌ Error saving layout:', error);
+                throw error;
+            }
+        }
+
+        function clearEditForm() {
+            document.getElementById('editAreaName').value = '';
+            document.getElementById('editAreaFloor').value = '';
+            document.getElementById('editAreaPositionX').value = '';
+            document.getElementById('editAreaPositionY').value = '';
+            document.getElementById('editAreaWidth').value = '';
+            document.getElementById('editAreaHeight').value = '';
+            document.getElementById('editAreaDescription').value = '';
+        }
+
+        // ========== LOAD AREAS ==========
+        async function loadAreasForFloor() {
+            try {
+                console.log('📡 Loading areas for floor:', currentFloor);
+                const apiUrl = `${apiAreas}/floor/${currentFloor}`;
+                console.log('🌐 API URL:', apiUrl);
+                
+                const response = await fetch(apiUrl);
+                console.log('📊 API response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const newAreas = await response.json();
+                console.log('📦 Loaded areas data:', newAreas);
+                console.log('🔢 Number of areas loaded:', newAreas.length);
+                
+                // Update global areas array
+                areas = newAreas;
+                
+                // Calculate and update total tables for floor
+                const totalTables = newAreas.reduce((sum, area) => sum + (area.tableCount || 0), 0);
+                const totalTablesElement = document.getElementById('totalTablesFloor');
+                if (totalTablesElement) {
+                    totalTablesElement.textContent = totalTables;
+                }
+                console.log('📊 Total tables for floor', currentFloor, ':', totalTables);
+                
+                // Clear any existing selections
+                selectedArea = null;
+                clearEditForm();
+                
+                // Re-render everything to ensure sync
+                renderAreaList();
+                renderAreaLayoutCanvas();
+                
+                console.log('✅ Successfully loaded and rendered areas for floor:', currentFloor);
+                console.log('🔄 Areas data synchronized with backend');
+            } catch (error) {
+                console.error('❌ Error loading areas for floor:', error);
+                alert('❌ Lỗi khi tải khu vực cho tầng ' + currentFloor + ': ' + error.message);
+            }
+        }
+
+        // ========== RENDER AREA LIST ==========
+        function renderAreaList() {
+            const areaList = document.getElementById('areaList');
+            areaList.innerHTML = '';
+
+            if (areas.length === 0) {
+                areaList.innerHTML = '<li style="color: var(--gray); font-size: 14px; text-align: center; padding: 20px;">Chưa có khu vực nào</li>';
+                return;
+            }
+
+            areas.forEach(area => {
+                const li = document.createElement('li');
+                li.className = 'area-item';
+                li.onclick = () => selectArea(area, li);
+                
+                li.innerHTML = `
+                    <h4>${area.name}</h4>
+                    <p>Tầng ${area.floor} • ${area.tableCount || 0} bàn</p>
+                `;
+                
+                areaList.appendChild(li);
+            });
+        }
+
+        // ========== RENDER CANVAS ==========
+        function renderAreaLayoutCanvas() {
+            const canvas = document.getElementById('canvas');
+            const emptyState = document.getElementById('emptyState');
+            
+            console.log('🎨 Rendering canvas for areas:', areas);
+            console.log('📊 Areas length:', areas.length);
+            
+            // Clear canvas completely
+            canvas.innerHTML = '';
+            
+            if (areas.length === 0) {
+                console.log('📭 No areas to render, showing empty state');
+                canvas.appendChild(emptyState);
+                return;
+            }
+            
+            console.log('🎯 Rendering', areas.length, 'areas on canvas with synchronized data');
+
+            // Get canvas dimensions
+            const canvasRect = canvas.getBoundingClientRect();
+            const canvasWidth = parseFloat(canvas.style.width) || 1200;
+            const canvasHeight = parseFloat(canvas.style.height) || 800;
+
+            // Render area shapes
+            areas.forEach((area, index) => {
+                const areaDiv = document.createElement('div');
+                areaDiv.className = 'area-layout-shape';
+                areaDiv.dataset.areaName = area.name;
+                areaDiv.dataset.areaId = area.id;
+                
+                // Use saved position if available, otherwise use grid layout
+                if (area.positionX !== null && area.positionY !== null && area.width !== null && area.height !== null) {
+                    // Ensure area fits within canvas bounds
+                    const maxX = Math.max(0, canvasWidth - area.width);
+                    const maxY = Math.max(0, canvasHeight - area.height);
+                    
+                    areaDiv.style.left = Math.min(area.positionX, maxX) + 'px';
+                    areaDiv.style.top = Math.min(area.positionY, maxY) + 'px';
+                    areaDiv.style.width = Math.min(area.width, canvasWidth) + 'px';
+                    areaDiv.style.height = Math.min(area.height, canvasHeight) + 'px';
+                } else {
+                    // Default grid layout
+                    const cols = Math.ceil(Math.sqrt(areas.length));
+                    const row = Math.floor(index / cols);
+                    const col = index % cols;
+                    const gap = 20;
+                    const width = Math.min(150, (canvasWidth - (cols + 1) * gap) / cols);
+                    const height = Math.min(100, (canvasHeight - (Math.ceil(areas.length / cols) + 1) * gap) / Math.ceil(areas.length / cols));
+                    
+                    areaDiv.style.left = (col * (width + gap) + gap) + 'px';
+                    areaDiv.style.top = (row * (height + gap) + gap) + 'px';
+                    areaDiv.style.width = width + 'px';
+                    areaDiv.style.height = height + 'px';
+                }
+                
+                areaDiv.textContent = area.name;
+                areaDiv.onclick = () => selectAreaShape(area, areaDiv);
+                
+                // Make draggable and resizable
+                makeAreaDraggable(areaDiv, area);
+                
+                canvas.appendChild(areaDiv);
+            });
+        }
+
+        // ========== SELECT AREA ==========
+        function selectArea(area, element) {
+            // Remove previous selection from list
+            document.querySelectorAll('.area-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Remove previous selection from canvas
+            document.querySelectorAll('.area-layout-shape').forEach(shape => {
+                shape.classList.remove('selected');
+            });
+            
+            // Select new area
+            element.classList.add('selected');
+            selectedArea = area;
+            
+            // Also select corresponding shape
+            const shape = document.querySelector(`[data-area-id="${area.id}"]`);
+            if (shape) {
+                shape.classList.add('selected');
+            }
+            
+            // Update edit form
+            updateEditForm(area);
+        }
+
+        function selectAreaShape(area, element) {
+            // Remove previous selection
+            document.querySelectorAll('.area-layout-shape').forEach(shape => {
+                shape.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.area-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // Select new area
+            element.classList.add('selected');
+            selectedArea = area;
+            
+            // Also select corresponding list item
+            const listItem = document.querySelector(`[data-area-id="${area.id}"]`);
+            if (listItem) {
+                listItem.classList.add('selected');
+            }
+            
+            // Update edit form
+            updateEditForm(area);
+        }
+
+
+        function updateEditForm(area) {
+            document.getElementById('editAreaName').value = area.name || '';
+            document.getElementById('editAreaFloor').value = area.floor || currentFloor;
+            document.getElementById('editAreaPositionX').value = area.positionX || 0;
+            document.getElementById('editAreaPositionY').value = area.positionY || 0;
+            document.getElementById('editAreaWidth').value = area.width || 100;
+            document.getElementById('editAreaHeight').value = area.height || 100;
+            document.getElementById('editAreaDescription').value = area.description || '';
+        }
+
+        function updateAreaFromFormRealTime() {
+            if (!selectedArea) return;
+            
+            const x = parseFloat(document.getElementById('editAreaPositionX').value) || 0;
+            const y = parseFloat(document.getElementById('editAreaPositionY').value) || 0;
+            const width = parseFloat(document.getElementById('editAreaWidth').value) || 100;
+            const height = parseFloat(document.getElementById('editAreaHeight').value) || 100;
+            
+            console.log('📝 Real-time update for:', selectedArea.name, 'to', x, y, width, height);
+            
+            // Update area data in global array
+            const areaIndex = areas.findIndex(a => a.id === selectedArea.id);
+            if (areaIndex !== -1) {
+                areas[areaIndex].positionX = x;
+                areas[areaIndex].positionY = y;
+                areas[areaIndex].width = width;
+                areas[areaIndex].height = height;
+                console.log('✅ Updated global area data for:', selectedArea.name);
+            }
+            
+            // Update visual element
+            const shape = document.querySelector(`[data-area-id="${selectedArea.id}"]`);
+            if (shape) {
+                shape.style.left = x + 'px';
+                shape.style.top = y + 'px';
+                shape.style.width = width + 'px';
+                shape.style.height = height + 'px';
+                console.log('✅ Updated visual element for:', selectedArea.name);
+            }
+        }
+
+        function updateAreaFromForm() {
+            if (!selectedArea) return;
+            
+            const x = parseFloat(document.getElementById('editAreaPositionX').value) || 0;
+            const y = parseFloat(document.getElementById('editAreaPositionY').value) || 0;
+            const width = parseFloat(document.getElementById('editAreaWidth').value) || 100;
+            const height = parseFloat(document.getElementById('editAreaHeight').value) || 100;
+            
+            // Update area data
+            const areaIndex = areas.findIndex(a => a.id === selectedArea.id);
+            if (areaIndex !== -1) {
+                areas[areaIndex].positionX = x;
+                areas[areaIndex].positionY = y;
+                areas[areaIndex].width = width;
+                areas[areaIndex].height = height;
+            }
+            
+            // Update visual element
+            const shape = document.querySelector(`[data-area-id="${selectedArea.id}"]`);
+            if (shape) {
+                shape.style.left = x + 'px';
+                shape.style.top = y + 'px';
+                shape.style.width = width + 'px';
+                shape.style.height = height + 'px';
+            }
+            
+            alert('✅ Đã cập nhật thuộc tính khu vực!');
+        }
+
+        async function deleteSelectedArea() {
+            if (!selectedArea) return;
+            
+            if (!confirm(`Bạn có chắc muốn xóa khu vực "${selectedArea.name}"?`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${apiAreas}/${selectedArea.id}`, {
+                    method: 'DELETE'
+                });
+                
+                if (response.ok) {
+                    alert('✅ Đã xóa khu vực thành công!');
+                    // Edit panel is always visible; just clear the form
+                    clearEditForm();
+                    loadAreasForFloor();
+                } else {
+                    const error = await response.text();
+                    alert('❌ Lỗi khi xóa khu vực: ' + error);
+                }
+            } catch (error) {
+                console.error('Error deleting area:', error);
+                alert('❌ Lỗi khi xóa khu vực: ' + error.message);
+            }
+        }
+
+        // ========== DRAG FUNCTIONALITY ==========
+        function makeAreaDraggable(element, areaData) {
+            let isDragging = false;
+            let isResizing = false;
+            let startX, startY, startLeft, startTop, startWidth, startHeight;
+
+            console.log('🎯 Making area draggable:', areaData.name, 'ID:', areaData.id);
+
+            // Add resize handle (only bottom-right)
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            resizeHandle.style.pointerEvents = 'auto';
+            resizeHandle.style.display = 'block';
+            resizeHandle.style.zIndex = '1001';
+            resizeHandle.style.cursor = 'se-resize';
+            element.appendChild(resizeHandle);
+
+            // Separate event handlers for better control
+            const handleMouseDown = (e) => {
+                // Check if clicking on resize handle
+                if (!e.target.classList.contains('resize-handle')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🔄 RESIZE START - Handle clicked for:', areaData.name);
+                
+                isResizing = true;
+                isDragging = false;
+                startX = e.clientX;
+                startY = e.clientY;
+                startWidth = parseFloat(element.style.width) || element.offsetWidth;
+                startHeight = parseFloat(element.style.height) || element.offsetHeight;
+                
+                element.style.cursor = 'se-resize';
+                element.style.zIndex = '1000';
+                
+                // Select this area
+                selectAreaShape(areaData, element);
+                
+                console.log('📏 Initial size - W:', startWidth, 'H:', startHeight);
+            };
+
+            const elementMouseDown = (e) => {
+                // Skip if clicking on resize handle
+                if (e.target.classList.contains('resize-handle')) {
+                    return;
+                }
+                
+                e.preventDefault();
+                e.stopPropagation();
+                console.log('🖱️ DRAG START - Area clicked for:', areaData.name);
+                
+                isDragging = true;
+                isResizing = false;
+                startX = e.clientX;
+                startY = e.clientY;
+                startLeft = parseFloat(element.style.left) || element.offsetLeft;
+                startTop = parseFloat(element.style.top) || element.offsetTop;
+                
+                element.style.cursor = 'grabbing';
+                element.style.zIndex = '1000';
+                
+                // Select this area
+                selectAreaShape(areaData, element);
+                
+                console.log('📍 Initial position - X:', startLeft, 'Y:', startTop);
+            };
+
+            const handleMouseMove = (e) => {
+                if (isDragging) {
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    const newLeft = startLeft + deltaX;
+                    const newTop = startTop + deltaY;
+                    
+                    // Keep within canvas bounds
+                    const canvas = document.getElementById('canvas');
+                    const canvasWidth = parseFloat(canvas.style.width) || canvas.offsetWidth;
+                    const canvasHeight = parseFloat(canvas.style.height) || canvas.offsetHeight;
+                    const elementWidth = parseFloat(element.style.width) || element.offsetWidth;
+                    const elementHeight = parseFloat(element.style.height) || element.offsetHeight;
+                    
+                    const maxLeft = Math.max(0, canvasWidth - elementWidth);
+                    const maxTop = Math.max(0, canvasHeight - elementHeight);
+                    
+                    const finalLeft = Math.max(0, Math.min(newLeft, maxLeft));
+                    const finalTop = Math.max(0, Math.min(newTop, maxTop));
+                    
+                    element.style.left = finalLeft + 'px';
+                    element.style.top = finalTop + 'px';
+                    
+                    // Update area data in global array
+                    const globalAreaIndex = areas.findIndex(a => a.id === areaData.id);
+                    if (globalAreaIndex !== -1) {
+                        areas[globalAreaIndex].positionX = finalLeft;
+                        areas[globalAreaIndex].positionY = finalTop;
+                        console.log('🔄 Updated global area data for:', areaData.name, 'at', finalLeft, finalTop);
+                    }
+                    
+                    // Update form if this area is selected
+                    if (selectedArea && selectedArea.id === areaData.id) {
+                        document.getElementById('editAreaPositionX').value = Math.round(finalLeft);
+                        document.getElementById('editAreaPositionY').value = Math.round(finalTop);
+                    }
+                } else if (isResizing) {
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    
+                    const newWidth = Math.max(50, startWidth + deltaX);
+                    const newHeight = Math.max(50, startHeight + deltaY);
+                    
+                    // Keep within canvas bounds
+                    const canvas = document.getElementById('canvas');
+                    const canvasWidth = parseFloat(canvas.style.width) || canvas.offsetWidth;
+                    const canvasHeight = parseFloat(canvas.style.height) || canvas.offsetHeight;
+                    const elementLeft = parseFloat(element.style.left) || element.offsetLeft;
+                    const elementTop = parseFloat(element.style.top) || element.offsetTop;
+                    
+                    const maxWidth = Math.max(50, canvasWidth - elementLeft);
+                    const maxHeight = Math.max(50, canvasHeight - elementTop);
+                    
+                    const finalWidth = Math.min(newWidth, maxWidth);
+                    const finalHeight = Math.min(newHeight, maxHeight);
+                    
+                    element.style.width = finalWidth + 'px';
+                    element.style.height = finalHeight + 'px';
+                    
+                    // Update area data in global array
+                    const globalAreaIndex = areas.findIndex(a => a.id === areaData.id);
+                    if (globalAreaIndex !== -1) {
+                        areas[globalAreaIndex].width = finalWidth;
+                        areas[globalAreaIndex].height = finalHeight;
+                        console.log('🔄 Updated global area size for:', areaData.name, 'to', finalWidth, 'x', finalHeight);
+                    }
+                    
+                    // Update form if this area is selected
+                    if (selectedArea && selectedArea.id === areaData.id) {
+                        document.getElementById('editAreaWidth').value = Math.round(finalWidth);
+                        document.getElementById('editAreaHeight').value = Math.round(finalHeight);
+                    }
+                    
+                    console.log('📏 RESIZING - W:', finalWidth, 'H:', finalHeight);
+                }
+            };
+
+            const handleMouseUp = () => {
+                if (isDragging || isResizing) {
+                    console.log('🛑 DRAG/RESIZE END for:', areaData.name);
+                    isDragging = false;
+                    isResizing = false;
+                    element.style.cursor = 'grab';
+                    element.style.zIndex = '1';
+                }
+            };
+
+            // Add event listener to resize handle
+            resizeHandle.addEventListener('mousedown', handleMouseDown);
+            element.addEventListener('mousedown', elementMouseDown);
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        }
+
+        // ========== CREATE AREA MODAL ==========
+        function openCreateAreaModal() {
+            const modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>➕ Thêm Khu vực Mới</h3>
+                        <button class="close-btn" onclick="closeModal(this)">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Tên khu vực *</label>
+                            <input type="text" id="newAreaName" class="form-control" placeholder="Nhập tên khu vực" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Tầng</label>
+                            <input type="number" id="newAreaFloor" class="form-control" value="${currentFloor}" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả</label>
+                            <textarea id="newAreaDescription" class="form-control" rows="2" placeholder="Nhập mô tả khu vực"></textarea>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Vị trí X (px)</label>
+                                <input type="number" id="newAreaPositionX" class="form-control" value="50" min="0" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Vị trí Y (px)</label>
+                                <input type="number" id="newAreaPositionY" class="form-control" value="50" min="0" step="0.1">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chiều rộng (px)</label>
+                                <input type="number" id="newAreaWidth" class="form-control" value="150" min="50" max="1000" step="0.1">
+                            </div>
+                            <div class="form-group">
+                                <label>Chiều cao (px)</label>
+                                <input type="number" id="newAreaHeight" class="form-control" value="100" min="50" max="1000" step="0.1">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" onclick="closeModal(this)">Hủy</button>
+                        <button class="btn btn-primary" onclick="createNewArea()">Tạo Khu vực</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        function closeModal(button) {
+            const modal = button.closest('.modal');
+            modal.remove();
+        }
+
+        async function createNewArea() {
+            const name = document.getElementById('newAreaName').value.trim();
+            const description = document.getElementById('newAreaDescription').value.trim();
+            const positionX = parseFloat(document.getElementById('newAreaPositionX').value) || 50;
+            const positionY = parseFloat(document.getElementById('newAreaPositionY').value) || 50;
+            const width = parseFloat(document.getElementById('newAreaWidth').value) || 150;
+            const height = parseFloat(document.getElementById('newAreaHeight').value) || 100;
+
+            if (!name) {
+                alert('❌ Vui lòng nhập tên khu vực!');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${apiAreas}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        floor: currentFloor,
+                        description: description,
+                        positionX: positionX,
+                        positionY: positionY,
+                        width: width,
+                        height: height
+                    })
+                });
+
+                if (response.ok) {
+                    alert('✅ Đã tạo khu vực thành công!');
+                    closeModal(document.querySelector('.modal .close-btn'));
+                    loadAreasForFloor(); // Reload areas
+                } else {
+                    const error = await response.text();
+                    alert('❌ Lỗi khi tạo khu vực: ' + error);
+                }
+            } catch (error) {
+                console.error('Error creating area:', error);
+                alert('❌ Lỗi khi tạo khu vực: ' + error.message);
+            }
+        }
+
+        // ========== SAVE LAYOUT ==========
+        async function saveAreaLayout() {
+            try {
+                console.log('💾 Starting to save layout for floor:', currentFloor);
+                
+                // Collect current area positions and sizes
+                const areaLayouts = [];
+                const areaElements = document.querySelectorAll('.area-layout-shape');
+                
+                console.log('📦 Found', areaElements.length, 'area elements to save');
+                
+                areaElements.forEach(element => {
+                    const areaData = {
+                        name: element.dataset.areaName,
+                        positionX: parseFloat(element.style.left) || 0,
+                        positionY: parseFloat(element.style.top) || 0,
+                        width: parseFloat(element.style.width) || 100,
+                        height: parseFloat(element.style.height) || 100
+                    };
+                    areaLayouts.push(areaData);
+                    console.log('📝 Saving area:', areaData.name, 'at', areaData.positionX, areaData.positionY, 'size', areaData.width, 'x', areaData.height);
+                });
+
+                // Send to backend
+                const response = await fetch(`/api/admin/areas/layout/floor/${currentFloor}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(areaLayouts)
+                });
+
+                if (response.ok) {
+                    console.log('✅ Layout saved successfully to backend');
+                    
+                    // Force refresh from backend to ensure complete sync
+                    await forceRefreshFromBackend();
+                    
+                    alert('✅ Đã lưu layout khu vực thành công!');
+                } else {
+                    const error = await response.text();
+                    console.error('❌ Backend save failed:', error);
+                    alert('❌ Lỗi khi lưu layout: ' + error);
+                }
+            } catch (error) {
+                console.error('❌ Error saving area layout:', error);
+                alert('❌ Lỗi khi lưu layout khu vực: ' + error.message);
+            }
+        }
+
+        function updateLocalAreasData(savedLayouts) {
+            console.log('🔄 Updating local areas data with saved layouts');
+            
+            savedLayouts.forEach(savedArea => {
+                const areaIndex = areas.findIndex(area => area.name === savedArea.name);
+                if (areaIndex !== -1) {
+                    areas[areaIndex].positionX = savedArea.positionX;
+                    areas[areaIndex].positionY = savedArea.positionY;
+                    areas[areaIndex].width = savedArea.width;
+                    areas[areaIndex].height = savedArea.height;
+                    console.log('✅ Updated local data for:', savedArea.name);
+                }
+            });
+        }
+
+        function refreshLayoutDisplay() {
+            console.log('🔄 Refreshing layout display to ensure sync');
+            
+            // Re-render area list
+            renderAreaList();
+            
+            // Re-render canvas
+            renderAreaLayoutCanvas();
+            
+            console.log('✅ Layout display refreshed');
+        }
+
+        // ========== FORCE REFRESH FROM BACKEND ==========
+        async function forceRefreshFromBackend() {
+            try {
+                console.log('🔄 Force refreshing from backend to ensure sync...');
+                
+                // Reload areas from backend
+                await loadAreasForFloor();
+                
+                console.log('✅ Force refresh completed - data synchronized with backend');
+            } catch (error) {
+                console.error('❌ Error during force refresh:', error);
+            }
+        }
+
+        // Removed debug utilities (not used in production)
+
+        // ========== CANVAS CLICK ==========
+        document.getElementById('canvas').addEventListener('click', (e) => {
+            // Only deselect if clicking on empty canvas (not on area shapes)
+            if (e.target === document.getElementById('canvas')) {
+                // Remove all selections
+                document.querySelectorAll('.area-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                
+                document.querySelectorAll('.area-layout-shape').forEach(shape => {
+                    shape.classList.remove('selected');
+                });
+                
+                selectedArea = null;
+                
+                // Clear form
+                document.getElementById('editAreaName').value = '';
+                document.getElementById('editAreaFloor').value = '';
+                document.getElementById('editAreaPositionX').value = '';
+                document.getElementById('editAreaPositionY').value = '';
+                document.getElementById('editAreaWidth').value = '';
+                document.getElementById('editAreaHeight').value = '';
+                document.getElementById('editAreaDescription').value = '';
+            }
+        });
+
+        // ========== ZOOM FUNCTIONALITY ==========
+        // ========== CANVAS DRAGGING ==========
+        let isDraggingCanvas = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let scrollStartX = 0;
+        let scrollStartY = 0;
+
+        function initCanvasDragging() {
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            if (!canvasWrapper) return;
+
+            // Mouse events
+            canvasWrapper.addEventListener('mousedown', handleCanvasMouseDown);
+            canvasWrapper.addEventListener('mousemove', handleCanvasMouseMove);
+            canvasWrapper.addEventListener('mouseup', handleCanvasMouseUp);
+            canvasWrapper.addEventListener('mouseleave', handleCanvasMouseUp);
+
+            // Touch events for mobile
+            canvasWrapper.addEventListener('touchstart', handleCanvasTouchStart);
+            canvasWrapper.addEventListener('touchmove', handleCanvasTouchMove);
+            canvasWrapper.addEventListener('touchend', handleCanvasTouchEnd);
+
+            console.log('✅ Canvas dragging initialized');
+        }
+
+        function handleCanvasMouseDown(e) {
+            // Only start dragging if clicking on empty canvas (not on area shapes)
+            if (e.target.classList.contains('canvas-wrapper') || e.target.classList.contains('canvas')) {
+                isDraggingCanvas = true;
+                dragStartX = e.clientX;
+                dragStartY = e.clientY;
+                
+                const canvasWrapper = document.querySelector('.canvas-wrapper');
+                scrollStartX = canvasWrapper.scrollLeft;
+                scrollStartY = canvasWrapper.scrollTop;
+                
+                e.preventDefault();
+                console.log('🖱️ Canvas drag started');
+            }
+        }
+
+        function handleCanvasMouseMove(e) {
+            if (!isDraggingCanvas) return;
+            
+            const deltaX = e.clientX - dragStartX;
+            const deltaY = e.clientY - dragStartY;
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            canvasWrapper.scrollLeft = scrollStartX - deltaX;
+            canvasWrapper.scrollTop = scrollStartY - deltaY;
+            
+            e.preventDefault();
+        }
+
+        function handleCanvasMouseUp(e) {
+            if (isDraggingCanvas) {
+                isDraggingCanvas = false;
+                console.log('🖱️ Canvas drag ended');
+            }
+        }
+
+        function handleCanvasTouchStart(e) {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                isDraggingCanvas = true;
+                dragStartX = touch.clientX;
+                dragStartY = touch.clientY;
+                
+                const canvasWrapper = document.querySelector('.canvas-wrapper');
+                scrollStartX = canvasWrapper.scrollLeft;
+                scrollStartY = canvasWrapper.scrollTop;
+                
+                console.log('👆 Canvas touch drag started');
+            }
+        }
+
+        function handleCanvasTouchMove(e) {
+            if (!isDraggingCanvas || e.touches.length !== 1) return;
+            
+            const touch = e.touches[0];
+            const deltaX = touch.clientX - dragStartX;
+            const deltaY = touch.clientY - dragStartY;
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            canvasWrapper.scrollLeft = scrollStartX - deltaX;
+            canvasWrapper.scrollTop = scrollStartY - deltaY;
+            
+            e.preventDefault();
+        }
+
+        function handleCanvasTouchEnd(e) {
+            if (isDraggingCanvas) {
+                isDraggingCanvas = false;
+                console.log('👆 Canvas touch drag ended');
+            }
+        }
+
+        // Removed unused canvas size controls and related helpers
+
+        function zoomIn() {
+            if (currentZoom < maxZoom) {
+                currentZoom = Math.min(maxZoom, currentZoom + zoomStep);
+                applyZoom();
+            }
+        }
+
+        function zoomOut() {
+            if (currentZoom > minZoom) {
+                currentZoom = Math.max(minZoom, currentZoom - zoomStep);
+                applyZoom();
+            }
+        }
+
+        function resetZoom() {
+            currentZoom = 1;
+            applyZoom();
+        }
+
+        function applyZoom() {
+            const canvas = document.getElementById('canvas');
+            canvas.style.transform = `scale(${currentZoom})`;
+            
+            const zoomLevel = document.getElementById('zoomLevel');
+            zoomLevel.textContent = Math.round(currentZoom * 100) + '%';
+        }
+
+
+        // ========== NAVIGATION ==========
+        function goBack() {
+            window.location.href = '/admin/area-layout';
+        }
+    </script>
+</body>
+</html>

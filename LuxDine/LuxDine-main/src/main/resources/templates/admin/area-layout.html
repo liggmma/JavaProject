@@ -1,0 +1,3705 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Khu vực & Sơ đồ bàn | LuxDine Admin</title>
+
+    <th:block th:replace="~{admin/fragments/admin-header :: adminStyles}"></th:block>
+    
+    <style>
+        /* Prevent body overflow */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            height: 100%;
+            width: 100%;
+        }
+        
+        /* Area Layout Specific Styles */
+        .table-controls {
+            display: none !important;
+        }
+
+        /* Content wrapper for main layout area */
+        .content-wrapper {
+            display: flex;
+            overflow-x: hidden;
+            overflow-y: hidden;
+            height: calc(100vh - 73px);
+            position: relative;
+            width: 100%;
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 290px;
+            background: #FFFFFF;
+            border-right: 1px solid var(--color-border);
+            padding: var(--space-lg);
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+            box-shadow: 2px 0 6px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            min-width: 250px;
+            max-width: 350px;
+            flex-shrink: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        .sidebar h2 {
+            margin: 0;
+            font-size: var(--h2-size);
+            font-weight: var(--h2-weight);
+            color: var(--color-primary);
+        }
+
+        .area-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .area-item {
+            padding: 12px;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .area-item:hover, .area-item.active {
+            border-color: var(--color-secondary);
+            background: #fef3e7;
+            color: var(--color-primary);
+        }
+
+        .area-item-actions {
+            display: none;
+            gap: 8px;
+        }
+
+        .area-item h4 {
+            color: var(--color-primary);
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 4px 0;
+        }
+
+        .area-item p {
+            color: var(--color-text-muted);
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .area-item:hover .area-item-actions {
+            display: flex;
+        }
+
+        .btn-edit-area {
+            background: var(--color-secondary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-edit-area:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+
+        .btn-layout-area {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-layout-area:hover {
+            background: #1a1a3a;
+            transform: translateY(-1px);
+        }
+
+        .btn-delete-area {
+            background: var(--color-error);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete-area:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        /* Buttons in content area only - don't affect header */
+        .content-wrapper button {
+            padding: 10px 24px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-add {
+            background: #0A0A23;
+            color: white;
+            font-weight: 500;
+            width: 100%;
+        }
+
+        .btn-add:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+        }
+
+        /* Main */
+        .main {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-width: 0; /* Đảm bảo flex item có thể shrink */
+            overflow: hidden;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .toolbar {
+            margin-bottom: 12px;
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .toolbar button {
+            white-space: nowrap;
+            flex-shrink: 0;
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            color: var(--color-primary);
+            transition: all 0.2s ease;
+        }
+
+        .toolbar button:hover {
+            background: var(--color-secondary);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        #canvas {
+            flex: 1;
+            background: #FFFFFF;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden; /* Disable scrolling on main canvas */
+            min-height: 0;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .canvas-wrapper {
+            position: relative;
+            overflow: auto; /* Enable both horizontal and vertical scrolling */
+            background: #f8fafc;
+            cursor: grab; /* Show grab cursor */
+            width: 100%;
+            height: 100%;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .canvas-wrapper:active {
+            cursor: grabbing; /* Show grabbing cursor when dragging */
+        }
+
+        .canvas-content {
+            width: 1200px; /* Fixed width for expansion */
+            height: 800px; /* Fixed height for expansion */
+            min-width: 1200px;
+            min-height: 800px;
+            position: relative;
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0,0,0,0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: #FFFFFF;
+            border: 1px solid var(--color-border);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin: 20px;
+            /* Ensure content can expand beyond viewport */
+            overflow: visible;
+            /* Center the content initially */
+            flex-shrink: 0;
+        }
+
+        /* Removed unused canvas size controls styles */
+
+        /* Removed unused canvas size slider styles */
+
+        .table-shape {
+            position: absolute;
+            border: 2px solid var(--color-primary);
+            border-radius: 6px;
+            background: rgba(10, 10, 35, 0.1);
+            cursor: move;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--color-primary);
+            user-select: none;
+            text-align: center;
+            padding: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* Performance optimizations for smooth dragging */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        /* Disable transitions during drag for better performance */
+        .table-shape.dragging {
+            transition: none !important;
+        }
+
+        .table-shape:hover:not(.dragging) {
+            background: rgba(10, 10, 35, 0.2);
+            transform: scale(1.02) translateZ(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .table-shape.circle {
+            border-radius: 50%;
+        }
+
+        .table-shape.selected:not(.dragging) {
+            border: 2px dashed var(--color-secondary);
+            background: rgba(249, 115, 22, 0.2);
+            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.3);
+            transform: scale(1.02) translateZ(0);
+        }
+
+        .table-controls {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: none;
+            gap: 4px;
+            background: #FFFFFF;
+            padding: 6px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border: 1px solid var(--color-border);
+        }
+
+        .table-shape.selected .table-controls {
+            display: flex;
+        }
+
+        .control-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .btn-delete {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #dc2626;
+        }
+
+        .btn-edit {
+            background: var(--color-secondary);
+            color: white;
+        }
+
+        .btn-edit:hover {
+            background: #ea580c;
+        }
+
+        /* Resize Handles */
+        .resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--color-secondary);
+            border: 1px solid #FFFFFF;
+            border-radius: 1px;
+            display: none;
+            transition: all 0.2s ease;
+        }
+
+        .resize-handle:hover {
+            background: #ea580c;
+            transform: scale(1.2);
+        }
+
+        .resize-handle.bottom-right {
+            right: -4px;
+            bottom: -4px;
+            cursor: nwse-resize;
+        }
+
+        .resize-handle.bottom-left {
+            left: -4px;
+            bottom: -4px;
+            cursor: nesw-resize;
+        }
+
+        .resize-handle.top-right {
+            right: -4px;
+            top: -4px;
+            cursor: nesw-resize;
+        }
+
+        .resize-handle.top-left {
+            left: -4px;
+            top: -4px;
+            cursor: nwse-resize;
+        }
+
+        .table-shape.selected .resize-handle {
+            display: block;
+        }
+
+        /* Feature (doors, windows, plants, sofa, etc.) */
+        .feature-shape {
+            position: absolute;
+            border: 2px dashed var(--color-text-muted);
+            border-radius: 6px;
+            background: rgba(107, 114, 128, 0.1);
+            cursor: move;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: var(--color-primary);
+            user-select: none;
+            text-align: center;
+            padding: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            /* Performance optimizations for smooth dragging */
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            transform: translateZ(0);
+            -webkit-transform: translateZ(0);
+        }
+        
+        /* Disable transitions during drag for better performance */
+        .feature-shape.dragging {
+            transition: none !important;
+        }
+
+        .feature-shape:hover:not(.dragging) {
+            background: rgba(107, 114, 128, 0.2);
+            transform: scale(1.02) translateZ(0);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .feature-shape.selected:not(.dragging) {
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 2px rgba(249,115,22,0.25);
+        }
+
+        .feature-shape.selected .table-controls {
+            display: flex;
+        }
+
+        .feature-shape.selected .resize-handle {
+            display: block;
+        }
+
+        .feature-badge {
+            position: absolute;
+            top: -18px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            color: var(--color-text-muted);
+            background: var(--color-bg);
+            padding: 1px 6px;
+            border: 1px solid var(--color-border);
+            border-radius: 10px;
+        }
+
+        /* Area overview tiles when clicking on a floor */
+        .area-preview {
+            position: absolute;
+            border: 2px solid var(--color-border);
+            background: #eef2ff;
+            color: var(--color-primary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .area-preview:hover {
+            border-color: var(--color-secondary);
+            background: #fdeccf;
+            transform: scale(1.02);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .header h2 {
+            color: var(--color-primary);
+            font-size: 24px;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--color-text-muted);
+            margin-top: 100px;
+        }
+
+        /* Panel chỉnh sửa */
+        .edit-panel {
+            width: 300px;
+            background: #FFFFFF;
+            border-left: 1px solid var(--color-border);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: absolute;
+            right: 0;
+            top: 0;
+            height: 100%;
+            max-height: calc(100vh - 73px);
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 99; /* Below header (z-index: 100) */
+            box-shadow: -4px 0 12px rgba(0, 0, 0, 0.15);
+            box-sizing: border-box;
+        }
+
+        /* Mặc định hiển thị editPanel, ẩn editFeaturePanel */
+        #editFeaturePanel {
+            display: none;
+        }
+
+        /* Adjust main content when edit panel is visible */
+        .main {
+            margin-right: 300px;
+        }
+        
+        /* Remove margin when panel is hidden */
+        .area-layout-mode .main {
+            margin-right: 0;
+        }
+
+        /* Chế độ chỉnh sửa layout khu vực */
+        .area-layout-mode {
+            position: relative;
+        }
+
+        .area-layout-mode .main {
+            margin-right: 0;
+        }
+
+        .area-layout-mode .edit-panel {
+            display: none !important;
+        }
+
+        /* Area layout editor */
+        .area-layout-editor {
+            position: fixed;
+            top: 73px; /* Below header */
+            left: 0;
+            width: 100%;
+            height: calc(100% - 73px);
+            background: var(--color-bg);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+        }
+
+        .area-layout-editor.visible {
+            display: flex;
+        }
+
+        .area-layout-header {
+            background: #FFFFFF;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .area-layout-content {
+            flex: 1;
+            padding: 24px;
+            display: flex;
+            gap: 24px;
+        }
+
+        .area-layout-canvas {
+            flex: 1;
+            background: #FFFFFF;
+            border: 2px dashed var(--color-border);
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+            min-height: 500px;
+        }
+
+        .area-layout-sidebar {
+            width: 300px;
+            background: #FFFFFF;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .area-item-editable {
+            position: absolute;
+            border: 2px solid var(--color-secondary);
+            background: rgba(249, 115, 22, 0.1);
+            border-radius: var(--radius-md);
+            cursor: move;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: var(--color-primary);
+            user-select: none;
+            transition: 0.2s;
+        }
+
+        .area-item-editable:hover {
+            background: rgba(249, 115, 22, 0.2);
+            transform: scale(1.02);
+        }
+
+        .area-item-editable.selected {
+            border-color: var(--color-error);
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .area-resize-handle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: var(--color-secondary);
+            border: 1px solid white;
+            border-radius: 1px;
+            display: none;
+        }
+
+        .area-item-editable.selected .area-resize-handle {
+            display: block;
+        }
+
+        .area-resize-handle.bottom-right {
+            right: -4px;
+            bottom: -4px;
+            cursor: nwse-resize;
+        }
+
+        .area-resize-handle.bottom-left {
+            left: -4px;
+            bottom: -4px;
+            cursor: nesw-resize;
+        }
+
+        .area-resize-handle.top-right {
+            right: -4px;
+            top: -4px;
+            cursor: nesw-resize;
+        }
+
+        .area-resize-handle.top-left {
+            left: -4px;
+            top: -4px;
+            cursor: nwse-resize;
+        }
+
+
+        .edit-panel h3 {
+            margin: 0;
+            color: var(--color-primary);
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--color-primary);
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+            font-family: inherit;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--color-secondary);
+            box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.2);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: #FFFFFF;
+            margin: 10% auto;
+            padding: 0;
+            border-radius: var(--radius-md);
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            padding: 20px 24px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: var(--color-primary);
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .close {
+            color: var(--color-text-muted);
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px 24px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #0A0A23;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #ea580c;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(249, 115, 22, 0.3);
+        }
+
+        .btn-secondary {
+            background: #FFFFFF;
+            color: var(--color-primary);
+            border: 1px solid var(--color-border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-bg);
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: var(--color-error);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .error-message {
+            color: var(--color-error);
+            font-size: 12px;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .capacity-badge {
+            font-size: 10px;
+            background: var(--color-secondary);
+            color: white;
+            border-radius: 10px;
+            padding: 2px 6px;
+            margin-top: 2px;
+            font-weight: 500;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Thêm style cho nhóm tầng */
+        .floor-group {
+            margin-bottom: 16px;
+        }
+
+        .floor-header {
+            font-weight: 600;
+            color: var(--color-primary);
+            font-size: 14px;
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            background: var(--color-bg);
+            border-radius: var(--radius-md);
+            border-left: 3px solid var(--color-secondary);
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .floor-header:hover {
+            background: #fef3e7;
+            border-left-color: #ea580c;
+            transform: translateX(2px);
+        }
+
+        .floor-area-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Responsive Design */
+        
+        /* Large screens (1920px and up) */
+        @media (min-width: 1920px) {
+            .sidebar {
+                width: 320px;
+                padding: 28px;
+            }
+            
+            .main {
+                padding: 28px;
+            }
+            
+            .edit-panel {
+                width: 340px;
+            }
+            
+            .main {
+                margin-right: 340px;
+            }
+        }
+
+        /* Standard desktop screens (1200px - 1919px) */
+        @media (min-width: 1200px) and (max-width: 1919px) {
+            .sidebar {
+                width: 290px;
+            }
+            
+            .edit-panel {
+                width: 300px;
+            }
+        }
+
+        /* Medium screens (992px - 1199px) */
+        @media (min-width: 992px) and (max-width: 1199px) {
+            .sidebar {
+                width: 260px;
+                padding: 16px;
+                min-width: 220px;
+            }
+            
+            .main {
+                padding: 20px;
+            }
+            
+            .edit-panel {
+                width: 280px;
+                padding: 20px;
+            }
+            
+            .main {
+                margin-right: 280px;
+            }
+            
+            .toolbar {
+                gap: 8px;
+            }
+            
+            .toolbar button {
+                padding: 8px 16px;
+                font-size: 13px;
+            }
+            
+            .header h2 {
+                font-size: 20px;
+            }
+        }
+
+        /* Small desktop/tablet landscape (768px - 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: none;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                padding: 16px;
+                flex-direction: row;
+                align-items: center;
+                gap: 16px;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            }
+            
+            .sidebar h2 {
+                margin: 0;
+                white-space: nowrap;
+            }
+            
+            .area-list {
+                flex-direction: row;
+                overflow-x: auto;
+                overflow-y: hidden;
+                flex-grow: 0;
+                flex-shrink: 1;
+                gap: 8px;
+                padding: 0 8px;
+            }
+            
+            .floor-group {
+                margin-bottom: 0;
+                margin-right: 16px;
+            }
+            
+            .floor-area-list {
+                display: flex;
+                gap: 8px;
+            }
+            
+            .area-item {
+                margin-bottom: 0;
+                min-width: 200px;
+                flex-shrink: 0;
+            }
+            
+            .btn-add {
+                width: auto;
+                min-width: 150px;
+                flex-shrink: 0;
+            }
+            
+            .main {
+                padding: 16px;
+                margin-right: 0;
+            }
+            
+            .edit-panel {
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                height: auto;
+                max-height: 50vh;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 100;
+                display: none;
+            }
+            
+            .edit-panel[style*="display: flex"] {
+                display: flex !important;
+            }
+            
+            #canvas {
+                min-height: 500px;
+            }
+            
+            .canvas-content {
+                min-width: 800px;
+                min-height: 600px;
+            }
+            
+            .toolbar {
+                gap: 6px;
+            }
+            
+            .toolbar button {
+                padding: 8px 14px;
+                font-size: 12px;
+            }
+            
+            .header h2 {
+                font-size: 18px;
+            }
+        }
+
+        /* Tablet portrait / Small screens (576px - 767px) */
+        @media (min-width: 576px) and (max-width: 767px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: none;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                padding: 12px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .sidebar h2 {
+                font-size: 18px;
+            }
+            
+            .area-list {
+                max-height: 200px;
+                overflow-y: auto;
+            }
+            
+            .main {
+                padding: 12px;
+                margin-right: 0;
+            }
+            
+            .edit-panel {
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                height: auto;
+                max-height: 60vh;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 100;
+                padding: 16px;
+                display: none;
+            }
+            
+            .edit-panel[style*="display: flex"] {
+                display: flex !important;
+            }
+            
+            #canvas {
+                min-height: 400px;
+            }
+            
+            .canvas-wrapper {
+                min-height: 400px;
+            }
+            
+            .canvas-content {
+                min-width: 600px;
+                min-height: 500px;
+                margin: 10px;
+            }
+            
+            .toolbar {
+                gap: 6px;
+                flex-wrap: wrap;
+            }
+            
+            .toolbar button {
+                padding: 8px 12px;
+                font-size: 11px;
+                flex: 1;
+                min-width: calc(33.333% - 4px);
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+            
+            .header h2 {
+                font-size: 16px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 5% auto;
+            }
+            
+            .canvas-slider-container {
+                top: 40px;
+                right: 10px;
+                padding: 8px;
+                min-width: 180px;
+            }
+        }
+
+        /* Mobile screens (up to 575px) */
+        @media (max-width: 575px) {
+            .content-wrapper {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                max-width: none;
+                border-right: none;
+                border-bottom: 1px solid var(--color-border);
+                padding: 12px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .sidebar h2 {
+                font-size: 16px;
+                margin-bottom: 8px;
+            }
+            
+            .area-list {
+                max-height: 180px;
+                overflow-y: auto;
+            }
+            
+            .area-item {
+                padding: 10px;
+            }
+            
+            .area-item h4 {
+                font-size: 13px;
+            }
+            
+            .area-item p {
+                font-size: 11px;
+            }
+            
+            .btn-add {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+            
+            .main {
+                padding: 12px;
+                margin-right: 0;
+                gap: 12px;
+            }
+            
+            .edit-panel {
+                width: 100%;
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                top: auto;
+                height: auto;
+                max-height: 70vh;
+                border-left: none;
+                border-top: 1px solid var(--color-border);
+                box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 100;
+                padding: 12px;
+                display: none;
+            }
+            
+            .edit-panel[style*="display: flex"] {
+                display: flex !important;
+            }
+            
+            .edit-panel h3 {
+                font-size: 16px;
+            }
+            
+            #canvas {
+                min-height: 350px;
+            }
+            
+            .canvas-wrapper {
+                min-height: 350px;
+            }
+            
+            .canvas-content {
+                min-width: 500px;
+                min-height: 400px;
+                margin: 10px;
+            }
+            
+            .toolbar {
+                gap: 4px;
+                flex-wrap: wrap;
+            }
+            
+            .toolbar button {
+                padding: 6px 10px;
+                font-size: 10px;
+                flex: 1;
+                min-width: calc(50% - 2px);
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+            
+            .header h2 {
+                font-size: 14px;
+                line-height: 1.4;
+            }
+            
+            .form-group {
+                margin-bottom: 12px;
+            }
+            
+            .form-group label {
+                font-size: 12px;
+                margin-bottom: 6px;
+            }
+            
+            .form-control {
+                padding: 6px 10px;
+                font-size: 13px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            
+            .btn {
+                padding: 8px 16px;
+                font-size: 12px;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 2% auto;
+                max-width: none;
+            }
+            
+            .modal-header {
+                padding: 16px 16px 0;
+            }
+            
+            .modal-header h3 {
+                font-size: 16px;
+            }
+            
+            .modal-body {
+                padding: 16px;
+            }
+            
+            .modal-footer {
+                padding: 12px 16px 16px;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .modal-footer .btn {
+                width: 100%;
+            }
+            
+            .canvas-slider-container {
+                top: 30px;
+                right: 8px;
+                padding: 8px;
+                min-width: 160px;
+            }
+            
+            .slider-label {
+                font-size: 10px;
+            }
+            
+            .area-layout-content {
+                flex-direction: column;
+                padding: 16px;
+                gap: 16px;
+            }
+            
+            .area-layout-sidebar {
+                width: 100%;
+                order: 2;
+            }
+            
+            .area-layout-canvas {
+                order: 1;
+                min-height: 300px;
+            }
+            
+            .area-layout-header {
+                padding: 12px 16px;
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+            
+            .area-layout-header h3 {
+                font-size: 16px;
+                width: 100%;
+            }
+            
+            .table-shape {
+                font-size: 10px;
+                padding: 2px;
+            }
+            
+            .feature-shape {
+                font-size: 10px;
+                padding: 2px;
+            }
+        }
+
+        /* Adjustments for edit panel visibility states */
+        @media (min-width: 992px) {
+            .edit-panel {
+                display: flex;
+            }
+            
+            #editFeaturePanel {
+                display: none;
+            }
+        }
+
+        /* Print styles */
+        @media print {
+            .sidebar,
+            .edit-panel,
+            .toolbar,
+            .canvas-size-controls,
+            .canvas-slider-container {
+                display: none !important;
+            }
+            
+            .main {
+                margin-right: 0;
+                width: 100%;
+            }
+            
+            .content-wrapper {
+                flex-direction: column;
+            }
+        }
+    </style>
+    
+</head>
+<body>
+
+<!-- Admin Header -->
+<th:block th:replace="~{admin/fragments/admin-header :: adminHeader}"></th:block>
+
+<!-- Content Wrapper -->
+<div class="content-wrapper">
+<!-- Modal Thêm Khu vực -->
+<div id="areaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Thêm Khu vực Mới</h3>
+            <button class="close" onclick="closeModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="areaForm">
+                <div class="form-group">
+                    <label for="areaName">Tên khu vực *</label>
+                    <input type="text" id="areaName" class="form-control" placeholder="Nhập tên khu vực" required>
+                    <div class="error-message" id="nameError">Vui lòng nhập tên khu vực</div>
+                </div>
+                <div class="form-group">
+                    <label for="areaFloor">Tầng</label>
+                    <input type="number" id="areaFloor" class="form-control" placeholder="Nhập số tầng" value="1" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label for="areaDescription">Mô tả</label>
+                    <textarea id="areaDescription" class="form-control" placeholder="Nhập mô tả khu vực" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="submitAreaForm()">Lưu Khu vực</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Chỉnh sửa Khu vực -->
+<div id="editAreaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Chỉnh sửa Khu vực</h3>
+            <button class="close" onclick="closeEditModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="editAreaForm">
+                <div class="form-group">
+                    <label for="editAreaName">Tên khu vực *</label>
+                    <input type="text" id="editAreaName" class="form-control" placeholder="Nhập tên khu vực" required>
+                    <div class="error-message" id="editNameError">Vui lòng nhập tên khu vực</div>
+                </div>
+                <div class="form-group">
+                    <label for="editAreaFloor">Tầng</label>
+                    <input type="number" id="editAreaFloor" class="form-control" placeholder="Nhập số tầng" min="1" max="10">
+                </div>
+                <div class="form-group">
+                    <label for="editAreaDescription">Mô tả</label>
+                    <textarea id="editAreaDescription" class="form-control" placeholder="Nhập mô tả khu vực" rows="3"></textarea>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal()">Hủy</button>
+            <button type="button" class="btn btn-primary" onclick="submitEditAreaForm()">Cập nhật Khu vực</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Xác nhận Xóa Khu vực -->
+<div id="deleteAreaModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Xác nhận Xóa Khu vực</h3>
+            <button class="close" onclick="closeDeleteModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <p>Bạn có chắc chắn muốn xóa khu vực <strong id="deleteAreaName"></strong>?</p>
+            <p class="error-message">Lưu ý: Tất cả bàn trong khu vực này cũng sẽ bị xóa.</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDeleteArea()">Xóa Khu vực</button>
+        </div>
+    </div>
+</div>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <h2>Khu vực</h2>
+    <button class="btn-add" onclick="openAddModal()">+ Thêm khu vực</button>
+    <ul id="areaList" class="area-list">
+        <div class="empty-state" id="emptyAreas">Chưa có khu vực nào</div>
+    </ul>
+
+</div>
+
+<!-- Main Content -->
+<div class="main">
+    <div class="header">
+        <h2 id="areaTitle">Chưa chọn khu vực</h2>
+    </div>
+
+    <div class="toolbar">
+        <button onclick="addTable('rectangle')">Bàn vuông</button>
+        <button onclick="addTable('circle')">Bàn tròn</button>
+        <button onclick="addFeature('DOOR')">Cửa</button>
+        <button onclick="addFeature('WINDOW')">Cửa sổ</button>
+        <button onclick="addFeature('PLANT')">Cây</button>
+        <button onclick="addFeature('SOFA')">Sofa</button>
+        <button onclick="toggleAreaLayoutMode()" id="editLayoutBtn">Chỉnh sửa Layout Khu vực</button>
+        <button onclick="saveLayout()">Lưu sơ đồ</button>
+        <button onclick="clearSelection()">Bỏ chọn</button>
+    </div>
+
+    <div id="canvas">
+        <div class="canvas-wrapper">
+            <!-- Canvas Size Slider -->
+
+            <div class="canvas-content" id="canvasContent">
+        <div class="empty-state" id="emptyCanvas">Chọn khu vực để bắt đầu thiết kế sơ đồ bàn</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Panel chỉnh sửa bàn -->
+<div id="editPanel" class="edit-panel">
+    <h3>Chỉnh sửa Bàn</h3>
+    <div class="form-group">
+        <label>Tên bàn</label>
+        <input type="text" id="editTableName" class="form-control" placeholder="Tên bàn">
+    </div>
+    <div class="form-group">
+        <label>Số khách tối đa</label>
+        <input type="number" id="editCapacity" class="form-control" min="1" max="20" value="4">
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Vị trí X (px)</label>
+            <input type="number" id="editPositionX" class="form-control" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>Vị trí Y (px)</label>
+            <input type="number" id="editPositionY" class="form-control" min="0" step="0.1">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Chiều rộng (px)</label>
+            <input type="number" id="editWidth" class="form-control" min="40" max="500" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>Chiều cao (px)</label>
+            <input type="number" id="editHeight" class="form-control" min="40" max="500" step="0.1">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Hình dạng</label>
+        <select id="editShape" class="form-control">
+            <option value="rectangle">Vuông</option>
+            <option value="circle">Tròn</option>
+        </select>
+    </div>
+    <button class="btn btn-primary" onclick="updateTableFromForm()">Cập nhật</button>
+    <button class="btn btn-danger" onclick="deleteSelectedTable()">Xóa Bàn</button>
+</div>
+
+<!-- Panel chỉnh sửa Feature -->
+<div id="editFeaturePanel" class="edit-panel">
+    <h3>Chỉnh sửa Đối tượng</h3>
+    <div class="form-group">
+        <label>Nhãn</label>
+        <input type="text" id="editFeatureLabel" class="form-control" placeholder="Nhãn hiển thị">
+    </div>
+    <div class="form-group">
+        <label>Loại</label>
+        <select id="editFeatureType" class="form-control">
+            <option value="DOOR">Cửa</option>
+            <option value="WINDOW">Cửa sổ</option>
+            <option value="PLANT">Cây</option>
+            <option value="SOFA">Sofa</option>
+            <option value="COUNTER">Quầy</option>
+            <option value="WALL">Tường</option>
+            <option value="DECORATION">Trang trí</option>
+            <option value="STAGE">Sân khấu</option>
+            <option value="COLUMN">Cột</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Vị trí X (px)</label>
+            <input type="number" id="editFeatureX" class="form-control" min="0" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>Vị trí Y (px)</label>
+            <input type="number" id="editFeatureY" class="form-control" min="0" step="0.1">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Chiều rộng (px)</label>
+            <input type="number" id="editFeatureW" class="form-control" min="10" max="1000" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>Chiều cao (px)</label>
+            <input type="number" id="editFeatureH" class="form-control" min="10" max="1000" step="0.1">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Góc xoay (deg)</label>
+        <input type="number" id="editFeatureRot" class="form-control" min="0" max="359">
+    </div>
+    <button class="btn btn-primary" onclick="updateFeatureFromForm()">Cập nhật</button>
+    <button class="btn btn-danger" onclick="deleteSelectedFeature()">Xóa Đối tượng</button>
+    </div>
+
+<!-- Area Layout Editor -->
+<div id="areaLayoutEditor" class="area-layout-editor">
+    <div class="area-layout-header">
+        <h3>Chỉnh sửa Layout Khu vực - Tầng <span id="currentFloorNumber">1</span></h3>
+        <div>
+            <button class="btn btn-secondary" onclick="closeAreaLayoutEditor()">Đóng</button>
+            <button class="btn btn-primary" onclick="saveAreaLayout()">Lưu Layout</button>
+        </div>
+    </div>
+    <div class="area-layout-content">
+        <div id="areaLayoutCanvas" class="area-layout-canvas">
+            <div class="empty-state">Đang tải layout khu vực...</div>
+        </div>
+        <div class="area-layout-sidebar">
+            <h4>Thông tin Khu vực</h4>
+            <div class="form-group">
+                <label>Tên khu vực</label>
+                <input type="text" id="areaLayoutName" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+                <label>Vị trí X (px)</label>
+                <input type="number" id="areaLayoutX" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Vị trí Y (px)</label>
+                <input type="number" id="areaLayoutY" class="form-control" min="0" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Chiều rộng (px)</label>
+                <input type="number" id="areaLayoutW" class="form-control" min="50" step="0.1">
+            </div>
+            <div class="form-group">
+                <label>Chiều cao (px)</label>
+                <input type="number" id="areaLayoutH" class="form-control" min="50" step="0.1">
+            </div>
+            <button class="btn btn-primary" onclick="updateAreaLayoutFromForm()">Cập nhật</button>
+            <button class="btn btn-secondary" onclick="openEditAreaModal()">Chỉnh sửa Khu vực</button>
+            <button class="btn btn-danger" onclick="deleteSelectedAreaLayout()">Xóa Khu vực</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const apiAreas = '/api/admin/areas';
+    const apiLayouts = '/api/admin/layouts';
+    const apiFeatures = '/api/admin/features';
+    let previewedFloor = null;
+    let currentArea = null;
+    let tables = [];
+    let nextTableId = 1;
+    let selectedTable = null;
+    let selectedTableElement = null;
+    let areaToDelete = null;
+    let areaToEdit = null;
+
+    // Features state
+    let features = [];
+    let nextFeatureId = 1;
+    let selectedFeature = null;
+    let selectedFeatureElement = null;
+
+    // Area layout editor state
+    let areaLayoutMode = false;
+    let currentFloorAreas = [];
+    let selectedAreaLayout = null;
+    let selectedAreaLayoutElement = null;
+
+    // ========== MODAL FUNCTIONS ==========
+    function openAddModal() {
+        document.getElementById('areaModal').style.display = 'block';
+    }
+
+    function closeModal() {
+        document.getElementById('areaModal').style.display = 'none';
+        // Reset form
+        document.getElementById('areaForm').reset();
+    }
+
+    function openDeleteModal(area) {
+        areaToDelete = area;
+        document.getElementById('deleteAreaName').textContent = area.name;
+        document.getElementById('deleteAreaModal').style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteAreaModal').style.display = 'none';
+        areaToDelete = null;
+    }
+
+    function openEditModal(area) {
+        areaToEdit = area;
+        document.getElementById('editAreaName').value = area.name;
+        document.getElementById('editAreaFloor').value = area.floor || 1;
+        document.getElementById('editAreaDescription').value = area.description || '';
+        document.getElementById('editAreaModal').style.display = 'block';
+    }
+
+    function closeEditModal() {
+        document.getElementById('editAreaModal').style.display = 'none';
+        areaToEdit = null;
+    }
+
+    function submitAreaForm() {
+        const name = document.getElementById('areaName').value.trim();
+        const floor = parseInt(document.getElementById('areaFloor').value) || 1;
+        const description = document.getElementById('areaDescription').value.trim();
+
+        if (!name) {
+            alert('Vui lòng nhập tên khu vực');
+            return;
+        }
+
+        createArea(name, floor, description);
+    }
+
+    function submitEditAreaForm() {
+        const name = document.getElementById('editAreaName').value.trim();
+        const floor = parseInt(document.getElementById('editAreaFloor').value) || 1;
+        const description = document.getElementById('editAreaDescription').value.trim();
+
+        if (!name) {
+            alert('Vui lòng nhập tên khu vực');
+            return;
+        }
+
+        updateArea(areaToEdit.id, name, floor, description);
+    }
+
+    // ========== API CALLS ==========
+    async function createArea(name, floor, description) {
+        try {
+            const res = await fetch(apiAreas, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, floor, description})
+            });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            const newArea = await res.json();
+            closeModal();
+            // Reload areas and refresh preview
+            await loadAreas();
+            refreshFloorPreview();
+
+        } catch (error) {
+            console.error('Error creating area:', error);
+            alert("❌ Lỗi khi thêm khu vực: " + error.message);
+        }
+    }
+
+    async function updateArea(areaId, name, floor, description) {
+        try {
+            const res = await fetch(`${apiAreas}/${areaId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, floor, description})
+            });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            closeEditModal();
+            // Reload areas and refresh preview
+            await loadAreas();
+            refreshFloorPreview();
+
+        } catch (error) {
+            console.error('Error updating area:', error);
+            alert("❌ Lỗi khi cập nhật khu vực: " + error.message);
+        }
+    }
+
+    async function deleteArea(areaId) {
+        try {
+            const res = await fetch(`${apiAreas}/${areaId}`, {
+                method: 'DELETE'
+            });
+
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            // Nếu đang xóa khu vực hiện tại, reset state
+            if (currentArea && currentArea.id === areaId) {
+                currentArea = null;
+                tables = [];
+                selectedTable = null;
+                selectedTableElement = null;
+                hideEditPanel();
+                updateTitle();
+            }
+
+            closeDeleteModal();
+            // Reload areas and refresh preview
+            await loadAreas();
+            refreshFloorPreview();
+
+        } catch (error) {
+            console.error('Error deleting area:', error);
+            alert("❌ Lỗi khi xóa khu vực: " + error.message);
+        }
+    }
+
+    function confirmDeleteArea() {
+        if (areaToDelete) {
+            deleteArea(areaToDelete.id);
+        }
+    }
+
+    // Removed groupAreasByFloor - now handled by Backend endpoint /areas/grouped-by-floor
+
+    // ========== TẠO ITEM KHU VỰC ==========
+    function createAreaListItem(area) {
+        const li = document.createElement('li');
+        li.className = 'area-item';
+        li.setAttribute('data-area-id', area.id);
+
+        const h4 = document.createElement('h4');
+        h4.textContent = area.name;
+
+        const p = document.createElement('p');
+        p.textContent = `Tầng ${area.floor} • ${area.tableCount || 0} bàn`;
+
+        const actionsDiv = document.createElement('div');
+        actionsDiv.className = 'area-item-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'btn-edit-area';
+        editBtn.innerHTML = '✏️';
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            openEditModal(area);
+        };
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'btn-delete-area';
+        deleteBtn.innerHTML = '🗑';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            openDeleteModal(area);
+        };
+
+        actionsDiv.appendChild(editBtn);
+        actionsDiv.appendChild(deleteBtn);
+        li.appendChild(h4);
+        li.appendChild(p);
+        li.appendChild(actionsDiv);
+
+        li.onclick = (e) => {
+            e.stopPropagation();
+            selectArea(area, li);
+        };
+
+        return li;
+    }
+
+    // ========== CẬP NHẬT SỐ LƯỢNG BÀN TRONG SIDEBAR ==========
+    function updateAreaTableCount(areaId, delta) {
+        try {
+            if (!areaId || !delta) return;
+            const li = document.querySelector(`[data-area-id="${areaId}"]`);
+            if (!li) return;
+            const nameEl = li.querySelector('h4');
+            const infoEl = li.querySelector('p');
+            if (!infoEl) return;
+
+            // Lấy floor từ currentArea (nếu đang ở khu vực hiện tại) hoặc từ text cũ
+            let floorNum = currentArea && currentArea.id === areaId ? (currentArea.floor || 1) : null;
+            if (!floorNum) {
+                const m = infoEl.textContent.match(/Tầng\s+(\d+)/);
+                floorNum = m ? parseInt(m[1]) : 1;
+            }
+
+            // Tính count mới
+            let currentCountMatch = infoEl.textContent.match(/(\d+)\s*bàn/);
+            let count = currentCountMatch ? parseInt(currentCountMatch[1]) : 0;
+            count = Math.max(0, count + delta);
+
+            // Cập nhật model hiện tại nếu phù hợp
+            if (currentArea && currentArea.id === areaId) {
+                currentArea.tableCount = count;
+            }
+
+            infoEl.textContent = `Tầng ${floorNum} • ${count} bàn`;
+        } catch (e) {
+            console.error('Failed to update area table count UI:', e);
+        }
+    }
+
+    // ========== LOAD DANH SÁCH KHU VỰC ==========
+    async function loadAreas(selectedId = null) {
+        try {
+            // Use Backend endpoint that returns grouped areas
+            const res = await fetch(`${apiAreas}/grouped-by-floor`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            const areasByFloor = await res.json(); // Backend returns Map<Integer, List<AreaResponse>>
+            const areaList = document.getElementById('areaList');
+            const emptyAreas = document.getElementById('emptyAreas');
+
+            if (!areaList) return;
+
+            areaList.innerHTML = '';
+
+            const totalAreas = Object.values(areasByFloor).flat().length;
+            if (totalAreas === 0) {
+                if (emptyAreas) emptyAreas.style.display = 'block';
+                currentArea = null;
+                updateTitle();
+                return;
+            } else {
+                if (emptyAreas) emptyAreas.style.display = 'none';
+            }
+
+            // Tạo HTML cho từng nhóm tầng (Backend đã sort sẵn)
+            Object.keys(areasByFloor).sort((a, b) => parseInt(a) - parseInt(b)).forEach(floor => {
+                const floorGroup = document.createElement('div');
+                floorGroup.className = 'floor-group';
+
+                const floorHeader = document.createElement('div');
+                floorHeader.className = 'floor-header';
+                floorHeader.textContent = `Tầng ${floor}`;
+                floorHeader.style.cursor = 'pointer';
+                floorHeader.title = 'Bấm để xem sơ đồ vị trí các khu vực của tầng này';
+                floorHeader.onclick = (e) => {
+                    e.stopPropagation();
+                    previewedFloor = floor; 
+                    previewAreasForFloor(areasByFloor[floor]);
+                };
+                floorGroup.appendChild(floorHeader);
+
+                const floorAreaList = document.createElement('ul');
+                floorAreaList.className = 'floor-area-list';
+
+                areasByFloor[floor].forEach(area => {
+                    const li = createAreaListItem(area);
+                    floorAreaList.appendChild(li);
+
+                    if (selectedId && area.id === selectedId) {
+                        li.classList.add('active');
+                        currentArea = area;
+                    }
+                });
+
+                floorGroup.appendChild(floorAreaList);
+                areaList.appendChild(floorGroup);
+            });
+
+            if (!currentArea && totalAreas > 0) {
+                // Chọn khu vực đầu tiên của tầng đầu tiên và tự động load layout
+                const firstFloor = Object.keys(areasByFloor).sort((a, b) => parseInt(a) - parseInt(b))[0];
+                const firstArea = areasByFloor[firstFloor][0];
+                const firstLi = areaList.querySelector(`[data-area-id="${firstArea.id}"]`);
+                if (firstLi) {
+                    firstLi.classList.add('active');
+                    currentArea = firstArea;
+                    loadLayout(firstArea);
+                }
+            } else if (currentArea) {
+                loadLayout(currentArea);
+            }
+
+            updateTitle();
+        } catch (error) {
+            console.error('Error loading areas:', error);
+        }
+    }
+
+    // ========== CẬP NHẬT TIÊU ĐỀ ==========
+    function updateTitle() {
+   const title = document.getElementById('areaTitle');
+    if (title) {
+       if (currentArea) {
+           title.textContent = `Sơ đồ bàn - ${currentArea.name} (Tầng ${currentArea.floor})`;
+       } else if (previewedFloor) {
+           title.textContent = `Sơ đồ khu vực - Tầng ${previewedFloor}`;
+      } else {
+                   title.textContent = "Chưa chọn khu vực";
+       }
+   }
+  
+   
+}
+
+
+    // ========== CHỌN KHU VỰC ==========
+    function selectArea(area, element) {
+        document.querySelectorAll('.area-item').forEach(item => {
+            item.classList.remove('active');
+        });
+
+        if (element) {
+            element.classList.add('active');
+        }
+        currentArea = area;
+        loadLayout(area);
+        previewedFloor = null;
+        updateTitle();
+    }
+
+    // ========== LOAD & HIỂN THỊ SƠ ĐỒ BÀN ==========
+    async function loadLayout(area) {
+        const canvasContent = document.getElementById('canvasContent');
+        const emptyCanvas = document.getElementById('emptyCanvas');
+
+        if (!canvasContent) return;
+
+        // Xóa tất cả các element cũ một cách triệt để
+        const allTables = canvasContent.querySelectorAll('.table-shape');
+        const allFeatures = canvasContent.querySelectorAll('.feature-shape');
+        allTables.forEach(el => el.remove());
+        allFeatures.forEach(el => el.remove());
+        
+        // Xóa toàn bộ nội dung canvas
+        canvasContent.innerHTML = '';
+        
+        // Reset tất cả state
+        tables = [];
+        features = [];
+        selectedTable = null;
+        selectedTableElement = null;
+        selectedFeature = null;
+        selectedFeatureElement = null;
+        hideEditPanel();
+
+        try {
+            const res = await fetch(`${apiLayouts}/area/${area.id}`);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+            const areaLayouts = await res.json();
+
+            if (areaLayouts.length === 0) {
+                showEmptyCanvas();
+                return;
+            }
+
+            if (emptyCanvas) emptyCanvas.style.display = 'none';
+
+            // Tạo bàn mới và kiểm tra trùng lặp
+            areaLayouts.forEach(layout => {
+                // Kiểm tra xem bàn đã tồn tại chưa (tránh trùng lặp)
+                const existingTable = tables.find(t => t.id === layout.id);
+                if (!existingTable) {
+                    createTableElement(layout);
+                    tables.push(layout);
+                }
+            });
+
+        } catch (error) {
+            console.error('Error loading layout:', error);
+            showEmptyCanvas();
+        }
+
+        // Load features separately
+        try {
+            const resF = await fetch(`${apiFeatures}/area/${area.id}`);
+            if (!resF.ok) throw new Error(`HTTP error! status: ${resF.status}`);
+            const areaFeatures = await resF.json();
+            areaFeatures.forEach(f => {
+                // Kiểm tra xem feature đã tồn tại chưa (tránh trùng lặp)
+                const existingFeature = features.find(fe => fe.id === f.id);
+                if (!existingFeature) {
+                    createFeatureElement(f);
+                    features.push(f);
+                }
+            });
+        } catch (e) {
+            console.error('Error loading features:', e);
+        }
+        
+        // Center canvas content after loading
+        setTimeout(() => {
+            centerCanvasContent();
+        }, 100);
+    }
+    
+    // ========== CĂN GIỮA CANVAS ==========
+    function centerCanvasContent() {
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        const canvasContent = document.getElementById('canvasContent');
+        
+        if (!canvasWrapper || !canvasContent) return;
+        
+        // Get wrapper dimensions (clientWidth/Height gives visible area)
+        const wrapperWidth = canvasWrapper.clientWidth;
+        const wrapperHeight = canvasWrapper.clientHeight;
+        
+        // Get content dimensions
+        const contentWidth = canvasContent.offsetWidth;
+        const contentHeight = canvasContent.offsetHeight;
+        
+        // Calculate center position
+        // Position scroll so that content center aligns with wrapper center
+        const scrollLeft = (contentWidth - wrapperWidth) / 2;
+        const scrollTop = (contentHeight - wrapperHeight) / 2;
+        
+        // Set scroll position (only if content is larger than wrapper)
+        if (contentWidth > wrapperWidth) {
+            canvasWrapper.scrollLeft = Math.max(0, scrollLeft);
+        } else {
+            // Content is smaller - no scrolling needed, already centered visually
+            canvasWrapper.scrollLeft = 0;
+        }
+        
+        if (contentHeight > wrapperHeight) {
+            canvasWrapper.scrollTop = Math.max(0, scrollTop);
+        } else {
+            canvasWrapper.scrollTop = 0;
+        }
+        
+        console.log('✅ Canvas centered', { 
+            wrapper: `${wrapperWidth}x${wrapperHeight}`, 
+            content: `${contentWidth}x${contentHeight}`,
+            scroll: { left: canvasWrapper.scrollLeft, top: canvasWrapper.scrollTop }
+        });
+    }
+
+    function showEmptyCanvas() {
+        const canvasContent = document.getElementById('canvasContent');
+        const emptyCanvas = document.getElementById('emptyCanvas');
+        if (emptyCanvas) {
+            emptyCanvas.style.display = 'block';
+        } else {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.textContent = 'Chưa có bàn nào. Hãy thêm bàn mới!';
+            canvasContent.appendChild(emptyDiv);
+        }
+    }
+
+    // ========== CANVAS DRAGGING ==========
+    let isDraggingCanvas = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+    let scrollStartX = 0;
+    let scrollStartY = 0;
+
+    function initCanvasDragging() {
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        if (!canvasWrapper) return;
+
+        // Mouse events
+        canvasWrapper.addEventListener('mousedown', handleCanvasMouseDown);
+        canvasWrapper.addEventListener('mousemove', handleCanvasMouseMove);
+        canvasWrapper.addEventListener('mouseup', handleCanvasMouseUp);
+        canvasWrapper.addEventListener('mouseleave', handleCanvasMouseUp);
+
+        // Touch events for mobile
+        canvasWrapper.addEventListener('touchstart', handleCanvasTouchStart);
+        canvasWrapper.addEventListener('touchmove', handleCanvasTouchMove);
+        canvasWrapper.addEventListener('touchend', handleCanvasTouchEnd);
+
+        console.log('✅ Canvas dragging initialized');
+    }
+
+    function handleCanvasMouseDown(e) {
+        // Only start dragging if clicking on empty canvas (not on area shapes or tables)
+        if (e.target.classList.contains('canvas-wrapper') || e.target.classList.contains('canvas-content')) {
+            isDraggingCanvas = true;
+            dragStartX = e.clientX;
+            dragStartY = e.clientY;
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            scrollStartX = canvasWrapper.scrollLeft;
+            scrollStartY = canvasWrapper.scrollTop;
+            
+            e.preventDefault();
+            console.log('🖱️ Canvas drag started');
+        }
+    }
+
+    function handleCanvasMouseMove(e) {
+        if (!isDraggingCanvas) return;
+        
+        const deltaX = e.clientX - dragStartX;
+        const deltaY = e.clientY - dragStartY;
+        
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        canvasWrapper.scrollLeft = scrollStartX - deltaX;
+        canvasWrapper.scrollTop = scrollStartY - deltaY;
+        
+        e.preventDefault();
+    }
+
+    function handleCanvasMouseUp(e) {
+        if (isDraggingCanvas) {
+            isDraggingCanvas = false;
+            console.log('🖱️ Canvas drag ended');
+        }
+    }
+
+    function handleCanvasTouchStart(e) {
+        if (e.touches.length === 1) {
+            const touch = e.touches[0];
+            isDraggingCanvas = true;
+            dragStartX = touch.clientX;
+            dragStartY = touch.clientY;
+            
+            const canvasWrapper = document.querySelector('.canvas-wrapper');
+            scrollStartX = canvasWrapper.scrollLeft;
+            scrollStartY = canvasWrapper.scrollTop;
+            
+            console.log('👆 Canvas touch drag started');
+        }
+    }
+
+    function handleCanvasTouchMove(e) {
+        if (!isDraggingCanvas || e.touches.length !== 1) return;
+        
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - dragStartX;
+        const deltaY = touch.clientY - dragStartY;
+        
+        const canvasWrapper = document.querySelector('.canvas-wrapper');
+        canvasWrapper.scrollLeft = scrollStartX - deltaX;
+        canvasWrapper.scrollTop = scrollStartY - deltaY;
+        
+        e.preventDefault();
+    }
+
+    function handleCanvasTouchEnd(e) {
+        if (isDraggingCanvas) {
+            isDraggingCanvas = false;
+            console.log('👆 Canvas touch drag ended');
+        }
+    }
+
+    // Removed unused canvas size/slider functions and variables
+
+    // ========== REFRESH FLOOR PREVIEW ==========
+    function refreshFloorPreview() {
+        console.log('🔄 Refreshing floor preview...');
+        const currentFloor = document.querySelector('.floor-header.active')?.textContent?.replace('Tầng ', '');
+        if (currentFloor) {
+            const areasByFloor = groupAreasByFloor(areas);
+            if (areasByFloor[currentFloor]) {
+                previewAreasForFloor(areasByFloor[currentFloor]);
+                console.log('✅ Floor preview refreshed for floor:', currentFloor);
+            }
+        }
+    }
+
+    // ========== FORCE REFRESH FROM BACKEND ==========
+    async function forceRefreshFromBackend() {
+        try {
+            console.log('🔄 Force refreshing from backend...');
+            await loadAreas();
+            refreshFloorPreview();
+            console.log('✅ Force refresh completed');
+        } catch (error) {
+            console.error('❌ Error during force refresh:', error);
+        }
+    }
+
+    // Add to window for external access
+    window.refreshFloorPreview = refreshFloorPreview;
+    window.forceRefreshFromBackend = forceRefreshFromBackend;
+
+    // ========== TỔNG QUAN KHU VỰC TRONG TẦNG ==========
+    function previewAreasForFloor(floorAreas) {
+        const canvasContent = document.getElementById('canvasContent');
+        document.querySelectorAll('.area-item').forEach(i => i.classList.remove('active'));
+        currentArea = null;
+        updateTitle();
+        if (!canvasContent) return;
+        canvasContent.innerHTML = '';
+        hideEditPanel(); hideFeatureEditPanel();
+        selectedTable = null; selectedTableElement = null;
+        selectedFeature = null; selectedFeatureElement = null;
+
+        console.log('🎨 Previewing areas for floor with saved layout data:', floorAreas);
+
+        // Use saved layout data if available, otherwise fallback to grid
+        floorAreas.forEach((area, idx) => {
+            const tile = document.createElement('div');
+            tile.className = 'area-preview';
+            
+            // Use saved position and size if available
+            if (area.positionX !== null && area.positionY !== null && 
+                area.width !== null && area.height !== null) {
+                console.log('📍 Using saved layout for:', area.name, 'at', area.positionX, area.positionY, 'size', area.width, 'x', area.height);
+                tile.style.left = area.positionX + 'px';
+                tile.style.top = area.positionY + 'px';
+                tile.style.width = area.width + 'px';
+                tile.style.height = area.height + 'px';
+            } else {
+                // Fallback to grid layout
+                console.log('📐 Using grid layout for:', area.name);
+        const cols = Math.ceil(Math.sqrt(floorAreas.length || 1));
+        const gap = 24;
+        const tileW = 160, tileH = 100;
+            const row = Math.floor(idx / cols);
+            const col = idx % cols;
+            const left = 40 + col * (tileW + gap);
+            const top = 40 + row * (tileH + gap);
+            tile.style.left = left + 'px';
+            tile.style.top = top + 'px';
+            tile.style.width = tileW + 'px';
+            tile.style.height = tileH + 'px';
+            }
+            
+            tile.textContent = area.name + (area.description ? ` - ${area.description}`: '');
+            tile.onclick = () => {
+                // chọn và hiển thị layout của khu vực
+                const li = document.querySelector(`[data-area-id="${area.id}"]`);
+                document.querySelectorAll('.area-item').forEach(i => i.classList.remove('active'));
+                if (li) li.classList.add('active');
+                currentArea = area; updateTitle(); loadLayout(area);
+            };
+            canvasContent.appendChild(tile);
+        });
+        
+        // Center canvas after preview
+        setTimeout(() => {
+            centerCanvasContent();
+        }, 100);
+    }
+
+    // ========== TẠO BÀN MỚI ==========
+    function addTable(shape) {
+        if (!currentArea) {
+            alert("⚠️ Vui lòng chọn khu vực trước!");
+            return;
+        }
+
+        const canvasContent = document.getElementById('canvasContent');
+        const emptyCanvas = document.getElementById('emptyCanvas');
+
+        if (!canvas) return;
+
+        if (emptyCanvas) emptyCanvas.style.display = 'none';
+
+        // Backend will auto-generate table name if not provided
+        const newTable = {
+            id: 'temp_' + nextTableId,
+            areaId: currentArea.id,
+            shape: shape,
+            positionX: 60,
+            positionY: 60,
+            width: 80,
+            height: 80,
+            rotationAngle: 0,
+            tableName: null, // Backend will generate unique name
+            capacity: 4
+        };
+
+        createTableElement(newTable);
+        tables.push(newTable);
+        nextTableId++;
+        // Cập nhật số lượng bàn hiển thị ngay
+        updateAreaTableCount(currentArea.id, 1);
+    }
+
+    // Removed generateUniqueTableName - now handled by Backend
+
+    function createTableElement(tableData) {
+        const canvasContent = document.getElementById('canvasContent');
+        
+        // Kiểm tra xem bàn đã tồn tại trong DOM chưa (tránh trùng lặp)
+        const existingElement = canvasContent.querySelector(`[data-table-id="${tableData.id}"]`);
+        if (existingElement) {
+            console.warn(`Bàn với ID ${tableData.id} đã tồn tại, bỏ qua tạo mới`);
+            return existingElement;
+        }
+        
+        const div = document.createElement('div');
+        div.className = `table-shape ${tableData.shape}`;
+        div.style.left = tableData.positionX + 'px';
+        div.style.top = tableData.positionY + 'px';
+        div.style.width = tableData.width + 'px';
+        div.style.height = tableData.height + 'px';
+
+        // Hiển thị tên bàn và capacity
+        const nameSpan = document.createElement('div');
+        nameSpan.textContent = tableData.tableName || `Bàn ${tableData.id}`;
+
+        const capacitySpan = document.createElement('div');
+        capacitySpan.className = 'capacity-badge';
+        capacitySpan.textContent = `${tableData.capacity || 4} khách`;
+
+        div.appendChild(nameSpan);
+        div.appendChild(capacitySpan);
+
+        div.setAttribute('data-table-id', tableData.id);
+
+        // Thêm controls
+        const controls = document.createElement('div');
+        controls.className = 'table-controls';
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'control-btn btn-delete';
+        deleteBtn.innerHTML = '🗑';
+        deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteTable(tableData.id);
+        };
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'control-btn btn-edit';
+        editBtn.innerHTML = '✏️';
+        editBtn.onclick = (e) => {
+            e.stopPropagation();
+            selectTable(div, tableData);
+            showEditPanel();
+        };
+
+        controls.appendChild(editBtn);
+        controls.appendChild(deleteBtn);
+        div.appendChild(controls);
+
+        // Thêm resize handles
+        const handles = [
+            { position: 'top-left', cursor: 'nw-resize' },
+            { position: 'top-right', cursor: 'ne-resize' },
+            { position: 'bottom-left', cursor: 'sw-resize' },
+            { position: 'bottom-right', cursor: 'se-resize' }
+        ];
+
+        handles.forEach(handle => {
+            const handleEl = document.createElement('div');
+            handleEl.className = `resize-handle ${handle.position}`;
+            handleEl.style.cursor = handle.cursor;
+            handleEl.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                startResize(div, tableData, handle.position, e);
+            });
+            div.appendChild(handleEl);
+        });
+
+        // Click để chọn
+        div.addEventListener('click', (e) => {
+            if (e.target.classList.contains('control-btn') || e.target.classList.contains('resize-handle')) return;
+            selectTable(div, tableData);
+            showEditPanel();
+        });
+
+        makeDraggable(div, tableData);
+
+        canvasContent.appendChild(div);
+        return div;
+    }
+
+    // ========== RESIZE BÀN ==========
+    function startResize(element, tableData, handlePosition, e) {
+        e.preventDefault();
+
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = parseFloat(element.style.width);
+        const startHeight = parseFloat(element.style.height);
+        const startLeft = parseFloat(element.style.left);
+        const startTop = parseFloat(element.style.top);
+
+        selectTable(element, tableData);
+
+        function resize(moveEvent) {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+
+            switch(handlePosition) {
+                case 'bottom-right':
+                    newWidth = Math.max(40, startWidth + deltaX);
+                    newHeight = Math.max(40, startHeight + deltaY);
+                    break;
+                case 'bottom-left':
+                    newWidth = Math.max(40, startWidth - deltaX);
+                    newHeight = Math.max(40, startHeight + deltaY);
+                    newLeft = startLeft + deltaX;
+                    break;
+                case 'top-right':
+                    newWidth = Math.max(40, startWidth + deltaX);
+                    newHeight = Math.max(40, startHeight - deltaY);
+                    newTop = startTop + deltaY;
+                    break;
+                case 'top-left':
+                    newWidth = Math.max(40, startWidth - deltaX);
+                    newHeight = Math.max(40, startHeight - deltaY);
+                    newLeft = startLeft + deltaX;
+                    newTop = startTop + deltaY;
+                    break;
+            }
+
+            // Cập nhật DOM
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+            element.style.left = newLeft + 'px';
+            element.style.top = newTop + 'px';
+
+            // Cập nhật dữ liệu
+            tableData.width = parseFloat(newWidth.toFixed(1));
+            tableData.height = parseFloat(newHeight.toFixed(1));
+            tableData.positionX = parseFloat(newLeft.toFixed(1));
+            tableData.positionY = parseFloat(newTop.toFixed(1));
+
+            // Cập nhật vào mảng tables
+            const tableIndex = tables.findIndex(t => t.id === tableData.id);
+            if (tableIndex !== -1) {
+                tables[tableIndex] = { ...tableData };
+            }
+
+            // Cập nhật form
+            updateEditForm(tableData);
+        }
+
+        function stopResize() {
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+    }
+
+    // ========== KÉO THẢ BÀN ==========
+    function makeDraggable(el, tableData) {
+        let offsetX = 0, offsetY = 0;
+        let dragging = false;
+        let canvasRect = null;
+        let rafId = null;
+        let maxX = 0, maxY = 0;
+        let elWidth = 0, elHeight = 0;
+        let startLeft = 0, startTop = 0;
+        let tableIndex = -1; // Cache table index to avoid findIndex in each frame
+
+        function updatePosition(x, y) {
+            // Clamp values efficiently
+            const clampedX = x < 0 ? 0 : (x > maxX ? maxX : x);
+            const clampedY = y < 0 ? 0 : (y > maxY ? maxY : y);
+            
+            // Calculate delta from start position
+            const deltaX = clampedX - startLeft;
+            const deltaY = clampedY - startTop;
+            
+            // Use translate3d for GPU-accelerated smooth movement (combine with scale if selected)
+            const scale = el.classList.contains('selected') ? 1.02 : 1;
+            el.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scale})`;
+            
+            // Update data directly (no parsing, minimal operations)
+            const finalX = Math.round(clampedX * 10) / 10;
+            const finalY = Math.round(clampedY * 10) / 10;
+            
+            tableData.positionX = finalX;
+            tableData.positionY = finalY;
+            
+            // Update array directly using cached index (no findIndex!)
+            if (tableIndex !== -1) {
+                tables[tableIndex].positionX = finalX;
+                tables[tableIndex].positionY = finalY;
+            }
+        }
+
+        function finalizePosition() {
+            // Finalize position using left/top after drag ends
+            const finalX = tableData.positionX;
+            const finalY = tableData.positionY;
+            
+            // Set final position and restore CSS transform (for scale if selected)
+            el.style.left = finalX + 'px';
+            el.style.top = finalY + 'px';
+            // Reset transform - CSS will handle scale via .selected class
+            el.style.transform = '';
+            
+            // Force reflow to ensure position is set
+            void el.offsetHeight;
+            
+            // Update form only once when drag ends
+            if (selectedTable && selectedTable.id === tableData.id) {
+                updateEditForm(tableData);
+            }
+        }
+
+        function onMouseMove(e) {
+            if (!dragging) return;
+            
+            // Calculate new position directly
+            const newX = e.clientX - canvasRect.left - offsetX;
+            const newY = e.clientY - canvasRect.top - offsetY;
+            
+            // Cancel previous RAF if pending (prevents queue buildup)
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+            
+            // Schedule update with RAF for smooth 60fps
+            rafId = requestAnimationFrame(() => {
+                updatePosition(newX, newY);
+                rafId = null;
+            });
+        }
+
+        function onMouseUp() {
+            if (!dragging) return;
+            
+            dragging = false;
+            
+            // Cancel any pending RAF
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            
+            // Finalize position synchronously
+            finalizePosition();
+            
+            // Cleanup styles
+            el.classList.remove('dragging'); // Re-enable transitions
+            el.style.zIndex = '1';
+            el.style.willChange = '';
+            
+            // Remove listeners
+            document.removeEventListener('mousemove', onMouseMove, { passive: true });
+            document.removeEventListener('mouseup', onMouseUp);
+        }
+
+        el.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('control-btn') || e.target.classList.contains('resize-handle')) return;
+            
+            const canvasContent = document.getElementById('canvasContent');
+            if (!canvasContent) return;
+            
+            // Cache ALL values once on mousedown (no recalculation during drag)
+            canvasRect = canvasContent.getBoundingClientRect();
+            elWidth = el.offsetWidth;
+            elHeight = el.offsetHeight;
+            startLeft = parseFloat(el.style.left) || 0;
+            startTop = parseFloat(el.style.top) || 0;
+            maxX = Math.max(0, canvasRect.width - elWidth);
+            maxY = Math.max(0, canvasRect.height - elHeight);
+            
+            // Cache table index ONCE (avoid findIndex in every frame)
+            tableIndex = tables.findIndex(t => t.id === tableData.id);
+            
+            dragging = true;
+            offsetX = e.offsetX;
+            offsetY = e.offsetY;
+            
+            // Prepare for drag
+            el.classList.add('dragging'); // Disable transitions
+            el.style.zIndex = '1000';
+            el.style.willChange = 'transform'; // Hint browser for GPU optimization
+            selectTable(el, tableData);
+            
+            // Add listeners with passive flag for better performance
+            document.addEventListener('mousemove', onMouseMove, { passive: true });
+            document.addEventListener('mouseup', onMouseUp);
+        });
+    }
+
+    // ========== CHỌN BÀN ==========
+    function selectTable(el, tableData) {
+        // Bỏ chọn bàn cũ
+        if (selectedTableElement) {
+            selectedTableElement.classList.remove('selected');
+        }
+
+        // Chọn bàn mới
+        selectedTableElement = el;
+        selectedTable = tableData;
+        el.classList.add('selected');
+
+        updateEditForm(tableData);
+    }
+
+    function clearSelection() {
+        if (selectedTableElement) {
+            selectedTableElement.classList.remove('selected');
+        }
+        if (selectedFeatureElement) {
+            selectedFeatureElement.classList.remove('selected');
+        }
+        selectedTableElement = null;
+        selectedTable = null;
+        selectedFeatureElement = null;
+        selectedFeature = null;
+        hideEditPanel();
+    }
+
+    // ========== PANEL CHỈNH SỬA ==========
+    function showEditPanel() {
+        // Ẩn panel feature nếu đang mở
+        hideFeatureEditPanel();
+        // Panel đã luôn hiển thị, không cần toggle visibility
+        const editPanel = document.getElementById('editPanel');
+        const featurePanel = document.getElementById('editFeaturePanel');
+        if (editPanel) editPanel.style.display = 'flex';
+        if (featurePanel) featurePanel.style.display = 'none';
+    }
+
+    function hideEditPanel() {
+        // Panel luôn hiển thị, chỉ ẩn feature panel
+        const editPanel = document.getElementById('editPanel');
+        const featurePanel = document.getElementById('editFeaturePanel');
+        if (editPanel) editPanel.style.display = 'flex';
+        if (featurePanel) featurePanel.style.display = 'none';
+    }
+
+    function updateEditForm(tableData) {
+        document.getElementById('editTableName').value = tableData.tableName || '';
+        document.getElementById('editCapacity').value = tableData.capacity || 4;
+        document.getElementById('editPositionX').value = tableData.positionX;
+        document.getElementById('editPositionY').value = tableData.positionY;
+        document.getElementById('editWidth').value = tableData.width;
+        document.getElementById('editHeight').value = tableData.height;
+        document.getElementById('editShape').value = tableData.shape;
+    }
+
+    // ========== CẬP NHẬT REAL-TIME KHI THAY ĐỔI FORM ==========
+    function setupRealTimeUpdates() {
+        // Lắng nghe sự kiện input trên các trường form
+        const formInputs = [
+            'editPositionX', 'editPositionY', 'editWidth', 'editHeight',
+            'editTableName', 'editCapacity', 'editShape'
+        ];
+
+        formInputs.forEach(inputId => {
+            const input = document.getElementById(inputId);
+            if (input) {
+                input.addEventListener('input', handleFormInputChange);
+            }
+        });
+    }
+
+    function handleFormInputChange(e) {
+        if (!selectedTable || !selectedTableElement) return;
+
+        const field = e.target.id;
+        const value = e.target.value;
+
+        // Cập nhật dữ liệu bàn được chọn
+        switch(field) {
+            case 'editPositionX':
+                selectedTable.positionX = parseFloat(value) || 0;
+                selectedTableElement.style.left = selectedTable.positionX + 'px';
+                break;
+            case 'editPositionY':
+                selectedTable.positionY = parseFloat(value) || 0;
+                selectedTableElement.style.top = selectedTable.positionY + 'px';
+                break;
+            case 'editWidth':
+                selectedTable.width = parseFloat(value) || 80;
+                selectedTableElement.style.width = selectedTable.width + 'px';
+                break;
+            case 'editHeight':
+                selectedTable.height = parseFloat(value) || 80;
+                selectedTableElement.style.height = selectedTable.height + 'px';
+                break;
+            case 'editTableName':
+                selectedTable.tableName = value;
+                // Cập nhật tên bàn hiển thị
+                selectedTableElement.querySelector('div:first-child').textContent = value || `Bàn ${selectedTable.id}`;
+                break;
+            case 'editCapacity':
+                selectedTable.capacity = parseInt(value) || 4;
+                // Cập nhật capacity hiển thị
+                selectedTableElement.querySelector('.capacity-badge').textContent = `${selectedTable.capacity} khách`;
+                break;
+            case 'editShape':
+                selectedTable.shape = value;
+                selectedTableElement.className = `table-shape ${value}`;
+                break;
+        }
+
+        // Cập nhật vào mảng tables
+        const tableIndex = tables.findIndex(t => t.id === selectedTable.id);
+        if (tableIndex !== -1) {
+            tables[tableIndex] = { ...selectedTable };
+        }
+    }
+
+    function updateTableFromForm() {
+        // Hàm này giờ chỉ để xác nhận cập nhật (nếu cần)
+        alert('✅ Đã cập nhật thông tin bàn');
+    }
+
+    function deleteSelectedTable() {
+        if (!selectedTable) return;
+
+        if (confirm('Bạn có chắc muốn xóa bàn này?')) {
+            deleteTable(selectedTable.id);
+        }
+    }
+
+    // ========== XÓA BÀN ==========
+    function deleteTable(tableId) {
+        // Xóa khỏi DOM
+        const tableElement = document.querySelector(`[data-table-id="${tableId}"]`);
+        if (tableElement) {
+            tableElement.remove();
+        }
+
+        // Xóa khỏi mảng dữ liệu
+        tables = tables.filter(t => t.id !== tableId);
+
+        if (!tableId.toString().startsWith('temp_')) {
+            fetch(`${apiLayouts}/${tableId}`, {
+                method: 'DELETE'
+            }).catch(error => {
+                console.error('Error deleting table:', error);
+            });
+        }
+
+        selectedTable = null;
+        selectedTableElement = null;
+        hideEditPanel();
+        // Cập nhật số lượng bàn hiển thị ngay
+        if (currentArea) {
+            updateAreaTableCount(currentArea.id, -1);
+        }
+    }
+
+    // ========== FEATURES ==========
+    function defaultFeatureSize(type) {
+        switch(type) {
+            case 'DOOR': return { w: 80, h: 12 };
+            case 'WINDOW': return { w: 100, h: 10 };
+            case 'PLANT': return { w: 36, h: 36 };
+            case 'SOFA': return { w: 120, h: 48 };
+            case 'COUNTER': return { w: 140, h: 40 };
+            default: return { w: 60, h: 20 };
+        }
+    }
+
+    function addFeature(type) {
+        if (!currentArea) {
+            alert('⚠️ Vui lòng chọn khu vực trước!');
+            return;
+        }
+        const canvasContent = document.getElementById('canvasContent');
+        const emptyCanvas = document.getElementById('emptyCanvas');
+        if (emptyCanvas) emptyCanvas.style.display = 'none';
+
+        const sz = defaultFeatureSize(type);
+        const f = {
+            id: 'f_temp_' + nextFeatureId,
+            areaId: currentArea.id,
+            type: type,
+            label: null, // Backend will auto-generate label
+            positionX: 80,
+            positionY: 80,
+            width: sz.w,
+            height: sz.h,
+            rotationAngle: 0
+        };
+        createFeatureElement(f);
+        features.push(f);
+        nextFeatureId++;
+    }
+
+    // Removed generateFeatureLabel - now handled by Backend
+
+    function createFeatureElement(f) {
+        const canvasContent = document.getElementById('canvasContent');
+        
+        // Kiểm tra xem feature đã tồn tại trong DOM chưa (tránh trùng lặp)
+        const existingElement = canvasContent.querySelector(`[data-feature-id="${f.id}"]`);
+        if (existingElement) {
+            console.warn(`Feature với ID ${f.id} đã tồn tại, bỏ qua tạo mới`);
+            return existingElement;
+        }
+        
+        const el = document.createElement('div');
+        el.className = 'feature-shape';
+        el.style.left = f.positionX + 'px';
+        el.style.top = f.positionY + 'px';
+        el.style.width = f.width + 'px';
+        el.style.height = f.height + 'px';
+        el.setAttribute('data-feature-id', f.id);
+
+        const badge = document.createElement('div');
+        badge.className = 'feature-badge';
+        badge.textContent = f.label || f.type;
+        el.appendChild(badge);
+
+        // Controls
+        const controls = document.createElement('div');
+        controls.className = 'table-controls';
+        const del = document.createElement('button');
+        del.className = 'control-btn btn-delete';
+        del.innerHTML = '🗑';
+        del.onclick = (e) => { e.stopPropagation(); deleteFeature(f.id); };
+        controls.appendChild(del);
+        el.appendChild(controls);
+
+        // Resize handles
+        ['top-left','top-right','bottom-left','bottom-right'].forEach(pos => {
+            const h = document.createElement('div');
+            h.className = `resize-handle ${pos}`;
+            h.addEventListener('mousedown', (e) => { e.stopPropagation(); startResizeFeature(el, f, pos, e); });
+            el.appendChild(h);
+        });
+
+        // Select
+        el.addEventListener('click', () => {
+            if (selectedFeatureElement) selectedFeatureElement.classList.remove('selected');
+            selectedFeatureElement = el;
+            selectedFeature = f;
+            el.classList.add('selected');
+            showFeatureEditPanel();
+            updateFeatureEditForm(f);
+        });
+
+        makeFeatureDraggable(el, f);
+        canvasContent.appendChild(el);
+        return el;
+    }
+
+    function makeFeatureDraggable(el, f) {
+        let dragging = false, offX = 0, offY = 0;
+        let rect = null;
+        let rafId = null;
+        let maxX = 0, maxY = 0;
+        let elWidth = 0, elHeight = 0;
+        let startLeft = 0, startTop = 0;
+        let featureIndex = -1; // Cache feature index
+
+        function updatePosition(x, y) {
+            // Efficient clamping
+            const clampedX = x < 0 ? 0 : (x > maxX ? maxX : x);
+            const clampedY = y < 0 ? 0 : (y > maxY ? maxY : y);
+            
+            // Calculate delta from start position
+            const deltaX = clampedX - startLeft;
+            const deltaY = clampedY - startTop;
+            
+            // Use translate3d for GPU acceleration (combine with scale if selected)
+            const scale = el.classList.contains('selected') ? 1.02 : 1;
+            el.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scale})`;
+            
+            // Update data directly (minimal operations)
+            const finalX = Math.round(clampedX * 10) / 10;
+            const finalY = Math.round(clampedY * 10) / 10;
+            
+            f.positionX = finalX;
+            f.positionY = finalY;
+            
+            // Update array using cached index (no findIndex!)
+            if (featureIndex !== -1) {
+                features[featureIndex].positionX = finalX;
+                features[featureIndex].positionY = finalY;
+            }
+        }
+
+        function finalizePosition() {
+            const finalX = f.positionX;
+            const finalY = f.positionY;
+            
+            // Set final position and restore CSS transform
+            el.style.left = finalX + 'px';
+            el.style.top = finalY + 'px';
+            // Reset transform - CSS will handle scale via .selected class
+            el.style.transform = '';
+            
+            // Force reflow to ensure position is set
+            void el.offsetHeight;
+        }
+
+        function onMove(e) {
+            if (!dragging) return;
+            
+            const newX = e.clientX - rect.left - offX;
+            const newY = e.clientY - rect.top - offY;
+            
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+            }
+            
+            rafId = requestAnimationFrame(() => {
+                updatePosition(newX, newY);
+                rafId = null;
+            });
+        }
+
+        function onUp() {
+            if (!dragging) return;
+            dragging = false;
+            
+            if (rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+            
+            finalizePosition();
+            el.classList.remove('dragging'); // Re-enable transitions
+            el.style.willChange = '';
+            
+            document.removeEventListener('mousemove', onMove, { passive: true });
+            document.removeEventListener('mouseup', onUp);
+        }
+
+        el.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('control-btn') || e.target.classList.contains('resize-handle')) return;
+            
+            const canvasContent = document.getElementById('canvasContent');
+            if (!canvasContent) return;
+            
+            // Cache ALL values once on mousedown
+            rect = canvasContent.getBoundingClientRect();
+            elWidth = el.offsetWidth;
+            elHeight = el.offsetHeight;
+            startLeft = parseFloat(el.style.left) || 0;
+            startTop = parseFloat(el.style.top) || 0;
+            maxX = Math.max(0, rect.width - elWidth);
+            maxY = Math.max(0, rect.height - elHeight);
+            
+            // Cache feature index ONCE
+            featureIndex = features.findIndex(it => it.id === f.id);
+            
+            dragging = true;
+            offX = e.offsetX;
+            offY = e.offsetY;
+            
+            el.classList.add('dragging'); // Disable transitions
+            el.style.willChange = 'transform';
+            if (selectedFeatureElement) selectedFeatureElement.classList.remove('selected');
+            selectedFeatureElement = el;
+            selectedFeature = f;
+            el.classList.add('selected');
+            
+            document.addEventListener('mousemove', onMove, { passive: true });
+            document.addEventListener('mouseup', onUp);
+        });
+    }
+
+    function startResizeFeature(el, f, pos, e) {
+        e.preventDefault();
+        const startX = e.clientX, startY = e.clientY;
+        const sW = parseFloat(el.style.width), sH = parseFloat(el.style.height);
+        const sL = parseFloat(el.style.left), sT = parseFloat(el.style.top);
+        if (selectedFeatureElement) selectedFeatureElement.classList.remove('selected');
+        selectedFeatureElement = el; selectedFeature = f; el.classList.add('selected');
+
+        function onMove(me) {
+            const dx = me.clientX - startX, dy = me.clientY - startY;
+            let w = sW, h = sH, l = sL, t = sT;
+            switch(pos) {
+                case 'bottom-right': w = Math.max(10, sW + dx); h = Math.max(10, sH + dy); break;
+                case 'bottom-left': w = Math.max(10, sW - dx); h = Math.max(10, sH + dy); l = sL + dx; break;
+                case 'top-right': w = Math.max(10, sW + dx); h = Math.max(10, sH - dy); t = sT + dy; break;
+                case 'top-left': w = Math.max(10, sW - dx); h = Math.max(10, sH - dy); l = sL + dx; t = sT + dy; break;
+            }
+            el.style.width = w + 'px';
+            el.style.height = h + 'px';
+            el.style.left = l + 'px';
+            el.style.top = t + 'px';
+            f.width = parseFloat(w.toFixed(1));
+            f.height = parseFloat(h.toFixed(1));
+            f.positionX = parseFloat(l.toFixed(1));
+            f.positionY = parseFloat(t.toFixed(1));
+            const idx = features.findIndex(it => it.id === f.id);
+            if (idx !== -1) features[idx] = { ...f };
+        }
+        function onUp() {
+            document.removeEventListener('mousemove', onMove);
+            document.removeEventListener('mouseup', onUp);
+        }
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+    }
+
+    function deleteFeature(id) {
+        const el = document.querySelector(`[data-feature-id="${id}"]`);
+        if (el) el.remove();
+        const removed = features.find(x => x.id === id);
+        features = features.filter(x => x.id !== id);
+        if (!id.toString().startsWith('f_temp_')) {
+            fetch(`${apiFeatures}/${id}`, { method: 'DELETE' }).catch(console.error);
+        }
+        if (selectedFeature && selectedFeature.id === id) {
+            selectedFeature = null; selectedFeatureElement = null;
+            hideFeatureEditPanel();
+        }
+        // Renumber remaining features of same type
+        if (removed) renumberFeaturesOfType(removed.type);
+    }
+
+    function renumberFeaturesOfType(type) {
+        const sameType = features.filter(x => x.type === type).sort((a,b) => (a.positionX+a.positionY) - (b.positionX+b.positionY));
+        sameType.forEach((f, idx) => {
+            f.label = `${type} ${idx+1}`;
+            const el = document.querySelector(`[data-feature-id="${f.id}"] .feature-badge`);
+            if (el) el.textContent = f.label;
+        });
+    }
+
+    // ===== Feature edit panel helpers =====
+    function showFeatureEditPanel() {
+        // Panel luôn hiển thị, chỉ switch giữa các panel
+        const editPanel = document.getElementById('editPanel');
+        const featurePanel = document.getElementById('editFeaturePanel');
+        if (editPanel) editPanel.style.display = 'none';
+        if (featurePanel) featurePanel.style.display = 'flex';
+    }
+    function hideFeatureEditPanel() {
+        // Panel luôn hiển thị, chỉ ẩn feature panel
+        const editPanel = document.getElementById('editPanel');
+        const featurePanel = document.getElementById('editFeaturePanel');
+        if (editPanel) editPanel.style.display = 'flex';
+        if (featurePanel) featurePanel.style.display = 'none';
+    }
+    function updateFeatureEditForm(f) {
+        document.getElementById('editFeatureLabel').value = f.label || '';
+        document.getElementById('editFeatureType').value = f.type;
+        document.getElementById('editFeatureX').value = f.positionX;
+        document.getElementById('editFeatureY').value = f.positionY;
+        document.getElementById('editFeatureW').value = f.width;
+        document.getElementById('editFeatureH').value = f.height;
+        document.getElementById('editFeatureRot').value = f.rotationAngle || 0;
+    }
+    function updateFeatureFromForm() {
+        if (!selectedFeature || !selectedFeatureElement) return;
+        selectedFeature.label = document.getElementById('editFeatureLabel').value;
+        selectedFeature.type = document.getElementById('editFeatureType').value;
+        selectedFeature.positionX = parseFloat(document.getElementById('editFeatureX').value) || 0;
+        selectedFeature.positionY = parseFloat(document.getElementById('editFeatureY').value) || 0;
+        selectedFeature.width = parseFloat(document.getElementById('editFeatureW').value) || selectedFeature.width;
+        selectedFeature.height = parseFloat(document.getElementById('editFeatureH').value) || selectedFeature.height;
+        selectedFeature.rotationAngle = parseInt(document.getElementById('editFeatureRot').value) || 0;
+
+        selectedFeatureElement.style.left = selectedFeature.positionX + 'px';
+        selectedFeatureElement.style.top = selectedFeature.positionY + 'px';
+        selectedFeatureElement.style.width = selectedFeature.width + 'px';
+        selectedFeatureElement.style.height = selectedFeature.height + 'px';
+        selectedFeatureElement.querySelector('.feature-badge').textContent = selectedFeature.label || selectedFeature.type;
+        selectedFeatureElement.style.transform = `rotate(${selectedFeature.rotationAngle}deg)`;
+
+        const idx = features.findIndex(it => it.id === selectedFeature.id);
+        if (idx !== -1) features[idx] = { ...selectedFeature };
+        alert('✅ Đã cập nhật đối tượng');
+    }
+    function deleteSelectedFeature() {
+        if (!selectedFeature) return;
+        if (confirm('Bạn có chắc muốn xóa đối tượng này?')) {
+            deleteFeature(selectedFeature.id);
+        }
+    }
+
+    function setupFeatureRealTimeUpdates() {
+        const ids = ['editFeatureLabel','editFeatureType','editFeatureX','editFeatureY','editFeatureW','editFeatureH','editFeatureRot'];
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', (e) => {
+                if (!selectedFeature || !selectedFeatureElement) return;
+                switch (e.target.id) {
+                    case 'editFeatureLabel':
+                        selectedFeature.label = e.target.value; selectedFeatureElement.querySelector('.feature-badge').textContent = selectedFeature.label || selectedFeature.type; break;
+                    case 'editFeatureType':
+                        selectedFeature.type = e.target.value; selectedFeatureElement.querySelector('.feature-badge').textContent = selectedFeature.label || selectedFeature.type; break;
+                    case 'editFeatureX':
+                        selectedFeature.positionX = parseFloat(e.target.value) || 0; selectedFeatureElement.style.left = selectedFeature.positionX + 'px'; break;
+                    case 'editFeatureY':
+                        selectedFeature.positionY = parseFloat(e.target.value) || 0; selectedFeatureElement.style.top = selectedFeature.positionY + 'px'; break;
+                    case 'editFeatureW':
+                        selectedFeature.width = parseFloat(e.target.value) || selectedFeature.width; selectedFeatureElement.style.width = selectedFeature.width + 'px'; break;
+                    case 'editFeatureH':
+                        selectedFeature.height = parseFloat(e.target.value) || selectedFeature.height; selectedFeatureElement.style.height = selectedFeature.height + 'px'; break;
+                    case 'editFeatureRot':
+                        selectedFeature.rotationAngle = parseInt(e.target.value) || 0; selectedFeatureElement.style.transform = `rotate(${selectedFeature.rotationAngle}deg)`; break;
+                }
+                const idx = features.findIndex(it => it.id === selectedFeature.id);
+                if (idx !== -1) features[idx] = { ...selectedFeature };
+            });
+        });
+    }
+
+    async function saveLayout() {
+        if (!currentArea) {
+            alert('⚠️ Vui lòng chọn khu vực trước!');
+            return;
+        }
+
+        const hasSomething = document.querySelectorAll('.table-shape, .feature-shape').length > 0;
+        if (!hasSomething) {
+            alert('❌ Chưa có gì để lưu.');
+            return;
+        }
+
+        try {
+            console.log('Bắt đầu batch save layout...');
+            
+            // Prepare table layouts for batch save
+            const tableRequests = tables.map(table => ({
+                id: table.id.toString().startsWith('temp_') ? null : table.id,
+                areaId: currentArea.id,
+                positionX: table.positionX,
+                positionY: table.positionY,
+                width: table.width,
+                height: table.height,
+                rotationAngle: table.rotationAngle || 0,
+                shape: table.shape,
+                tableName: table.tableName,
+                capacity: table.capacity || 4
+            }));
+
+            // Prepare features for batch save
+            const featureRequests = features.map(f => ({
+                id: f.id.toString().startsWith('f_temp_') ? null : f.id,
+                areaId: currentArea.id,
+                type: f.type,
+                label: f.label,
+                positionX: f.positionX,
+                positionY: f.positionY,
+                width: f.width,
+                height: f.height,
+                rotationAngle: f.rotationAngle || 0
+            }));
+
+            // Batch save tables and features in parallel
+            const [tableResult, featureResult] = await Promise.allSettled([
+                fetch(`${apiLayouts}/batch/${currentArea.id}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(tableRequests)
+                }).then(res => res.ok ? res.json() : Promise.reject(new Error(`Tables: ${res.status}`))),
+                fetch(`${apiFeatures}/batch/${currentArea.id}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(featureRequests)
+                }).then(res => res.ok ? res.json() : Promise.reject(new Error(`Features: ${res.status}`)))
+            ]);
+
+            let totalSuccess = 0;
+            let totalErrors = 0;
+
+            if (tableResult.status === 'fulfilled') {
+                totalSuccess += tableResult.value.successCount || 0;
+                totalErrors += (tableRequests.length - (tableResult.value.successCount || 0));
+                console.log('✅ Tables saved:', tableResult.value);
+            } else {
+                totalErrors += tableRequests.length;
+                console.error('❌ Tables save failed:', tableResult.reason);
+            }
+
+            if (featureResult.status === 'fulfilled') {
+                totalSuccess += featureResult.value.successCount || 0;
+                totalErrors += (featureRequests.length - (featureResult.value.successCount || 0));
+                console.log('✅ Features saved:', featureResult.value);
+            } else {
+                totalErrors += featureRequests.length;
+                console.error('❌ Features save failed:', featureResult.reason);
+            }
+
+            if (totalErrors === 0) {
+                alert(`✅ Đã lưu thành công ${totalSuccess} mục cho khu vực "${currentArea.name}"`);
+                await loadAreas(currentArea.id);
+            } else {
+                alert(`⚠️ Lưu thành công ${totalSuccess} mục, lỗi ${totalErrors} mục. Kiểm tra console.`);
+            }
+
+            // Reload layout
+            await loadLayout(currentArea);
+
+        } catch (error) {
+            console.error('Error saving layout:', error);
+            alert('❌ Lỗi khi lưu sơ đồ: ' + error.message);
+        }
+    }
+
+    // ========== ĐÓNG MODAL KHI CLICK NGOÀI ==========
+    window.onclick = function(event) {
+        const modal = document.getElementById('areaModal');
+        const deleteModal = document.getElementById('deleteAreaModal');
+        const editModal = document.getElementById('editAreaModal');
+        
+        if (event.target === modal) {
+            closeModal();
+        }
+        if (event.target === deleteModal) {
+            closeDeleteModal();
+        }
+        if (event.target === editModal) {
+            closeEditModal();
+        }
+    }
+
+    // ========== AREA LAYOUT EDITOR FUNCTIONS ==========
+    function toggleAreaLayoutMode() {
+
+    if (!currentArea && previewedFloor) {
+        window.location.href = `/admin/area-layout-editor?floor=${previewedFloor}`;
+        return;
+    }
+    alert('Chỉ có thể chỉnh layout tổng khi đang ở chế độ xem tổng quan tầng!');
+}
+
+    function openAreaLayoutEditor() {
+        const editor = document.getElementById('areaLayoutEditor');
+        const floorNumber = document.getElementById('currentFloorNumber');
+        
+        if (floorNumber) {
+            floorNumber.textContent = currentArea.floor || 1;
+        }
+        
+        editor.classList.add('visible');
+        loadAreaLayoutForFloor(currentArea.floor || 1);
+    }
+
+    function closeAreaLayoutEditor() {
+        const editor = document.getElementById('areaLayoutEditor');
+        editor.classList.remove('visible');
+        areaLayoutMode = false;
+        selectedAreaLayout = null;
+        selectedAreaLayoutElement = null;
+    }
+
+    async function loadAreaLayoutForFloor(floorNumber) {
+        try {
+            const res = await fetch(apiAreas);
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            
+            const allAreas = await res.json();
+            currentFloorAreas = allAreas.filter(area => (area.floor || 1) === floorNumber);
+            
+            renderAreaLayoutCanvas();
+        } catch (error) {
+            console.error('Error loading floor areas:', error);
+            alert('❌ Lỗi khi tải khu vực tầng: ' + error.message);
+        }
+    }
+
+    function renderAreaLayoutCanvas() {
+        const canvas = document.getElementById('areaLayoutCanvas');
+        if (!canvas) return;
+        
+        canvas.innerHTML = '';
+        
+        if (currentFloorAreas.length === 0) {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = 'empty-state';
+            emptyDiv.textContent = 'Chưa có khu vực nào trong tầng này';
+            canvasContent.appendChild(emptyDiv);
+            return;
+        }
+        
+        // Use saved positions if available, otherwise auto layout
+        currentFloorAreas.forEach((area, idx) => {
+            let left, top, width, height;
+            
+            if (area.positionX !== null && area.positionY !== null && 
+                area.width !== null && area.height !== null) {
+                // Use saved positions
+                left = area.positionX;
+                top = area.positionY;
+                width = area.width;
+                height = area.height;
+            } else {
+                // Auto layout in grid
+        const cols = Math.ceil(Math.sqrt(currentFloorAreas.length));
+        const gap = 20;
+        const tileW = 150, tileH = 100;
+            const row = Math.floor(idx / cols);
+            const col = idx % cols;
+                left = 50 + col * (tileW + gap);
+                top = 50 + row * (tileH + gap);
+                width = tileW;
+                height = tileH;
+            }
+            
+            createAreaLayoutElement(area, left, top, width, height);
+        });
+    }
+
+    function createAreaLayoutElement(area, x, y, w, h) {
+        const canvas = document.getElementById('areaLayoutCanvas');
+        const div = document.createElement('div');
+        
+        div.className = 'area-item-editable';
+        div.style.left = x + 'px';
+        div.style.top = y + 'px';
+        div.style.width = w + 'px';
+        div.style.height = h + 'px';
+        div.textContent = area.name;
+        div.setAttribute('data-area-id', area.id);
+        
+        // Add resize handles
+        const handles = [
+            { position: 'top-left', cursor: 'nw-resize' },
+            { position: 'top-right', cursor: 'ne-resize' },
+            { position: 'bottom-left', cursor: 'sw-resize' },
+            { position: 'bottom-right', cursor: 'se-resize' }
+        ];
+        
+        handles.forEach(handle => {
+            const handleEl = document.createElement('div');
+            handleEl.className = `area-resize-handle ${handle.position}`;
+            handleEl.style.cursor = handle.cursor;
+            handleEl.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                startAreaResize(div, area, handle.position, e);
+            });
+            div.appendChild(handleEl);
+        });
+        
+        // Click to select
+        div.addEventListener('click', (e) => {
+            if (e.target.classList.contains('area-resize-handle')) return;
+            selectAreaLayout(div, area);
+        });
+        
+        // Make draggable
+        makeAreaDraggable(div, area);
+        
+        canvasContent.appendChild(div);
+        return div;
+    }
+
+    function selectAreaLayout(element, area) {
+        // Deselect previous
+        if (selectedAreaLayoutElement) {
+            selectedAreaLayoutElement.classList.remove('selected');
+        }
+        
+        // Select new
+        selectedAreaLayoutElement = element;
+        selectedAreaLayout = area;
+        element.classList.add('selected');
+        
+        // Update form
+        updateAreaLayoutForm(area);
+    }
+
+    function updateAreaLayoutForm(area) {
+        document.getElementById('areaLayoutName').value = area.name;
+        document.getElementById('areaLayoutX').value = parseFloat(selectedAreaLayoutElement.style.left);
+        document.getElementById('areaLayoutY').value = parseFloat(selectedAreaLayoutElement.style.top);
+        document.getElementById('areaLayoutW').value = parseFloat(selectedAreaLayoutElement.style.width);
+        document.getElementById('areaLayoutH').value = parseFloat(selectedAreaLayoutElement.style.height);
+    }
+
+    function makeAreaDraggable(element, area) {
+        let dragging = false, offsetX = 0, offsetY = 0;
+        
+        element.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('area-resize-handle')) return;
+            
+            dragging = true;
+            offsetX = e.offsetX;
+            offsetY = e.offsetY;
+            element.style.zIndex = '1000';
+            selectAreaLayout(element, area);
+        });
+        
+        document.addEventListener('mouseup', () => {
+            dragging = false;
+            element.style.zIndex = '1';
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (!dragging) return;
+            
+            const canvas = document.getElementById('areaLayoutCanvas');
+            const rect = canvas.getBoundingClientRect();
+            
+            let x = e.clientX - rect.left - offsetX;
+            let y = e.clientY - rect.top - offsetY;
+            
+            x = Math.max(0, Math.min(x, rect.width - element.offsetWidth));
+            y = Math.max(0, Math.min(y, rect.height - element.offsetHeight));
+            
+            element.style.left = x + 'px';
+            element.style.top = y + 'px';
+            
+            // Update form
+            if (selectedAreaLayout && selectedAreaLayout.id === area.id) {
+                updateAreaLayoutForm(area);
+            }
+        });
+    }
+
+    function startAreaResize(element, area, handlePosition, e) {
+        e.preventDefault();
+        
+        const startX = e.clientX;
+        const startY = e.clientY;
+        const startWidth = parseFloat(element.style.width);
+        const startHeight = parseFloat(element.style.height);
+        const startLeft = parseFloat(element.style.left);
+        const startTop = parseFloat(element.style.top);
+        
+        selectAreaLayout(element, area);
+        
+        function resize(moveEvent) {
+            const deltaX = moveEvent.clientX - startX;
+            const deltaY = moveEvent.clientY - startY;
+            
+            let newWidth = startWidth;
+            let newHeight = startHeight;
+            let newLeft = startLeft;
+            let newTop = startTop;
+            
+            switch(handlePosition) {
+                case 'bottom-right':
+                    newWidth = Math.max(50, startWidth + deltaX);
+                    newHeight = Math.max(50, startHeight + deltaY);
+                    break;
+                case 'bottom-left':
+                    newWidth = Math.max(50, startWidth - deltaX);
+                    newHeight = Math.max(50, startHeight + deltaY);
+                    newLeft = startLeft + deltaX;
+                    break;
+                case 'top-right':
+                    newWidth = Math.max(50, startWidth + deltaX);
+                    newHeight = Math.max(50, startHeight - deltaY);
+                    newTop = startTop + deltaY;
+                    break;
+                case 'top-left':
+                    newWidth = Math.max(50, startWidth - deltaX);
+                    newHeight = Math.max(50, startHeight - deltaY);
+                    newLeft = startLeft + deltaX;
+                    newTop = startTop + deltaY;
+                    break;
+            }
+            
+            element.style.width = newWidth + 'px';
+            element.style.height = newHeight + 'px';
+            element.style.left = newLeft + 'px';
+            element.style.top = newTop + 'px';
+            
+            // Update form
+            if (selectedAreaLayout && selectedAreaLayout.id === area.id) {
+                updateAreaLayoutForm(area);
+            }
+        }
+        
+        function stopResize() {
+            document.removeEventListener('mousemove', resize);
+            document.removeEventListener('mouseup', stopResize);
+        }
+        
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('mouseup', stopResize);
+    }
+
+    function updateAreaLayoutFromForm() {
+        if (!selectedAreaLayout || !selectedAreaLayoutElement) return;
+        
+        const x = parseFloat(document.getElementById('areaLayoutX').value) || 0;
+        const y = parseFloat(document.getElementById('areaLayoutY').value) || 0;
+        const w = parseFloat(document.getElementById('areaLayoutW').value) || 150;
+        const h = parseFloat(document.getElementById('areaLayoutH').value) || 100;
+        
+        selectedAreaLayoutElement.style.left = x + 'px';
+        selectedAreaLayoutElement.style.top = y + 'px';
+        selectedAreaLayoutElement.style.width = w + 'px';
+        selectedAreaLayoutElement.style.height = h + 'px';
+        
+        alert('✅ Đã cập nhật vị trí khu vực');
+    }
+
+    function deleteSelectedAreaLayout() {
+        if (!selectedAreaLayout) return;
+        
+        if (confirm(`Bạn có chắc muốn xóa khu vực "${selectedAreaLayout.name}"?`)) {
+            deleteArea(selectedAreaLayout.id);
+            closeAreaLayoutEditor();
+        }
+    }
+
+    function openEditAreaModal() {
+        if (!selectedAreaLayout) {
+            alert('⚠️ Vui lòng chọn khu vực trước!');
+            return;
+        }
+        
+        // Use the existing edit modal functionality
+        openEditModal(selectedAreaLayout);
+    }
+
+    function saveAreaLayout() {
+        if (!currentFloorAreas || currentFloorAreas.length === 0) {
+            alert('❌ Không có khu vực nào để lưu');
+            return;
+        }
+
+        try {
+            // Collect all area layout data
+            const areaLayouts = [];
+            const canvas = document.getElementById('areaLayoutCanvas');
+            const areaElements = canvas.querySelectorAll('.area-item-editable');
+            
+            areaElements.forEach(element => {
+                const areaId = element.getAttribute('data-area-id');
+                const area = currentFloorAreas.find(a => a.id == areaId);
+                
+                if (area) {
+                    areaLayouts.push({
+                        name: area.name,
+                        positionX: parseFloat(element.style.left),
+                        positionY: parseFloat(element.style.top),
+                        width: parseFloat(element.style.width),
+                        height: parseFloat(element.style.height)
+                    });
+                }
+            });
+
+            // Save to server
+            fetch(`/api/admin/areas/layout/floor/${currentArea.floor || 1}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(areaLayouts)
+            })
+            .then(response => {
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                return response.json();
+            })
+            .then(data => {
+                alert('✅ Đã lưu layout khu vực thành công');
+        closeAreaLayoutEditor();
+            })
+            .catch(error => {
+                console.error('Error saving area layout:', error);
+                alert('❌ Lỗi khi lưu layout khu vực: ' + error.message);
+            });
+
+        } catch (error) {
+            console.error('Error preparing area layout data:', error);
+            alert('❌ Lỗi khi chuẩn bị dữ liệu: ' + error.message);
+        }
+    }
+
+    // ========== KHỞI TẠO ==========
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize canvas dragging
+        initCanvasDragging();
+        
+        // Removed initSliders (sliders not used)
+        
+        // Center canvas on window resize
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                centerCanvasContent();
+            }, 300);
+        });
+        
+        loadAreas();
+        setupRealTimeUpdates();
+        setupFeatureRealTimeUpdates();
+        
+        // Center canvas initially after page loads
+        setTimeout(() => {
+            centerCanvasContent();
+        }, 500);
+    });
+</script>
+
+</div> <!-- End content-wrapper -->
+
+</body>
+</html>

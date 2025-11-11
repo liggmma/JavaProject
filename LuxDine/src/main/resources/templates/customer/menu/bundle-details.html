@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width, initial-scale=1" name="viewport"/>
+    <title th:text="${bundle.name} + ' | LuxDine'">Chi tiết set | LuxDine</title>
+
+    <!-- Design tokens từ fragments -->
+    <th:block th:replace="~{customer/fragments/header :: styles}"></th:block>
+    <th:block th:replace="~{customer/fragments/footer :: styles}"></th:block>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* ================= Page Scope: chỉ áp dụng cho trang Bundle ================= */
+        .bundle-page {
+            font-family: var(--font, Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial);
+            background: var(--color-bg, #F9FAFB);
+            color: var(--color-text, #111827);
+        }
+
+        .bundle-page .container {
+            max-width: var(--container, 1200px);
+            margin: 0 auto;
+            padding: var(--space-10, 48px) var(--space-7, 24px);
+        }
+
+        /* ======= Layout 2 cột: media trái – summary phải ======= */
+        .bundle-page .layout {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: var(--space-8, 32px);
+            margin-bottom: var(--space-8, 32px);
+        }
+
+        /* Media (ảnh bundle) */
+        .bundle-page .media {
+            background: var(--color-surface, #fff);
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            padding: var(--space-6, 20px);
+        }
+
+        .bundle-page .media__main {
+            position: relative;
+            aspect-ratio: 4/3;
+            border-radius: 10px;
+            overflow: hidden;
+            background: #f3f4f6;
+            display: grid;
+            place-items: center;
+        }
+
+        .bundle-page .media__main img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Summary (tên, meta, CTA) — mô tả đã chuyển xuống dưới */
+        .bundle-page .summary {
+            background: var(--color-surface, #fff);
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            padding: var(--space-7, 24px);
+            display: grid;
+            gap: 14px;
+        }
+
+        .bundle-page .title {
+            font-size: 28px;
+            line-height: 1.25;
+            font-weight: 800;
+            margin: 0;
+            color: var(--color-primary, #0A0A23);
+        }
+
+        /* Meta hàng gọn: giá + chip loại + tổng món */
+        .bundle-page .meta {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px 16px;
+            align-items: center;
+        }
+
+        .bundle-page .price {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--color-secondary, #F97316);
+            white-space: nowrap;
+        }
+
+        .bundle-page .meta-right {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .bundle-page .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: var(--color-bg, #F9FAFB);
+            color: var(--color-text-muted, #6B7280);
+            border: 1px solid var(--color-border, #E5E7EB);
+            font-weight: 700;
+            font-size: 12px;
+            width: fit-content;
+        }
+
+        .bundle-page .meta-lite {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--color-text-muted, #6B7280);
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        /* CTA Panel: bố cục “đầy đặn” hơn để không trống */
+        .bundle-page .cta-panel {
+            display: grid;
+            gap: 10px;
+            padding: 14px;
+            border: 1px dashed var(--color-border, #E5E7EB);
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .bundle-page .cta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .bundle-page .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+            text-decoration: none;
+            user-select: none;
+            transition: background .2s, border-color .2s, color .2s, transform .02s;
+        }
+
+        .bundle-page .btn:active {
+            transform: translateY(1px);
+        }
+
+        .bundle-page .btn--primary {
+            background: var(--color-primary, #0A0A23);
+            color: #fff;
+        }
+
+        .bundle-page .btn--primary:hover {
+            filter: brightness(1.08);
+        }
+
+        .bundle-page .btn--ghost {
+            background: #fff;
+            color: var(--color-secondary, #F97316);
+            border-color: var(--color-secondary, #F97316);
+        }
+
+        .bundle-page .btn--ghost:hover {
+            background: rgba(249, 115, 22, .06);
+        }
+
+        /* Section khối dưới: mô tả & danh sách món */
+        .bundle-page .section {
+            background: var(--color-surface, #fff);
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            padding: var(--space-7, 24px);
+            margin-bottom: var(--space-8, 32px);
+        }
+
+        .bundle-page .section__title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--color-primary, #0A0A23);
+            margin: 0 0 16px;
+            text-align: center;
+        }
+
+        .bundle-page .desc {
+            color: #444;
+            line-height: 1.65;
+            margin: 0;
+        }
+
+        /* Items */
+        .bundle-page .items {
+            display: grid;
+            gap: 14px;
+        }
+
+        .bundle-page .item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 16px;
+            align-items: center;
+            background: var(--color-bg, #F9FAFB);
+            border: 1px solid var(--color-border, #E5E7EB);
+            border-left: 4px solid var(--color-secondary, #F97316);
+            border-radius: 10px;
+            padding: 14px;
+            opacity: 0;
+            transform: translateY(12px);
+            transition: opacity .5s ease, transform .5s ease;
+        }
+
+        .bundle-page .item.is-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .bundle-page .num {
+            width: 36px;
+            height: 36px;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: var(--color-secondary, #F97316);
+            color: #fff;
+            font-weight: 800;
+        }
+
+        .bundle-page .i-name {
+            font-weight: 700;
+            color: var(--color-primary, #0A0A23);
+        }
+
+        .bundle-page .i-desc {
+            color: #555;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+
+        .bundle-page .qty {
+            background: #fff;
+            color: var(--color-secondary, #F97316);
+            border: 1px solid var(--color-secondary, #F97316);
+            border-radius: 999px;
+            padding: 6px 12px;
+            font-weight: 700;
+            font-size: 12px;
+        }
+
+        .bundle-page .empty {
+            text-align: center;
+            color: var(--color-text-muted, #6B7280);
+            padding: 20px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .bundle-page .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body class="bundle-page">
+<!-- Header -->
+<th:block th:replace="~{customer/fragments/header :: header}"></th:block>
+
+<main class="container">
+    <!-- ======= Ảnh + Tóm tắt (không chứa mô tả) ======= -->
+    <section aria-label="Tóm tắt set/bundle" class="layout">
+        <!-- Media -->
+        <aside aria-label="Hình ảnh set/bundle" class="media">
+            <div class="media__main">
+                <img decoding="async"
+                     loading="eager" onerror="this.src='https://via.placeholder.com/800x560?text=No+Image';" th:alt="${bundle.name}"
+                     th:src="${bundle.imageUrl != null ? bundle.imageUrl : 'https://images.unsplash.com/photo-1604908812770-32a87e24e0e0'}"/>
+            </div>
+        </aside>
+
+        <!-- Summary (tên + meta + CTA) -->
+        <article aria-labelledby="bundle-title" class="summary">
+            <h1 class="title" id="bundle-title" th:text="${bundle.name}">Tên set</h1>
+
+            <!-- Meta: Giá + chip loại + tổng món -->
+            <div class="meta">
+                <div class="price price-vnd" th:attr="data-price=${bundle.price}">0 VND</div>
+                <div class="meta-right">
+                    <span class="chip"
+                          th:text="${bundle.bundleType != null and 'COMBO'.equalsIgnoreCase(bundle.bundleType) ? 'Combo' : 'Tasting menu'}">
+  Tasting menu
+</span>
+                    <span class="meta-lite">
+            <!-- icon list -->
+            <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 6h16v2H4V6zm0 5h16v2H4v-2zm0 5h16v2H4v-2z"/></svg>
+            <b th:text="${bundle.items != null ? bundle.items.size() : 0}">0</b> món
+          </span>
+                </div>
+            </div>
+
+            <!-- CTA Panel -->
+            <div aria-label="Hành động nhanh" class="cta-panel">
+                <div class="cta-row">
+                    <a class="btn btn--primary" th:href="@{/reservations/new}">Đặt bàn ngay</a>
+                    <a class="btn btn--ghost" href="javascript:void(0)" onclick="window.history.back()">Quay lại danh
+                        sách</a>
+                </div>
+                <small style="color:var(--color-text-muted,#6B7280);">
+                    Nhân viên sẽ xác nhận đặt bàn sau vài phút. Khung giờ mở cửa: 10:00–22:00.
+                </small>
+            </div>
+        </article>
+    </section>
+
+    <!-- ======= Mô tả (đã chuyển xuống dưới) ======= -->
+    <section aria-label="Mô tả set/bundle" class="section">
+        <h2 class="section__title">Mô tả</h2>
+        <p class="desc" th:text="${bundle.description}">
+            Mô tả chi tiết về set/bundle…
+        </p>
+    </section>
+
+    <!-- ======= Danh sách món ======= -->
+    <section aria-label="Món trong set" class="section">
+        <h2 class="section__title">
+            Món trong set
+            <span th:if="${bundle.totalItems != null}">( <span th:text="${bundle.totalItems}">0</span> )</span>
+        </h2>
+
+        <div class="items" th:if="${bundle.items != null and !#lists.isEmpty(bundle.items)}">
+            <div class="item"
+                 th:classappend="${it.index < 6} ? ' is-in' : null"
+                 th:each="bi, it : ${bundle.items}">
+                <div class="num" th:text="${it.index + 1}">1</div>
+                <div>
+                    <div class="i-name" th:text="${bi.item != null ? bi.item.name : 'Món'}">Tên món</div>
+                    <div class="i-desc" th:text="${bi.item != null ? bi.item.description : ''}">Mô tả ngắn…</div>
+                </div>
+                <div class="qty" th:text="'SL: ' + ${bi.quantity}">SL: 1</div>
+            </div>
+        </div>
+
+        <div class="empty" th:if="${bundle.items == null or #lists.isEmpty(bundle.items)}">
+            Set này chưa có món.
+        </div>
+    </section>
+</main>
+
+<!-- Footer -->
+<th:block th:replace="~{customer/fragments/footer :: footer}"></th:block>
+<th:block th:replace="~{customer/fragments/footer :: scripts}"></th:block>
+<th:block th:replace="~{customer/fragments/header :: scripts}"></th:block>
+
+<script>
+    // Định dạng giá VND theo yêu cầu
+    function formatPriceVND(price) {
+        return new Intl.NumberFormat('vi-VN').format(Math.round(price)) + ' VND';
+    }
+
+    function applyVNDPrices() {
+        document.querySelectorAll('.price-vnd').forEach(el => {
+            const p = Number(el.getAttribute('data-price') || 0);
+            el.textContent = formatPriceVND(p);
+        });
+    }
+
+    // Reveal animation cho danh sách món
+    document.addEventListener('DOMContentLoaded', () => {
+        applyVNDPrices();
+
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((e) => {
+                if (e.isIntersecting) e.target.classList.add('is-in');
+            });
+        }, {threshold: .15, rootMargin: '0px 0px -40px 0px'});
+
+        document.querySelectorAll('.bundle-page .item').forEach(el => io.observe(el));
+    });
+</script>
+</body>
+</html>

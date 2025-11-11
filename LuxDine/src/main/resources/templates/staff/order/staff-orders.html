@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width,initial-scale=1" name="viewport"/>
+    <title>Đơn gọi món — LuxDine</title>
+
+    <!-- Typography -->
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <!-- (Nếu có) styles chung cho staff -->
+    <th:block th:replace="~{staff/fragments/staff-header :: staffStyles}"></th:block>
+
+    <style>
+        :root {
+            --color-primary: #0a0a23;
+            --color-secondary: #f97316;
+            --color-bg: #f9fafb;
+            --color-surface: #fff;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+            --color-success: #22c55e;
+            --color-warning: #facc15;
+            --color-error: #ef4444;
+            --radius: 12px;
+            --btn-radius: 8px;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-xxl: 64px;
+            --h1-size: 32px;
+            --h1-lh: 1.2;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-lh: 1.3;
+            --h2-weight: 600;
+            --h3-size: 20px;
+            --h3-lh: 1.4;
+            --h3-weight: 500;
+            --body-size: 16px;
+            --body-lh: 1.5;
+            --body-weight: 400;
+            --small-size: 14px;
+            --small-lh: 1.4
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            margin: 0;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font: 16px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-lg);
+            width: 100%
+        }
+
+        .page h1 {
+            font-size: var(--h1-size);
+            font-weight: var(--h1-weight);
+            margin: 0 0 var(--space-md);
+            color: var(--color-text)
+        }
+
+        .page-sub {
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-lg);
+            font-size: var(--body-size)
+        }
+
+        /* Alerts */
+        .flash {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 16px
+        }
+
+        .alert {
+            position: relative;
+            border-radius: 10px;
+            padding: 12px 44px 12px 12px;
+            border: 1px solid;
+            box-shadow: var(--shadow);
+            font-weight: 500
+        }
+
+        .alert-success {
+            background: #ecfdf5;
+            color: #065f46;
+            border-color: #a7f3d0
+        }
+
+        .alert-error {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fca5a5
+        }
+
+        .alert .close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 6px;
+            background: #ffffffcc;
+            color: #111827;
+            cursor: pointer
+        }
+
+        .alert .close:hover {
+            background: #ffffff
+        }
+
+        /* Toolbar */
+        .toolbar {
+            display: grid;
+            grid-template-columns:1fr;
+            gap: 12px;
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            margin-bottom: 16px
+        }
+
+        @media (min-width: 768px) {
+            .toolbar {
+                grid-template-columns:repeat(12, 1fr)
+            }
+
+            .col-span-3 {
+                grid-column: span 3
+            }
+
+            .col-span-2 {
+                grid-column: span 2
+            }
+
+            .col-span-4 {
+                grid-column: span 4
+            }
+
+            .col-span-12 {
+                grid-column: span 12
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            color: var(--color-text-muted);
+            margin-bottom: 6px
+        }
+
+        .input, .select {
+            width: 100%;
+            height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 6px;
+            background: #fff;
+            outline: none
+        }
+
+        .input:focus, .select:focus {
+            border-color: var(--color-primary)
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid transparent;
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            cursor: pointer;
+            line-height: 1;
+            text-decoration: none
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff
+        }
+
+        .btn-primary:hover {
+            filter: brightness(.95)
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary)
+        }
+
+        .btn-secondary:hover {
+            background: rgba(249, 115, 22, .06)
+        }
+
+        .btn-ghost {
+            background: #fff;
+            color: var(--color-text);
+            border-color: var(--color-border)
+        }
+
+        .btn-ghost:hover {
+            background: #f8fafc
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: var(--color-error);
+            border: 1px solid var(--color-error)
+        }
+
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed
+        }
+
+        /* Empty */
+        .empty {
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            color: var(--color-text-muted);
+            background: linear-gradient(0deg, #fff, #fff), repeating-linear-gradient(45deg, #f9fafb, #f9fafb 10px, #f3f4f6 10px, #f3f4f6 20px)
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            height: 28px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 999px;
+            border: 1px solid transparent
+        }
+
+        .status--IN_PROGRESS {
+            background: #eef2ff;
+            color: #3730a3;
+            border-color: #c7d2fe
+        }
+
+        .status--COMPLETED {
+            background: #ecfdf5;
+            color: #065f46;
+            border-color: #a7f3d0
+        }
+
+        .status--CANCELLED {
+            background: #fef2f2;
+            color: #991b1b;
+            border-color: #fca5a5
+        }
+
+        /* Orders list */
+        .orders-list {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden
+        }
+
+        .orders-head, .orders-row {
+            display: grid;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            grid-template-columns:120px 180px 120px 80px 140px 160px auto
+        }
+
+        .orders-head {
+            background: #f8fafc;
+            color: var(--color-text-muted);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: .02em
+        }
+
+        .orders-row {
+            border-top: 1px solid var(--color-border)
+        }
+
+        .orders-cell.actions {
+            display: grid;
+            grid-template-columns:120px 140px 110px;
+            justify-content: end;
+            gap: 8px
+        }
+
+        @media (max-width: 1024px) {
+            .orders-head, .orders-row {
+                grid-template-columns:100px 160px 100px 70px 120px 150px auto
+            }
+        }
+
+        @media (max-width: 768px) {
+            .orders-head {
+                display: none
+            }
+
+            .orders-row {
+                grid-template-columns:1fr 1fr
+            }
+
+            .orders-cell {
+                position: relative;
+                padding-top: 6px
+            }
+
+            .orders-cell::before {
+                content: attr(data-label);
+                display: block;
+                font-size: 12px;
+                color: var(--color-text-muted);
+                margin-bottom: 4px
+            }
+
+            .orders-cell.actions {
+                grid-template-columns:1fr 1fr 1fr;
+                justify-content: stretch
+            }
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000
+        }
+
+        .modal[aria-hidden="false"] {
+            display: flex
+        }
+
+        .modal__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .45)
+        }
+
+        .modal__dialog {
+            position: relative;
+            width: min(520px, 92vw);
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px
+        }
+
+        .modal__title {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-text)
+        }
+
+        .modal__msg {
+            margin: 0 0 16px 0;
+            color: var(--color-text)
+        }
+
+        .modal__actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end
+        }
+    </style>
+
+    <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+</head>
+<body>
+<header th:replace="~{staff/fragments/staff-header :: staffHeader}"></header>
+<main class="page">
+    <h1>Đơn gọi món</h1>
+    <div class="page-sub">Lọc theo ngày, trạng thái hoặc tìm nhanh theo ghi chú/bàn/Mã đơn.</div>
+
+    <!-- Thông báo -->
+    <div aria-live="polite" class="flash">
+        <div class="alert alert-success" th:if="${success}">
+            <span th:text="${success}">Thành công</span>
+            <button class="close" onclick="this.parentElement.remove()" type="button">×</button>
+        </div>
+        <div class="alert alert-error" th:if="${error}">
+            <span th:text="${error}">Có lỗi xảy ra</span>
+            <button class="close" onclick="this.parentElement.remove()" type="button">×</button>
+        </div>
+    </div>
+
+    <!-- Bộ lọc -->
+    <form class="toolbar" method="get" th:action="@{/staff/orders}" th:object="${filter}">
+        <div class="col-span-3">
+            <label for="dateFrom">Từ ngày</label>
+            <input class="input" id="dateFrom" name="dateFrom" th:value="${param.dateFrom}" type="date"/>
+        </div>
+        <div class="col-span-3">
+            <label for="dateTo">Đến ngày</label>
+            <input class="input" id="dateTo" name="dateTo" th:value="${param.dateTo}" type="date"/>
+        </div>
+        <div class="col-span-2">
+            <label for="status">Trạng thái</label>
+            <select class="select" id="status" name="status" th:field="*{status}">
+                <option value="">Tất cả</option>
+                <option th:each="st : ${statuses}" th:text="${st}" th:value="${st}"></option>
+            </select>
+        </div>
+        <div class="col-span-4">
+            <label for="q">Tìm kiếm</label>
+            <input class="input" id="q" name="q" placeholder="Tìm theo Mã đơn, ghi chú, tên bàn…" th:value="${param.q}"
+                   type="search"/>
+        </div>
+        <div class="col-span-12 actions">
+            <a class="btn btn-secondary" th:href="@{/staff/orders/new}">+ Tạo đơn mới</a>
+            <a class="btn btn-ghost" role="button" th:href="@{/staff/orders}">Đặt lại</a>
+            <button class="btn btn-primary" type="submit">Áp dụng bộ lọc</button>
+        </div>
+    </form>
+
+    <!-- Trạng thái rỗng -->
+    <div class="empty" th:if="${orders == null or #lists.isEmpty(orders)}">
+        Chưa có đơn nào khớp bộ lọc. Hãy điều chỉnh bộ lọc hoặc tạo mới.
+    </div>
+
+    <!-- Danh sách đơn -->
+    <section class="orders-list" th:if="${orders != null and !#lists.isEmpty(orders)}">
+        <!-- Header (desktop) -->
+        <div class="orders-head">
+            <div>Mã đơn</div>
+            <div>Ngày tạo</div>
+            <div>Bàn</div>
+            <div>Món</div>
+            <div>Tạm tính</div>
+            <div>Trạng thái</div>
+        </div>
+
+        <!-- Hàng dữ liệu -->
+        <div class="orders-row" th:each="order : ${orders}">
+            <div class="orders-cell" data-label="Mã đơn">#<span th:text="${order.id}">123</span></div>
+
+            <div class="orders-cell" data-label="Ngày tạo">
+                <span th:text="${#dates.format(order.createdDate, 'dd/MM/yyyy HH:mm')}">01/10/2025 18:30</span>
+            </div>
+
+            <div class="orders-cell" data-label="Bàn">
+                <span th:text="${order.tableName != null ? order.tableName : '—'}">T1</span>
+            </div>
+
+            <div class="orders-cell" data-label="Món">
+                <span th:text="${order.itemsCount}">3</span>
+            </div>
+
+            <!-- ĐỊNH DẠNG TIỀN BẰNG JS: dùng data-amount -->
+            <div class="orders-cell" data-label="Tạm tính">
+                <span class="mono" data-amount th:attr="data-amount=${order.subTotal}">0 VND</span>
+            </div>
+
+            <div class="orders-cell" data-label="Trạng thái">
+                <span class="badge"
+                      th:classappend="${' status--' + ((order.status.name() != null and order.status.name() != '') ? order.status.name() : 'PENDING')}">
+                  <span th:text="${order.status.name() == 'IN_PROGRESS' ? 'Đang phục vụ' : (order.status.name() == 'COMPLETED' ? 'Hoàn tất' : (order.status.name() == 'CANCELLED' ? 'Đã hủy' : order.status.name()))}">Đang phục vụ</span>
+                </span>
+            </div>
+
+            <!-- Hành động: 3 slot cố định -->
+            <div class="orders-cell actions" data-label="Hành động">
+                <!-- Slot 1: Thanh toán -->
+                <div class="slot">
+                    <form method="post" style="display:inline"
+                          th:action="@{|/payment/staff/checkout|}" th:if="${order.status.name() == 'IN_PROGRESS'}">
+                        <input name="orderId" th:value="${order.id}" type="hidden"/>
+                        <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"
+                               type="hidden"/>
+                        <button class="btn btn-secondary" type="submit">Thanh toán</button>
+                    </form>
+                </div>
+
+                <!-- Slot 2: Xem chi tiết (luôn có) -->
+                <div class="slot">
+                    <a class="btn btn-ghost" th:href="@{|/staff/orders/${order.id}|}">Xem chi tiết</a>
+                </div>
+
+                <!-- Slot 3: Hủy (ẩn khi đã hủy/hoàn tất) -->
+                <div class="slot">
+                    <form class="js-cancel-form" method="post" style="display:inline"
+                          th:action="@{|/staff/orders/${order.id}/cancel|}"
+                          th:if="${order.status.name() != 'CANCELLED' and order.status.name() != 'COMPLETED'}">
+                        <input name="_method" type="hidden" value="post"/>
+                        <input th:if="${_csrf != null}" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"
+                               type="hidden"/>
+                        <button class="btn btn-danger js-cancel-btn" th:attr="data-order-id=${order.id}" type="button">
+                            Hủy
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- Modal xác nhận -->
+<div aria-hidden="true" aria-labelledby="confirmTitle" aria-modal="true" class="modal" id="confirmModal" role="dialog">
+    <div class="modal__backdrop" data-close="true"></div>
+    <div class="modal__dialog" role="document">
+        <h3 class="modal__title" id="confirmTitle">Xác nhận hủy đơn</h3>
+        <p class="modal__msg" id="confirmMsg">Bạn có chắc muốn hủy đơn này?</p>
+        <div class="modal__actions">
+            <button class="btn btn-ghost" id="cancelNo" type="button">Không</button>
+            <button class="btn btn-danger" id="cancelYes" type="button">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ===== Định dạng tiền VND (giống cách làm trước) =====
+    function formatPriceVND(price) {
+        const n = Number(price);
+        if (isNaN(n)) return '0 VND';
+        return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' VND';
+    }
+
+    function applyMoneyFormatting(root = document) {
+        root.querySelectorAll('[data-amount]').forEach(function (el) {
+            const raw = el.getAttribute('data-amount');
+            el.textContent = formatPriceVND(raw);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        applyMoneyFormatting();
+    });
+
+    // ===== Modal xác nhận hủy =====
+    (function () {
+        let currentForm = null, lastFocus = null;
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmMsg');
+        const btnYes = document.getElementById('cancelYes');
+        const btnNo = document.getElementById('cancelNo');
+
+        function openModal(message) {
+            lastFocus = document.activeElement;
+            msgEl.textContent = message || 'Bạn có chắc muốn hủy đơn này?';
+            modal.setAttribute('aria-hidden', 'false');
+            btnNo.focus();
+            document.addEventListener('keydown', onKey);
+        }
+
+        function closeModal() {
+            modal.setAttribute('aria-hidden', 'true');
+            document.removeEventListener('keydown', onKey);
+            if (lastFocus) lastFocus.focus();
+            currentForm = null;
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnYes.click();
+            }
+        }
+
+        modal.addEventListener('click', (e) => {
+            if (e.target.dataset.close === 'true') closeModal();
+        });
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.js-cancel-btn');
+            if (!btn) return;
+            e.preventDefault();
+            currentForm = btn.closest('form');
+            const id = btn.getAttribute('data-order-id') || '';
+            openModal(id ? `Bạn có chắc muốn hủy đơn #${id}?` : 'Bạn có chắc muốn hủy đơn này?');
+        });
+
+        btnNo.addEventListener('click', closeModal);
+        btnYes.addEventListener('click', function () {
+            if (currentForm) currentForm.submit();
+            closeModal();
+        });
+    })();
+</script>
+
+<!-- AI Chatbot Widget -->
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+<th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+</body>
+</html>

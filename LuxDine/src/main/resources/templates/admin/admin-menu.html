@@ -1,0 +1,4843 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Quản lý menu - LuxDine</title>
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <th:block th:replace="~{admin/fragments/admin-header :: adminStyles}"></th:block>
+
+  <style>
+
+    /* ========== ADMIN MENU STYLES ========== */
+    :root {
+      --color-primary: #0A0A23;
+      --color-secondary: #F97316;
+      --color-bg-neutral: #F9FAFB;
+      --color-border: #E5E7EB;
+      --color-text: #111827;
+      --color-text-gray: #6B7280;
+      --color-success: #22C55E;
+      --color-error: #EF4444;
+
+      --font-body: "Inter", system-ui, sans-serif;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background-color: var(--color-bg-neutral);
+      color: var(--color-text);
+      margin: 0;
+      padding: 0;
+    }
+
+    .menu-management-container {
+      padding: var(--space-lg);
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .page-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin-bottom: 4px;
+    }
+
+    .page-header p {
+      color: var(--color-text-gray);
+      font-size: 16px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .tabs {
+      display: flex;
+      background: #F3F4F6;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: var(--space-lg);
+    }
+
+    .tab-item {
+      flex: 1;
+      text-align: center;
+      padding: var(--space-md);
+      color: var(--color-text-gray);
+      text-decoration: none;
+      font-weight: 500;
+      transition: 0.3s;
+    }
+
+    .tab-item.active {
+      background: white;
+      color: var(--color-primary);
+      font-weight: 600;
+      border-bottom: 3px solid var(--color-secondary);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-md);
+    }
+
+    .search-filter {
+      display: flex;
+      gap: var(--space-md);
+      align-items: center;
+    }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 6px 10px;
+      background: white;
+      max-width: 200px;
+    }
+
+    .search-box i {
+      color: var(--color-text-gray);
+      margin-right: 8px;
+    }
+
+    .search-box input {
+      border: none;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .category-filter {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 6px 12px;
+      background: white;
+    }
+
+    .btn-add-item {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-add-item:hover {
+      background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-add-item:active {
+      transform: translateY(0);
+    }
+
+    .category-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin: 20px 0 10px;
+      padding-left: 4px;
+      border-left: 4px solid var(--color-secondary);
+    }
+
+    .menu-list-item {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      margin-bottom: var(--space-md);
+      overflow: hidden;
+      background: white;
+    }
+
+    .menu-row {
+      display: grid;
+      grid-template-columns: 0.5fr 0.5fr 1fr auto; 
+      align-items: center;
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: background 0.2s;
+      gap: 30px;
+    }
+
+    .menu-row > span {
+      padding: 0 12px;
+    }
+
+    .menu-row .menu-price {
+      text-align: right;
+    }
+
+    .menu-row .menu-visibility {
+      text-align: center;
+    }
+
+    .menu-row:hover {
+      background-color: #F3F4F6;
+    }
+
+    .menu-name {
+      font-weight: 500;
+    }
+
+    .toggle-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .menu-detail {
+      display: none;
+      overflow: hidden;
+      background: var(--color-bg-neutral);
+      transition: all 0.4s ease;
+      padding: var(--space-md) 0;
+    }
+
+    .menu-detail.active {
+      display: block;
+      animation: slideDown 0.35s ease forwards;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .menu-grid {
+      display: flex;
+      justify-content: center;
+    }
+
+    .menu-card {
+      width: 32%;
+      max-width: 420px;
+      background: white;
+      border-radius: var(--radius-lg);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      overflow: hidden;
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .menu-card:hover {
+      transform: scale(1.02);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    }
+
+     
+.bundle-menu-row {
+  display: grid;
+  grid-template-columns: 0.5fr 0.3fr 0.6fr 0.2fr auto; 
+  align-items: center;
+  padding: var(--space-md);
+  cursor: pointer;
+  transition: background 0.2s;
+
+}
+
+.bundle-menu-row > span {
+  padding: 0 ;
+}
+
+.bundle-menu-row .menu-name {
+  font-weight: 500;
+}
+
+.bundle-menu-row > span:nth-child(2) {
+  text-align: right;
+}
+
+.bundle-menu-row > span:nth-child(3), 
+.bundle-menu-row > span:nth-child(4) { 
+  text-align: center;
+}
+
+    .bundle-menu-row:hover {
+      background-color: #F3F4F6;
+    }
+
+    .bundle-menu-row .toggle-icon {
+      transition: transform 0.3s ease;
+    }
+
+    .card-image {
+      position: relative;
+      width: 100%;
+      height: 130px;
+      overflow: hidden;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+
+    .menu-card:hover .card-image img {
+      transform: scale(1.05);
+    }
+
+    .badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 4px 10px;
+      font-size: 12px;
+      border-radius: 8px;
+      color: white;
+      font-weight: 600;
+      transition: background 0.3s ease, transform 0.2s ease;
+    }
+
+    .badge.available { background: var(--color-success); }
+    .badge.unavailable { background: var(--color-error); }
+
+    .card-content {
+      padding: 14px 18px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--color-primary);
+    }
+
+    .price {
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--color-primary);
+    }
+
+   
+
+    .description {
+      margin: 6px 0 10px;
+      color: var(--color-text-gray);
+      font-size: 14px;
+      line-height: 1.4;
+    }
+
+    .card-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid var(--color-border);
+      padding-top: 10px;
+    }
+
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 46px;
+      height: 24px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      border-radius: 24px;
+      transition: 0.3s;
+    }
+
+    .slider::before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: 0.3s;
+    }
+
+    .switch input:checked + .slider {
+      background-color: var(--color-success);
+    }
+
+    .switch input:checked + .slider::before {
+      transform: translateX(22px);
+    }
+
+    .action-buttons a {
+      color: var(--color-text-gray);
+      margin-left: 10px;
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .action-buttons a:hover {
+      color: var(--color-primary);
+    }
+
+    /* ========== MODAL STYLES ========== */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      z-index: 9999;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+      animation: fadeInOverlay 0.3s ease;
+    }
+
+    @keyframes fadeInOverlay {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .modal-overlay.active {
+      display: flex !important;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 600px;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: popupBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      position: relative;
+    }
+
+    @keyframes popupBounce {
+      0% {
+        transform: scale(0.3) translateY(-50px);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.05);
+      }
+      70% {
+        transform: scale(0.95);
+      }
+      100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-overlay.closing .modal-content {
+      animation: popupClose 0.3s ease forwards;
+    }
+
+    @keyframes popupClose {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: scale(0.7) translateY(30px);
+        opacity: 0;
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-md) var(--space-lg);
+      border-bottom: 2px solid var(--color-border);
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .modal-header h3 i {
+      color: white;
+    }
+
+    .modal-close {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 24px;
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close:hover {
+      background: var(--color-error);
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      padding: 24px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--color-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .form-group label i {
+      color: #1a1a1a;
+      font-size: 12px;
+    }
+
+    .form-group label .required {
+      color: var(--color-error);
+      font-weight: 700;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      font-family: var(--font-body);
+      font-size: 14px;
+      padding: 10px 12px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.1);
+    }
+
+    .form-group small {
+      color: var(--color-text-gray);
+      font-size: 12px;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .form-group small i {
+      color: #1a1a1a;
+    }
+
+    .form-section-title {
+      grid-column: 1 / -1;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--color-primary);
+      margin: 12px 0 0;
+      padding-top: 16px;
+      border-top: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .form-section-title i {
+      color: #1a1a1a;
+    }
+
+    .modal-footer {
+      padding: 16px 24px;
+      background: var(--color-bg-neutral);
+      border-top: 2px solid var(--color-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+
+    .btn-cancel {
+      background: white;
+      color: var(--color-text-gray);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      transition: all 0.3s;
+      border: 2px solid var(--color-border);
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+      background: #f3f4f6;
+      border-color: var(--color-text-gray);
+    }
+
+    .btn-submit {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      padding: 10px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .btn-submit:hover {
+      background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    /* ========== CATEGORY MANAGEMENT POPUP STYLES ========== */
+  .category-popup-overlay {
+    display: none;
+    position: fixed;
+    z-index: 9998;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+    animation: fadeInOverlay 0.3s ease;
+  }
+
+  .category-popup-overlay.active {
+    display: flex !important;
+  }
+
+  .category-popup-content {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 900px;
+    max-height: 85vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: popupBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .category-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-md) var(--space-lg);
+    border-bottom: 2px solid var(--color-border);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    color: white;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  .category-popup-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .category-popup-body {
+    padding: 24px;
+  }
+
+  .category-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  .category-list-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--color-text-gray);
+  }
+
+  .btn-add-category {
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); /* ← ĐỔI từ xanh lá sang đen */
+    color: white;
+    padding: 8px 16px;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+
+   .btn-add-category:hover {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%); /* ← ĐỔI hover */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 16px;
+  }
+
+  .category-card {
+    background: white;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    transition: all 0.3s;
+    position: relative;
+  }
+
+  .category-card:hover {
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  .category-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+  }
+
+  .category-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin: 0;
+  }
+
+  .category-card-count {
+    background: var(--color-bg-neutral);
+    color: var(--color-text-gray);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .category-card-count.has-items {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--color-primary);
+  }
+
+  .category-card-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .btn-category-edit,
+  .btn-category-delete {
+    flex: 1;
+    padding: 6px 12px;
+    border-radius: var(--radius-md);
+    font-size: 13px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .btn-category-edit {
+    background: rgba(249, 115, 22, 0.1);
+    color: var(--color-primary);
+  }
+
+  .btn-category-edit:hover {
+    background: var(--color-primary);
+    color: white;
+  }
+
+  .btn-category-delete {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--color-error);
+  }
+
+  .btn-category-delete:hover:not(:disabled) {
+    background: var(--color-error);
+    color: white;
+  }
+
+  .btn-category-delete:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ========== CATEGORY FORM MODAL ========== */
+  .category-form-modal {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    justify-content: center;
+    align-items: center;
+  }
+
+  .category-form-modal.active {
+    display: flex !important;
+  }
+
+  .category-form-content {
+    background: white;
+    border-radius: var(--radius-lg);
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: popupBounce 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+
+  .category-form-header {
+    padding: 16px 24px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); /* ← ĐỔI từ xanh lá sang đen */
+    color: white;
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .category-form-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .category-form-body {
+    padding: 24px;
+  }
+
+  .category-form-footer {
+    padding: 16px 24px;
+    background: var(--color-bg-neutral);
+    border-top: 2px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+  }
+  .category-filter-btn:hover {
+    background: #F3F4F6 !important;
+    border-color: #1a1a1a !important;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .category-filter-btn.active:hover {
+    background: linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  
+    /* ========== BUNDLE MODAL STYLES ========== */
+    .item-card-bundle {
+      background: white;
+      border: 1.85px solid #000000;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      position: relative;
+      text-align: center;
+    }
+
+    .item-card-bundle:hover {
+      border-color: var(--color-primary);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .item-card-bundle.selected {
+      border-color: var(--color-success);
+      background: rgba(34, 197, 94, 0.05);
+    }
+
+    
+
+    .item-card-bundle h4 {
+      margin: 0 0 4px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--color-text);
+      line-height: 1.3;
+    }
+
+    .item-card-bundle .price {
+      color: var(--color-primary);
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .item-card-bundle .checkmark {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      width: 20px;
+      height: 20px;
+      background: var(--color-success);
+      border-radius: 50%;
+      color: white;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+    }
+
+    .item-card-bundle.selected .checkmark {
+      display: flex;
+    }
+
+        .selected-item-row-bundle {
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) 120px 110px; 
+          align-items: center;
+          gap: 12px;
+          padding: 12px 0; 
+          border-bottom: 1px solid #F3F4F6;
+        }
+        .selected-item-row-bundle:last-child {
+          border-bottom: none;
+        }
+
+        .selected-item-info-bundle {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+         }
+   
+        .selected-item-info-bundle img {
+      width: 64px;      
+      height: 40px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: block;   
+      flex-shrink: 0;
+    }
+
+    .selected-item-info-bundle > div {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .selected-item-info-bundle h5 {
+      margin: 0;
+      font-size: 13px;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .selected-item-info-bundle .price-small {
+      font-size: 11px;
+      color: #6B7280;
+    }
+          .selected-item-row-bundle .subtotal {
+        width: 110px;       
+        text-align: right;
+        white-space: nowrap;
+        font-weight: 600;
+      }
+
+        .quantity-control-bundle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 120px; 
+    }
+
+    .quantity-control-bundle button {
+      width: 28px;
+      height: 28px;
+      line-height: 26px;
+      text-align: center;
+      border-radius: 6px;
+      border: 1px solid #E5E7EB;
+      background: #fff;
+      color: #111827;
+      cursor: pointer;
+    }
+
+        .quantity-control-bundle .qty {
+      display: inline-block;
+      width: 28px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .quantity-control-bundle button:hover {
+      background: var(--color-bg-neutral);
+      border-color: var(--color-primary);
+    }
+
+    .quantity-control-bundle input {
+      width: 35px;
+      text-align: center;
+      border: 1px solid #E5E7EB;
+      border-radius: 4px;
+      padding: 2px;
+      font-size: 12px;
+    }
+
+    .btn-remove-item-bundle {
+      background: rgba(239, 68, 68, 0.1);
+      color: var(--color-error);
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 11px;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .btn-remove-item-bundle:hover {
+      background: var(--color-error);
+      color: white;
+    }
+
+          /* ========== CONTENT SECTION TOGGLE ========== */
+      .content-section {
+        display: none;
+        animation: fadeIn 0.4s ease;
+      }
+
+      .content-section.active {
+        display: block;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .bundle-creation-container {
+        max-width: 1400px; 
+        margin: 0 auto;
+        width: 100%; 
+      }
+
+      
+/* ========== BUNDLE LIST STYLES ========== */
+/* == Bundle inline list styles == */
+.bundle-item-list {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid #F3F4F6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.bundle-item-list:hover { background: #F9FAFB; }
+.bundle-item-list:last-child { border-bottom: none; }
+.bundle-item-list.selected { background: #EFF6FF; border-left: 3px solid #3B82F6; }
+.bundle-item-info { flex: 1; min-width: 0; }
+.bundle-item-name { font-size: 14px; font-weight: 600; color: #111827; margin: 0 0 2px 0; }
+.bundle-item-category { font-size: 12px; color: #6B7280; margin: 0; }
+.bundle-item-price { font-size: 14px; font-weight: 700; color: #059669; margin: 0 16px 0 12px; white-space: nowrap; }
+.bundle-item-add-btn {
+  padding: 6px 16px; background: #3B82F6; color: white; border: none; border-radius: 6px;
+  font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap;
+}
+.bundle-item-add-btn:hover { background: #2563EB; }
+.bundle-item-list.selected .bundle-item-add-btn { background: #10B981; }
+.bundle-item-list.selected .bundle-item-add-btn::after { content: " ✓"; }
+
+/* Scrollbar */
+#available-items-list-inline {
+  padding: 12px;        
+  box-sizing: border-box;
+  border: 1px solid #000000;
+}
+#available-items-list-inline::-webkit-scrollbar { width: 6px; }
+#available-items-list-inline::-webkit-scrollbar-track { background: #F3F4F6; }
+#available-items-list-inline::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 3px; }
+#available-items-list-inline::-webkit-scrollbar-thumb:hover { background: #9CA3AF; }
+
+@media (max-width: 640px) {
+  .bundle-item-list { padding: 10px 12px; }
+  .bundle-item-name { font-size: 13px; }
+  .bundle-item-price { font-size: 13px; margin: 0 8px 0 8px; }
+  .bundle-item-add-btn { padding: 5px 12px; font-size: 12px; }
+}
+
+/* == Bundle Detail Card (distinct from menu card) == */
+.bundle-detail-grid {
+  display: flex;
+  justify-content: center;
+}
+.bundle-card {
+  width: 60%;
+  max-width: 960px;
+  background: #fff;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  overflow: hidden;
+  transition: transform .25s ease, box-shadow .25s ease;
+}
+.bundle-card:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+}
+.bundle-card-image {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  overflow: hidden;
+  border-bottom: 1px solid var(--color-border);
+}
+.bundle-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform .4s ease;
+}
+.bundle-card:hover .bundle-card-image img {
+  transform: scale(1.03);
+}
+.bundle-badge {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 600;
+}
+.bundle-badge.available { background: var(--color-success); }
+.bundle-badge.unavailable { background: var(--color-error); }
+
+.bundle-card-content { padding: 14px 18px; }
+.bundle-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bundle-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+.bundle-card-price {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-primary);
+}
+.bundle-card-desc {
+  margin: 6px 0 10px;
+  color: var(--color-text-gray);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.bundle-card-items { margin-top: 8px; }
+.bundle-card-items-title {
+  font-weight: 600;
+  color: var(--color-primary);
+  margin-bottom: 6px;
+}
+.bundle-card-items-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.bundle-item-tag {
+  background: #F3F4F6;
+  color: #111827;
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 12px;
+}
+
+.bundle-card-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  padding-top: 10px;
+}
+
+@media (max-width: 1024px) {
+  .bundle-card { width: 80%; }
+}
+@media (max-width: 768px) {
+  .bundle-card { width: 100%; }
+  .bundle-card-image { height: 140px; }
+}
+
+/* ========== TOAST NOTIFICATION STYLES ========== */
+.toast-container {
+  position: fixed;
+  top: 80px;
+  right: 24px;
+      z-index: 10000;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      max-width: 400px;
+    }
+
+    .toast {
+      background: white;
+      border-radius: var(--radius-md);
+      padding: 16px 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 300px;
+      animation: slideIn 0.3s ease;
+      border-left: 4px solid;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        transform: translateX(0);
+        opacity: 1;
+      }
+      to {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+    }
+
+    .toast.hiding {
+      animation: slideOut 0.3s ease forwards;
+    }
+
+    .toast-icon {
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .toast-content {
+      flex: 1;
+    }
+
+    .toast-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .toast-message {
+      font-size: 13px;
+      color: var(--color-text-gray);
+      line-height: 1.4;
+    }
+
+    .toast-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-gray);
+      font-size: 16px;
+      padding: 4px;
+      transition: color 0.2s;
+      flex-shrink: 0;
+    }
+
+    .toast-close:hover {
+      color: var(--color-text);
+    }
+
+    .toast.success {
+      border-left-color: var(--color-success);
+    }
+
+    .toast.success .toast-icon {
+      color: var(--color-success);
+    }
+
+    .toast.error {
+      border-left-color: var(--color-error);
+    }
+
+    .toast.error .toast-icon {
+      color: var(--color-error);
+    }
+
+    .toast.warning {
+      border-left-color: var(--color-secondary);
+    }
+
+    .toast.warning .toast-icon {
+      color: var(--color-secondary);
+    }
+
+    .toast.info {
+      border-left-color: var(--color-primary);
+    }
+
+    .toast.info .toast-icon {
+      color: var(--color-primary);
+    }
+
+    /* ========== PAGINATION STYLES ========== */
+    .pagination-btn {
+      padding: 8px 16px;
+      background: white;
+      color: #111827;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background: #F9FAFB;
+      border-color: #1a1a1a;
+      transform: translateY(-2px);
+    }
+
+    .pagination-btn:disabled {
+      background: #E5E7EB;
+      color: #9CA3AF;
+      cursor: not-allowed;
+    }
+
+    .pagination-page-btn {
+      width: 40px;
+      height: 40px;
+      background: white;
+      color: #111827;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .pagination-page-btn.active {
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: white;
+      border-color: #1a1a1a;
+    }
+
+    .pagination-page-btn:hover:not(.active) {
+      background: #F9FAFB;
+      border-color: #1a1a1a;
+    }
+
+    /* ========== CONFIRMATION DIALOG STYLES ========== */
+    .confirm-dialog-overlay {
+      display: none;
+      position: fixed;
+      z-index: 10001;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      justify-content: center;
+      align-items: center;
+      animation: fadeInOverlay 0.2s ease;
+    }
+
+    .confirm-dialog-overlay.active {
+      display: flex !important;
+    }
+
+    .confirm-dialog {
+      background: white;
+      border-radius: var(--radius-lg);
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: popupShake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+      transform: translate3d(0, 0, 0);
+    }
+
+    @keyframes popupShake {
+      0%, 100% {
+        transform: scale(0.5) translateY(-30px);
+        opacity: 0;
+      }
+      10% {
+        transform: scale(1.05) translateX(-5px);
+        opacity: 1;
+      }
+      20% {
+        transform: scale(1.05) translateX(5px);
+      }
+      30% {
+        transform: scale(1.02) translateX(-3px);
+      }
+      40% {
+        transform: scale(1.02) translateX(3px);
+      }
+      50%, 100% {
+        transform: scale(1) translateX(0);
+      }
+    }
+
+    .confirm-dialog-overlay.closing .confirm-dialog {
+      animation: popupClose 0.3s ease forwards;
+    }
+
+    .confirm-dialog-header {
+      padding: 20px 24px;
+      border-bottom: 2px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .confirm-dialog-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: rgba(239, 68, 68, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .confirm-dialog-icon i {
+      font-size: 24px;
+      color: var(--color-error);
+    }
+
+    .confirm-dialog-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text);
+      margin: 0;
+    }
+
+    .confirm-dialog-body {
+      padding: 24px;
+    }
+
+    .confirm-dialog-message {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--color-text-gray);
+      margin: 0;
+    }
+
+    .confirm-dialog-footer {
+      padding: 16px 24px;
+      background: var(--color-bg-neutral);
+      border-top: 2px solid var(--color-border);
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+    }
+
+    .btn-confirm-cancel {
+      background: white;
+      color: var(--color-text-gray);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      transition: all 0.3s;
+      border: 2px solid var(--color-border);
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 14px;
+    }
+
+    .btn-confirm-cancel:hover {
+      background: #f3f4f6;
+      border-color: var(--color-text-gray);
+    }
+
+    .btn-confirm-delete {
+      background: var(--color-error);
+      color: white;
+      padding: 10px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 600;
+      transition: all 0.3s;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+      font-size: 14px;
+      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-confirm-delete:hover {
+      background: #dc2626;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .btn-confirm-delete:active {
+      transform: translateY(0);
+    }
+
+  </style>
+</head>
+<body>
+
+<th:block th:replace="~{admin/fragments/admin-header :: adminHeader}"></th:block>
+
+
+<!-- ========== TOAST NOTIFICATION CONTAINER ========== -->
+<div class="toast-container" id="toast-container"></div>
+
+<!-- ========== CONFIRMATION DIALOG ========== -->
+<div class="confirm-dialog-overlay" id="confirm-dialog-overlay">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog-header">
+      <div class="confirm-dialog-icon">
+        <i class="fa fa-exclamation-triangle"></i>
+      </div>
+      <h3 class="confirm-dialog-title" id="confirm-dialog-title">Xác nhận</h3>
+    </div>
+    <div class="confirm-dialog-body">
+      <p class="confirm-dialog-message" id="confirm-dialog-message">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+    </div>
+    <div class="confirm-dialog-footer">
+      <button type="button" class="btn-confirm-cancel" id="btn-confirm-cancel">
+        <i class="fa fa-times"></i> Hủy
+      </button>
+      <button type="button" class="btn-confirm-delete" id="btn-confirm-delete">
+        <i class="fa fa-trash"></i> Xóa
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ========== CANCEL CONFIRMATION DIALOG (Custom for Edit Cancel) ========== -->
+<div class="confirm-dialog-overlay" id="cancel-edit-dialog-overlay">
+  <div class="confirm-dialog">
+    <div class="confirm-dialog-header" style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%);">
+      <div class="confirm-dialog-icon" style="background: rgba(255, 255, 255, 0.1);">
+        <i class="fa fa-exclamation-circle" style="color: #ffffff;"></i>
+      </div>
+      <h3 class="confirm-dialog-title" id="cancel-dialog-title" style="color: white;">Hủy chỉnh sửa?</h3>
+    </div>
+    <div class="confirm-dialog-body">
+      <p class="confirm-dialog-message" id="cancel-dialog-message">Các thay đổi chưa lưu sẽ bị mất. Bạn có chắc muốn hủy?</p>
+    </div>
+    <div class="confirm-dialog-footer">
+      <button type="button" class="btn-confirm-cancel" id="btn-cancel-no">
+        <i class="fa fa-times"></i> Không
+      </button>
+      <button type="button" class="btn-confirm-delete" id="btn-cancel-yes" style="background: #1f2937;">
+        <i class="fa fa-check"></i> Có, hủy
+      </button>
+    </div>
+  </div>
+</div>
+
+
+  <div class="menu-management-container">
+    <header class="page-header">
+      <h1>Quản lý menu</h1>
+      <p>Quản lý các mục menu và bộ combo</p>
+    </header>
+
+    <nav class="tabs">
+      <a href="javascript:void(0)" onclick="showSection('menu-items')" class="tab-item active" id="tab-menu-items">
+        Mục menu
+      </a>
+      <a href="javascript:void(0)" onclick="showSection('bundles')" class="tab-item" id="tab-bundles">
+        Bộ combo
+      </a>
+    </nav>
+
+  <!-- ========== SECTION 1: MENU ITEMS (MẶC ĐỊNH) ========== -->
+  <div id="section-menu-items" class="content-section active">
+    <div class="toolbar">
+      <div class="search-filter">
+        <div class="search-box">
+          <i class="fa fa-search"></i>
+          <input type="text" placeholder="Tìm kiếm món ăn..." id="search-input">
+          <i class="fa fa-times search-clear" onclick="clearSearch()" style="cursor:pointer; color:#6B7280; display:none;"></i>
+        </div>
+        <select class="category-filter">
+          <option value="all">Tất cả danh mục</option>
+        </select>
+      </div>
+    
+      <div style="display: flex; gap: 12px;">
+        <button type="button" id="btn-manage-categories" class="btn-add-item" style="background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);">
+          <i class="fa fa-folder-tree"></i> Quản lý danh mục
+        </button>
+        <button type="button" id="btn-open-modal" class="btn-add-item">
+          <i class="fa fa-plus"></i> Thêm mục menu
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-list">
+      <!-- Items will be loaded here dynamically -->
+    </div>
+  </div>
+  <!--  KẾT THÚC SECTION 1: MENU ITEMS -->
+
+ <!-- ========== SECTION 2: TẠO BUNDLE ========== -->
+<div id="section-bundles" class="content-section">
+  <div class="bundle-creation-container">
+    
+    <!--  HIỂN THỊ DANH SÁCH COMBO HIỆN CÓ -->
+    <div class="bundle-list-container">
+      <div class="bundle-list-header">
+        <h3>
+          Danh sách Combo hiện có (<span id="bundle-count">0</span>)
+        </h3>
+      </div>
+      <div class="bundle-grid" id="bundle-list">
+        <!-- Bundles will be loaded here -->
+        <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #6B7280;">
+          <i class="fa fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 12px;"></i>
+          <p style="margin: 0;">Đang tải combo...</p>
+        </div>
+      </div>
+    </div>
+
+    <!--  FORM TẠO COMBO MỚI -->
+    <header style="margin-bottom: 24px; padding-top: 24px; border-top: 3px solid var(--color-border);">
+      <h2 style="font-size: 24px; font-weight: 700; color: var(--color-primary); margin: 0 0 8px;">
+        <i class="fa fa-plus-circle"></i> Tạo Combo mới
+      </h2>
+      <p style="color: var(--color-text-gray); font-size: 14px; margin: 0;">
+        Chọn các món ăn để tạo thành combo với giá ưu đãi
+      </p>
+    </header>
+
+    <form id="bundle-form-inline">
+      <input type="hidden" id="bundle-type-inline" value="COMBO">
+      
+            <!--  BƯỚC 1: CHỌN MÓN ĂN -->
+      <div style="background: white; padding: 24px; border-radius: var(--radius-lg); margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+        <h3 style="font-size: 18px; font-weight: 600; color: var(--color-primary); margin: 0 0 12px; display: flex; align-items: center; gap: 8px;">
+          Chọn món ăn
+        </h3>
+        <p style="color: var(--color-text-gray); font-size: 14px; margin: 0 0 16px;">
+          Click vào món để thêm vào combo
+        </p>
+
+        <!-- Search Items -->
+        <div class="search-box" style="margin-bottom: 16px;">
+          <i class="fa fa-search"></i>
+          <input type="text" id="bundle-item-search-inline" placeholder="Tìm kiếm món ăn...">
+        </div>
+
+        <!-- Category Filter -->
+        <div style="margin-bottom: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+          <button type="button" 
+                  class="category-filter-btn active" 
+                  data-category="all"
+                  onclick="filterBundleItemsByCategory('all')"
+                  style="padding: 8px 16px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;">
+            <i class="fa fa-grip"></i> Tất cả
+          </button>
+          <!-- Category buttons will be added here dynamically -->
+        </div>
+
+        <!-- Available Items List -->
+        <div id="available-items-list-inline" style="
+          max-height: 450px; 
+          overflow-y: auto; 
+          background: white; 
+          border-radius: 8px; 
+          border: 1px solid #E5E7EB;">
+          <div style="text-align: center; padding: 40px 20px; color: #6B7280;">
+            <i class="fa fa-spinner fa-spin" style="font-size: 32px; margin-bottom: 12px;"></i>
+            <p style="margin: 0;">Đang tải món ăn...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== LAYOUT 2 CỘT: 40% Thông tin + 60% Ước lượng giá ===== -->
+      <div style="display: grid; grid-template-columns: 40fr 60fr; gap: 20px; margin-bottom: 20px;">
+
+        <!-- ===== CỘT TRÁI (40%): THÔNG TIN CƠ BẢN ===== -->
+        <div style="background: white; padding: 24px; border-radius: var(--radius-lg); box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <h3 style="font-size: 18px; font-weight: 600; color: var(--color-primary); margin: 0 0 20px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa fa-info-circle"></i> Thông tin combo
+          </h3>
+          
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div class="form-group">
+              <label for="bundle-name-inline">
+                <i class="fa fa-tag"></i>
+                Tên Bundle <span class="required">*</span>
+              </label>
+              <input type="text" id="bundle-name-inline" required placeholder="VD: Combo Phở Đặc Biệt">
+            </div>
+
+            <div class="form-group">
+              <label for="bundle-price-inline">
+                <i class="fa fa-dollar-sign"></i>
+                Giá Bundle (VND) <span class="required">*</span>
+              </label>
+              <input type="number" id="bundle-price-inline" required 
+              min="0" step="1000" 
+              placeholder="VND" 
+              oninput="updatePriceCalculationInline()"
+              onchange="updatePriceCalculationInline()">
+            </div>
+
+            <div class="form-group">
+              <label>Hình ảnh</label>
+                <input type="hidden" id="bundle-image-url-inline">
+
+              
+              <div style="margin-top: 12px; display: flex; gap: 12px;">
+                <input type="file" 
+                      id="bundle-image-file" 
+                      accept="image/*" 
+                      style="display: none;"
+                      onchange="handleBundleImageUpload(event)">
+                
+                <button type="button" 
+                        onclick="document.getElementById('bundle-image-file').click()"
+                        style="padding: 10px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">
+                  <i class="fa fa-cloud-upload"></i> Chọn ảnh
+                </button>
+                
+                <span id="bundle-upload-status" style="color: #6B7280; font-size: 13px;"></span>
+              </div>
+              
+              <div id="bundle-image-preview" style="margin-top: 16px; display: none;">
+                <img id="bundle-preview-img" src="" alt="Preview" 
+                    style="max-width: 100%; max-height: 200px; border-radius: 8px;">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="bundle-description-inline">
+                <i class="fa fa-align-left"></i>
+                Mô tả
+              </label>
+              <textarea id="bundle-description-inline" rows="4" placeholder="Mô tả chi tiết về combo..."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CỘT PHẢI (60%): ƯỚC LƯỢNG GIÁ ===== -->
+        <div id="selected-items-section-inline" style="display: none; background: white; padding: 24px; border-radius: var(--radius-lg); box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+          <h3 style="font-size: 18px; font-weight: 600; color: var(--color-primary); margin: 0 0 16px;">
+            <i class="fa fa-calculator"></i> Ước lượng giá (<span id="selected-items-count-inline">0</span> món)
+          </h3>
+          
+          <!-- Danh sách món đã chọn -->
+          <div id="selected-items-list-inline" style="margin-bottom: 20px;"></div>
+          
+          <!-- Price Calculation -->
+          <div style="padding-top: 20px; border-top: 2px solid #E5E7EB;">
+            
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px; color: #6B7280;">
+              <span>
+                <i class="fa fa-box"></i> Tổng giá vốn (ước lượng):
+                <i class="fa fa-info-circle" style="font-size: 12px; color: #9CA3AF; cursor: help;" 
+                   title="Ước lượng 30% giá bán (chuẩn ngành F&B)"></i>
+              </span>
+              <strong id="total-cost-price-inline" style="font-size: 16px; color: #DC2626;">0 VND</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px;">
+              <span>
+                <i class="fa fa-anchor"></i> Tổng giá lẻ:
+                <i class="fa fa-info-circle" style="font-size: 12px; color: #9CA3AF; cursor: help;" 
+                   title="Tổng giá nếu khách mua từng món riêng lẻ"></i>
+              </span>
+              <strong id="anchor-price-inline" style="font-size: 16px;">0 VND</strong>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 15px;">
+              <span>
+                <i class="fa fa-boxes-stacked"></i> Giá Bundle:
+              </span>
+              <strong id="bundle-price-display-inline" style="font-size: 16px;">0 VND</strong>
+            </div>
+
+            <!-- Đường phân cách -->
+            <div style="border-top: 1px dashed #E5E7EB; margin: 12px 0;"></div>
+
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; color: #059669; font-weight: 600;">
+              <span>
+                <i class="fa fa-chart-line"></i> Lợi nhuận:
+              </span>
+              <strong id="profit-amount-inline">0 VND (0%)</strong>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; padding: 8px 0; font-size: 16px; color: #2563EB; font-weight: 600;">
+              <span>
+                <i class="fa fa-piggy-bank"></i> Khách tiết kiệm:
+              </span>
+              <strong id="savings-amount-inline">0 VND (0%)</strong>
+            </div>
+
+            <!-- Cảnh báo định giá -->
+            <div id="pricing-warning-inline" style="display: none; margin-top: 16px; padding: 14px; background: #FEF3C7; border-left: 4px solid #F59E0B; border-radius: 8px;">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <i class="fa fa-exclamation-triangle" style="color: #F59E0B; font-size: 20px; margin-top: 2px;"></i>
+                <div style="flex: 1;">
+                  <strong style="color: #92400E; font-size: 15px; display: block; margin-bottom: 6px;">Cảnh báo:</strong>
+                  <div id="pricing-warning-text" style="color: #78350F; font-size: 14px; line-height: 1.6;"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Gợi ý giá tối ưu -->
+            <div id="pricing-suggestion-inline" style="display: none; margin-top: 16px; padding: 14px; background: #DBEAFE; border-left: 4px solid #3B82F6; border-radius: 8px;">
+              <div style="display: flex; align-items: start; gap: 10px;">
+                <i class="fa fa-lightbulb" style="color: #3B82F6; font-size: 20px; margin-top: 2px;"></i>
+                <div style="flex: 1;">
+                  <strong style="color: #1E40AF; font-size: 15px; display: block; margin-bottom: 6px;">Gợi ý:</strong>
+                  <p style="margin: 0; color: #1E3A8A; font-size: 14px; line-height: 1.6;">
+                    Giá <strong id="suggested-price-inline">0 VND</strong> sẽ cho 
+                    lợi nhuận ~64% và khách tiết kiệm 
+                    <strong id="suggested-savings-percent-inline">0</strong>%.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ===== ACTIONS: NÚT BẤM Ở DƯỚI CÙNG ===== -->
+      <div class="form-actions" style="display: flex; gap: 12px; justify-content: flex-end; padding: 24px 0 0 0;">
+        
+        <button type="button" 
+                id="btn-cancel-edit-inline" 
+                class="btn-cancel" 
+                onclick="cancelEditBundleInline()"
+                style="display: none; padding: 12px 24px; border: 2px solid #EF4444; background: white; color: #EF4444; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 14px;">
+          <i class="fa fa-times"></i> Hủy chỉnh sửa
+        </button>
+
+        <button type="button" 
+                class="btn-secondary" 
+                onclick="resetBundleFormInline()" 
+                style="padding: 12px 24px; border: 2px solid #E5E7EB; background: white; color: #6B7280; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 14px;">
+          <i class="fa fa-undo"></i> Đặt lại
+        </button>
+
+        <button type="submit" 
+                id="btn-submit-bundle-inline"
+                class="btn-primary" 
+                style="padding: 12px 32px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,0.15); transition: all 0.3s; font-size: 14px;">
+          <i class="fa fa-plus-circle"></i> Tạo combo
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+        <!-- ========== CATEGORY MANAGEMENT POPUP ========== -->
+      <div class="category-popup-overlay" id="category-popup">
+        <div class="category-popup-content">
+          <div class="category-popup-header">
+            <h3>
+              <i class="fa fa-folder-tree"></i>
+              Quản lý danh mục
+            </h3>
+            <button type="button" class="modal-close" id="btn-close-category-popup">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <div class="category-popup-body">
+            <div class="category-list-header">
+              <h4>Danh sách danh mục (<span id="category-count">0</span>)</h4>
+              <button type="button" class="btn-add-category" id="btn-add-new-category">
+                <i class="fa fa-plus"></i> Thêm danh mục
+              </button>
+            </div>
+            <div class="category-grid" id="category-grid">
+              <!-- Categories will be loaded here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ========== CATEGORY FORM MODAL ========== -->
+      <div class="category-form-modal" id="category-form-modal">
+        <div class="category-form-content">
+          <div class="category-form-header">
+            <h3 id="category-form-title">
+              <i class="fa fa-plus"></i> Thêm danh mục mới
+            </h3>
+            <button type="button" class="modal-close" id="btn-close-category-form">
+              <i class="fa fa-times"></i>
+            </button>
+          </div>
+          <form id="category-form">
+            <input type="hidden" id="category-id" value="">
+            <div class="category-form-body">
+              <div class="form-group">
+                <label for="category-name">
+                  <i class="fa fa-tag"></i>
+                  Tên danh mục <span class="required">*</span>
+                </label>
+                <input type="text" id="category-name" required placeholder="Ví dụ: Món khai vị, Món chính...">
+              </div>
+            </div>
+            <div class="category-form-footer">
+              <button type="button" class="btn-cancel" id="btn-cancel-category-form">
+                <i class="fa fa-times"></i> Hủy
+              </button>
+              <button type="submit" class="btn-submit" id="btn-submit-category-form" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);">
+                <i class="fa fa-check"></i> Lưu
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+  <div class="menu-list">
+    <!-- Items will be loaded here dynamically -->
+  </div>
+</div>
+
+<!-- ========== MODAL ========== -->
+<div class="modal-overlay" id="add-item-modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3 id="modal-header-title">
+        <i class="fa fa-utensils"></i>
+        Thêm mục menu mới
+      </h3>
+      <button type="button" class="modal-close" id="btn-close-modal">
+        <i class="fa fa-times"></i>
+      </button>
+    </div>
+
+    <form id="add-item-form">
+      <input type="hidden" id="item-id" value="">
+      <div class="modal-body">
+
+        <div class="form-group">
+          <label for="item-name">
+            <i class="fa fa-tag"></i>
+            Tên mục <span class="required">*</span>
+          </label>
+          <input type="text" id="item-name" required placeholder="e.g., Đậu phụ, nước ngọt">
+        </div>
+
+        <div class="form-group">
+          <label for="item-price">
+            <i class="fa fa-dollar-sign"></i>
+            Giá <span class="required">*</span>
+          </label>
+          <input type="number" id="item-price" step="0.01" min="0" required placeholder="0.00">
+        </div>
+
+        <div class="form-group">
+          <label for="item-category">
+            <i class="fa fa-list"></i>
+            Danh mục <span class="required">*</span>
+          </label>
+          <select id="item-category" required>
+            <option value="">-- Chọn danh mục --</option>
+          </select>
+        </div>
+
+          <div class="form-group">
+            <label for="item-visibility">
+              <i class="fa fa-eye"></i>
+               Hiển thị <span class="required">*</span>
+            </label>
+            <select id="item-visibility" required>
+               <option value="PUBLIC">Công khai (PUBLIC)</option>
+               <option value="PRIVATE">Riêng tư (PRIVATE)</option>
+               <option value="COMBO_ONLY">Chỉ combo (COMBO_ONLY)</option>
+            </select>
+      <small><i class="fa fa-info-circle"></i> PUBLIC: Hiển thị cho khách hàng | PRIVATE: Chỉ bạn thấy | COMBO_ONLY: Chỉ trong bộ combo</small>
+    </div>
+       
+
+        <div class="form-group full-width">
+          <label>
+            <i class="fa fa-image"></i>
+            Hình ảnh
+          </label>
+            <input type="hidden" id="item-image-url">
+
+        <div style="margin-top: 12px; display: flex; gap: 12px; align-items: center;">
+          <input type="file" 
+                id="item-image-file" 
+                accept="image/*" 
+                style="display: none;"
+                onchange="handleItemImageUpload(event)">
+          
+          <button type="button" 
+                  class="btn-upload-image" 
+                  onclick="document.getElementById('item-image-file').click()"
+                  style="padding: 10px 20px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: 600;">
+            <i class="fa fa-cloud-upload"></i> Chọn ảnh
+          </button>
+          
+          <span id="item-upload-status" style="color: #6B7280; font-size: 13px;"></span>
+        </div>
+         <div id="item-image-preview" style="margin-top: 16px; display: none;">
+              <img id="item-preview-img" src="" alt="Preview" 
+                  style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 2px solid #E5E7EB;">
+            </div>
+            
+            <small><i class="fa fa-info-circle"></i> Định dạng: JPG, PNG, WEBP. Tối đa 5MB.</small>
+          </div>
+
+        <div class="form-group full-width">
+          <label for="item-description">
+            <i class="fa fa-align-left"></i>
+            Mô tả
+          </label>
+          <textarea id="item-description" rows="3" placeholder="Mô tả món ăn (nguyên liệu, hương vị, v.v.)"></textarea>
+        </div>
+
+        <div class="form-section-title">
+          <i class="fa fa-triangle-exclamation"></i>
+          Dị ứng
+        </div>
+
+        <div class="form-group full-width">
+          <label for="item-allergens">
+            Dị ứng (cách nhau bằng dấu phẩy)
+          </label>
+          <input type="text" id="item-allergens" placeholder="e.g., sữa, gluten, hải sản, trứng">
+          <small>
+            <i class="fa fa-lightbulb"></i>
+            Phổ biến: <strong>hải sản, cá, sữa, trứng, gluten, đậu nành, đậu phộng, hạt cây, mè</strong>
+          </small>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-cancel" id="btn-cancel-form">
+          <i class="fa fa-times"></i> Hủy
+        </button>
+        <button type="submit" class="btn-submit" id="btn-submit-form">
+          <i class="fa fa-check"></i> Lưu
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+
+  // ========== TOAST NOTIFICATION SYSTEM ==========
+  function showToast(message, type = 'info', title = '', duration = 4000) {
+    const container = document.getElementById('toast-container');
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+
+    const icons = {
+      success: 'fa-check-circle',
+      error: 'fa-exclamation-circle',
+      warning: 'fa-exclamation-triangle',
+      info: 'fa-info-circle'
+    };
+
+    const titles = {
+      success: title || 'Thành công',
+      error: title || 'Lỗi',
+      warning: title || 'Cảnh báo',
+      info: title || 'Thông tin'
+    };
+
+    toast.innerHTML = `
+    <i class="fa ${icons[type]} toast-icon"></i>
+    <div class="toast-content">
+      <div class="toast-title">${titles[type]}</div>
+      <div class="toast-message">${message}</div>
+    </div>
+    <button class="toast-close" onclick="this.parentElement.remove()">
+      <i class="fa fa-times"></i>
+    </button>
+  `;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.classList.add('hiding');
+      setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
+  // ========== CONFIRMATION DIALOG SYSTEM ==========
+  function showConfirmDialog(title, message, onConfirm) {
+    const overlay = document.getElementById('confirm-dialog-overlay');
+    const titleEl = document.getElementById('confirm-dialog-title');
+    const messageEl = document.getElementById('confirm-dialog-message');
+    const cancelBtn = document.getElementById('btn-confirm-cancel');
+    const confirmBtn = document.getElementById('btn-confirm-delete');
+
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
+
+    const handleCancel = () => {
+      overlay.classList.add('closing');
+      setTimeout(() => {
+        overlay.classList.remove('active', 'closing');
+        document.body.style.overflow = '';
+      }, 300);
+      cancelBtn.removeEventListener('click', handleCancel);
+      confirmBtn.removeEventListener('click', handleConfirm);
+      overlay.removeEventListener('click', handleOverlayClick);
+    };
+
+    const handleConfirm = () => {
+      overlay.classList.add('closing');
+      setTimeout(() => {
+        overlay.classList.remove('active', 'closing');
+        document.body.style.overflow = '';
+      }, 300);
+      cancelBtn.removeEventListener('click', handleCancel);
+      confirmBtn.removeEventListener('click', handleConfirm);
+      overlay.removeEventListener('click', handleOverlayClick);
+      if (onConfirm) onConfirm();
+    };
+
+    const handleOverlayClick = (e) => {
+      if (e.target === overlay) {
+        handleCancel();
+      }
+    };
+
+    cancelBtn.addEventListener('click', handleCancel);
+    confirmBtn.addEventListener('click', handleConfirm);
+    overlay.addEventListener('click', handleOverlayClick);
+  }
+
+  // ========== HÀM ĐÓNG MODAL VỚI ANIMATION ==========
+  function closeModal() {
+    const modal = document.getElementById('add-item-modal');
+    modal.classList.add('closing');
+
+    setTimeout(() => {
+      modal.classList.remove('active', 'closing');
+      document.body.style.overflow = '';
+      resetForm();
+
+    }, 300);
+  }
+
+  function resetImagePreview(type = 'item') {
+  const prefix = type === 'bundle' ? 'bundle-' : 'item-';
+  
+  document.getElementById(`${prefix}image-url${type === 'bundle' ? '-inline' : ''}`).value = '';
+  document.getElementById(`${prefix}image-file`).value = '';
+  document.getElementById(`${prefix}upload-status`).innerHTML = '';
+  document.getElementById(`${prefix}image-preview`).style.display = 'none';
+  document.getElementById(`${prefix}preview-img`).src = '';
+}
+
+  // ========== HÀM RESET FORM ==========
+  function resetForm() {
+    document.getElementById('item-id').value = '';
+    document.getElementById('add-item-form').reset();
+    document.getElementById('item-visibility').value = 'PUBLIC';
+
+  resetImagePreview('item');
+
+  }
+
+  let allMenuItems = [];
+  let allCategories = [];
+
+  async function loadMenuItems() {
+    try {
+      const res = await fetch('/api/admin/menu');
+      const data = await res.json();
+
+      if (!data.success) throw new Error("Tải mục menu thất bại");
+
+      allMenuItems = data.data;
+      await loadAllCategoriesForDisplay();
+      displayMenuItems(allMenuItems);
+      loadCategoryFilter();
+
+      const scrollToItemId = sessionStorage.getItem('scrollToItemId');
+    if (scrollToItemId) {
+      console.log('Need to scroll to item:', scrollToItemId);
+      
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          scrollToMenuItem(parseInt(scrollToItemId), 5); 
+          sessionStorage.removeItem('scrollToItemId');
+        }, 200); 
+      });
+    }
+    } catch (error) {
+      console.error("Lỗi tải mục menu:", error);
+      document.querySelector('.menu-list').innerHTML = "<p>Tải mục menu thất bại.</p>";
+      showToast('Không thể tải danh sách món ăn. Vui lòng thử lại.', 'error');
+    }
+  }
+
+  /**
+ * Handle menu item image upload
+ */
+
+function handleItemImageUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showToast('Vui lòng chọn file ảnh hợp lệ', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  // Validate file size (5MB)
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Kích thước ảnh không được vượt quá 5MB', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  const statusEl = document.getElementById('item-upload-status');
+  const previewDiv = document.getElementById('item-image-preview');
+  const previewImg = document.getElementById('item-preview-img');
+
+  // Show local preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewDiv.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  // Show status
+  statusEl.innerHTML = '<i class="fa fa-check-circle"></i> Đã chọn ảnh';
+  statusEl.style.color = '#22C55E';
+  
+  // Clear image URL (sẽ upload khi submit)
+  document.getElementById('item-image-url').value = '';
+}
+
+/**
+ * Handle bundle image upload - PREVIEW ONLY
+ */
+function handleBundleImageUpload(event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    showToast('Vui lòng chọn file ảnh hợp lệ', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  if (file.size > 5 * 1024 * 1024) {
+    showToast('Kích thước ảnh tối đa 5MB', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  const statusEl = document.getElementById('bundle-upload-status');
+  const previewDiv = document.getElementById('bundle-image-preview');
+  const previewImg = document.getElementById('bundle-preview-img');
+
+  // Show local preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImg.src = e.target.result;
+    previewDiv.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+
+  statusEl.innerHTML = '<i class="fa fa-check-circle"></i> Đã chọn ảnh';
+  statusEl.style.color = '#22C55E';
+  
+  // Clear image URL
+  document.getElementById('bundle-image-url-inline').value = '';
+}
+
+
+  let expandedItems = new Set();
+
+      /**
+     * Load tất cả categories để hiển thị (kể cả rỗng)
+     */
+    async function loadAllCategoriesForDisplay() {
+      try {
+        const res = await fetch('/api/admin/categories');
+        if (!res.ok) throw new Error('Tải danh mục thất bại');
+
+        const data = await res.json();
+        if (!data.success) throw new Error('Tải danh mục thất bại');
+
+        allCategories = data.data;
+      } catch (error) {
+        console.error("Lỗi tải danh mục:", error);
+        allCategories = [];
+      }
+    }
+
+ 
+    /**
+ * [ĐÃ CẬP NHẬT]
+ * Hiển thị danh sách món ăn, có hỗ trợ lọc theo danh mục.
+ * @param {Array} items - Danh sách món ăn đã được lọc (theo tìm kiếm và/hoặc danh mục).
+ * @param {string} selectedCategory - ID của danh mục đang được lọc (hoặc 'all').
+ */
+function displayMenuItems(items, selectedCategory = 'all') {
+  const container = document.querySelector('.menu-list');
+  container.innerHTML = '';
+
+  // ← 1. NHÓM MÓN ĂN THEO CATEGORY (Giữ nguyên)
+  const grouped = {};
+  items.forEach(item => {
+    const categoryId = item.category ? item.category.id : null;
+    const categoryName = item.category ? item.category.name : "Chưa phân loại";
+    
+    if (!grouped[categoryId]) {
+      grouped[categoryId] = {
+        name: categoryName,
+        items: []
+      };
+    }
+    grouped[categoryId].items.push(item);
+  });
+
+  // ← 2. [SỬA ĐỔI] QUYẾT ĐỊNH DANH MỤC NÀO SẼ ĐƯỢC HIỂN THỊ
+  let categoriesToDisplay;
+  
+  if (selectedCategory && selectedCategory !== 'all') {
+    // Nếu lọc theo 1 danh mục, chỉ lấy danh mục đó
+    const singleCategory = allCategories.find(cat => cat.id == selectedCategory);
+    categoriesToDisplay = singleCategory ? [singleCategory] : [];
+  } else {
+    // Nếu là 'all', hiển thị tất cả danh mục
+    categoriesToDisplay = allCategories;
+  }
+
+  // ← 3. [SỬA ĐỔI] LẶP QUA DANH SÁCH ĐÃ LỌC `categoriesToDisplay`
+  categoriesToDisplay.forEach(category => {
+    const categoryDiv = document.createElement('div');
+    const categoryData = grouped[category.id];
+    const hasItems = categoryData && categoryData.items.length > 0;
+
+    // ← HIỂN THỊ HEADER CATEGORY
+    categoryDiv.innerHTML = `
+      <div class="category-header">
+        ${category.name} 
+        <span style="color: #6B7280; font-size: 14px; font-weight: 400; margin-left: 8px;">
+          (${hasItems ? categoryData.items.length : 0} món)
+        </span>
+      </div>
+    `;
+
+    // ← NẾU KHÔNG CÓ MÓN ĂN, HIỂN THỊ THÔNG BÁO
+    if (!hasItems) {
+      categoryDiv.innerHTML += `
+        <div style="text-align: center; padding: 40px 20px; color: #6B7280; background: white; border: 1px solid #E5E7EB; border-radius: 12px; margin-bottom: 16px;">
+          <i class="fa fa-inbox" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+          <p style="margin: 0; font-size: 14px;">Chưa có món ăn nào trong danh mục này</p>
+          <button 
+            type="button" 
+            onclick="openAddItemModalWithCategory(${category.id})" 
+            style="margin-top: 12px; background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); color: white; padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600;">
+            <i class="fa fa-plus"></i> Thêm món ăn đầu tiên
+          </button>
+        </div>
+      `;
+    } else {
+      // ← HIỂN THỊ CÁC MÓN ĂN
+      categoryData.items.forEach(it => {
+        const categoryName = it.category ? it.category.name : "N/A";
+        const allergens = it.allergens || [];
+        const allergensHTML = allergens.length > 0
+                ? `Allergens: ${allergens.join(', ')}`
+                : 'No allergen';
+
+        const isExpanded = expandedItems.has(it.id);
+        const detailClass = isExpanded ? 'menu-detail active' : 'menu-detail';
+        const iconRotation = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+
+        categoryDiv.innerHTML += `
+          <div class="menu-list-item">
+            <div class="menu-row" onclick="toggleDetail(this)" data-item-id="${it.id}">
+              <span class="menu-name">${it.name}</span>
+              <span class="menu-price">${formatPriceVND(it.price)}</span>
+              <span class="menu-visibility">${it.visibility}</span>
+              <i class="fa fa-chevron-down toggle-icon" style="transform: ${iconRotation}"></i>
+            </div>
+            <div class="${detailClass}">
+              <div class="menu-grid">
+                <div class="menu-card">
+                  <div class="card-image">
+                    <img src="${it.imageUrl || 'https://placehold.co/400x200?text=No+Image'}" alt="${it.name}">
+                    <span class="badge ${it.isAvailable ? 'available' : 'unavailable'}">
+                      ${it.isAvailable ? 'Hiệu lực' : 'Không hiệu lực'}
+                    </span>
+                  </div>
+                  <div class="card-content">
+                    <div class="card-header">
+                      <h3>${it.name}</h3>
+                      <span class="price">${formatPriceVND(it.price)}</span>
+                    </div>
+                    <p class="description">${it.description || 'Không có mô tả.'}</p>
+                    <div class="allergen-tags">${allergensHTML}</div>
+                    <div class="card-footer">
+                      <div class="toggle-switch" onclick="event.stopPropagation()">
+                        <label class="switch">
+                          <input type="checkbox" ${it.isAvailable ? 'checked' : ''} onchange="toggleAvailability(${it.id}, this)">
+                          <span class="slider"></span>
+                        </label>
+                      </div>
+                      <div class="action-buttons" style="display:flex;gap:12px;">
+                        <a href="javascript:void(0)" 
+                          onclick="editMenuItem(${it.id})"
+                          style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:#FFFFFF;color:#000000;border:2px solid #E5E5E5;border-radius:8px;text-decoration:none;transition:all 0.3s;"
+                          onmouseover="this.style.background='#F5F5F5';this.style.borderColor='#D4D4D4';this.style.transform='scale(1.05)'"
+                          onmouseout="this.style.background='#FFFFFF';this.style.borderColor='#E5E5E5';this.style.transform='scale(1)'">
+                          <i class="fa fa-pencil" style="font-size:18px;"></i>
+                        </a>
+                        
+                        <a href="javascript:void(0)" 
+                          onclick="deleteMenuItem(${it.id})"
+                          style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:#DC2626;color:#FFFFFF;border:2px solid #DC2626;border-radius:8px;text-decoration:none;transition:all 0.3s;"
+                          onmouseover="this.style.background='#B91C1C';this.style.borderColor='#B91C1C';this.style.transform='scale(1.05)'"
+                          onmouseout="this.style.background='#DC2626';this.style.borderColor='#DC2626';this.style.transform='scale(1)'">
+                          <i class="fa fa-trash" style="font-size:18px;"></i>
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>`;
+      });
+    }
+
+    container.appendChild(categoryDiv);
+  });
+
+  const uncategorizedItems = items.filter(item => !item.category);
+  if (selectedCategory === 'all' && uncategorizedItems.length > 0) {
+    const uncategorizedDiv = document.createElement('div');
+    uncategorizedDiv.innerHTML = `
+      <div class="category-header">
+        Chưa phân loại 
+        <span style="color: #6B7280; font-size: 14px; font-weight: 400; margin-left: 8px;">
+          (${uncategorizedItems.length} món)
+        </span>
+      </div>
+    `;
+
+    uncategorizedItems.forEach(it => {
+      const allergens = it.allergens || [];
+      const allergensHTML = allergens.length > 0
+              ? `Allergens: ${allergens.join(', ')}`
+              : 'No allergen';
+
+      const isExpanded = expandedItems.has(it.id);
+      const detailClass = isExpanded ? 'menu-detail active' : 'menu-detail';
+      const iconRotation = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+
+      uncategorizedDiv.innerHTML += `
+        <div class="menu-list-item">
+          <div class="menu-row" onclick="toggleDetail(this)" data-item-id="${it.id}">
+            <span class="menu-name">${it.name}</span>
+            <span class="menu-price">${formatPriceVND(it.price)}</span>
+            <span class="menu-visibility">${it.visibility}</span>
+            <i class="fa fa-chevron-down toggle-icon" style="transform: ${iconRotation}"></i>
+          </div>
+          <div class="${detailClass}">
+            <div class="menu-grid">
+              <div class="menu-card">
+                <div class="card-image">
+                  <img src="${it.imageUrl || 'https://placehold.co/400'}" alt="${it.name}">
+                  <span class="badge ${it.isAvailable ? 'available' : 'unavailable'}">
+                    ${it.isAvailable ? 'Hiệu lực' : 'Không hiệu lực'}
+                  </span>
+                </div>
+                <div class="card-content">
+                  <div class="card-header">
+                    <h3>${it.name}</h3>
+                    <span class="price">${formatPriceVND(it.price)}</span>
+                  </div>
+                 
+                  <p class="description">${it.description || 'Không có mô tả.'}</p>
+                  <div class="allergen-tags">${allergensHTML}</div>
+                  <div class="card-footer">
+                    <div class="toggle-switch" onclick="event.stopPropagation()">
+                      <label class="switch">
+                        <input type="checkbox" ${it.isAvailable ? 'checked' : ''} onchange="toggleAvailability(${it.id}, this)">
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                    <div class="action-buttons">
+                      <a href="javascript:void(0)" onclick="editMenuItem(${it.id})"><i class="fa fa-pencil"></i></a>
+                      <a href="javascript:void(0)" onclick="deleteMenuItem(${it.id})"><i class="fa fa-trash"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    });
+
+    container.appendChild(uncategorizedDiv);
+  }
+
+
+}
+
+  /**
+   * Mở modal thêm món ăn với category đã chọn sẵn
+   */
+  function openAddItemModalWithCategory(categoryId) {
+    resetForm();
+    document.getElementById('modal-header-title').innerHTML = '<i class="fa fa-utensils"></i> Thêm mục menu mới';
+    document.getElementById('btn-submit-form').innerHTML = '<i class="fa fa-check"></i> Lưu';
+    
+    document.getElementById('item-category').value = categoryId;
+    
+    const modal = document.getElementById('add-item-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function clearSearch() {
+    const searchInput = document.getElementById('search-input');
+    searchInput.value = '';
+    handleSearch();
+    document.querySelector('.search-clear').style.display = 'none';
+  }
+
+  function handleSearch() {
+    const searchInput = document.querySelector('.search-box input');
+    const categoryFilter = document.querySelector('.category-filter');
+
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    const selectedCategory = categoryFilter.value;
+
+    let filteredItems = allMenuItems;
+
+    if (searchTerm) {
+      filteredItems = filteredItems.filter(item => {
+        return item.name.toLowerCase().includes(searchTerm);
+      });
+    }
+
+    if (selectedCategory && selectedCategory !== 'all') {
+      filteredItems = filteredItems.filter(item => {
+        return item.category && item.category.id == selectedCategory;
+      });
+    }
+
+    displayMenuItems(filteredItems, selectedCategory);
+  }
+
+  window.addEventListener('DOMContentLoaded', async () => {
+    console.log("Trang đã được tải, đang khởi tạo...");
+
+    await loadMenuItems();
+    loadCategories().catch(err => console.warn("Lỗi tải danh mục:", err));
+
+    const searchInput = document.querySelector('.search-box input');
+    const clearBtn = document.querySelector('.search-clear');
+
+    clearBtn.addEventListener('click', clearSearch);
+
+    let searchTimeout;
+    searchInput.addEventListener('input', () => {
+      clearBtn.style.display = searchInput.value ? 'inline' : 'none';
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        handleSearch();
+      }, 300);
+    });
+
+    searchInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleSearch();
+      }
+    });
+
+    const modal = document.getElementById('add-item-modal');
+    const openBtn = document.getElementById('btn-open-modal');
+    const closeBtn = document.getElementById('btn-close-modal');
+    const cancelBtn = document.getElementById('btn-cancel-form');
+    const form = document.getElementById('add-item-form');
+
+    openBtn.addEventListener('click', () => {
+      console.log("Opening modal...");
+      resetForm();
+      document.getElementById('modal-header-title').innerHTML = '<i class="fa fa-utensils"></i> Thêm mục menu mới';
+      document.getElementById('btn-submit-form').innerHTML = '<i class="fa fa-check"></i> Lưu';
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    });
+
+    closeBtn.addEventListener('click', () => {
+      console.log("Closing modal...");
+      closeModal();
+    });
+
+    cancelBtn.addEventListener('click', () => {
+      console.log("Canceling...");
+      closeModal();
+      resetForm();
+    });
+
+    form.addEventListener('submit', handleFormSubmit);
+
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        console.log("Clicked outside, closing...");
+        closeModal();
+      }
+    });
+
+    console.log("Khởi tạo hoàn tất!");
+  });
+
+  async function loadCategoryFilter() {
+    const select = document.querySelector('.category-filter');
+    try {
+      const res = await fetch('/api/admin/categories');
+      if (!res.ok) throw new Error('Tải danh mục thất bại');
+
+      const data = await res.json();
+      if (!data.success) throw new Error('Tải danh mục thất bại');
+
+      select.innerHTML = '<option value="all">Tất cả danh mục</option>';
+      data.data.forEach(category => {
+      const itemCount = category.itemCount || 0;
+      const option = document.createElement('option');
+      option.value = category.id;
+      option.textContent = `${category.name} (${itemCount} món)`;
+      select.appendChild(option);
+    });
+
+      select.addEventListener('change', handleSearch);
+
+    } catch (error) {
+      console.error("Tải phân loại danh mục thất bại:", error);
+    }
+  }
+
+  // ========== CATEGORY MANAGEMENT JAVASCRIPT ==========
+
+  /**
+   * Mở popup quản lý categories
+   */
+  function openCategoryPopup() {
+    const popup = document.getElementById('category-popup');
+    popup.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    loadCategoriesForManagement();
+  }
+
+  /**
+   * Đóng popup quản lý categories
+   */
+  function closeCategoryPopup() {
+    const popup = document.getElementById('category-popup');
+    popup.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  /**
+   * Mở form thêm/sửa category
+   */
+  function openCategoryForm(categoryId = null) {
+    const modal = document.getElementById('category-form-modal');
+    const titleEl = document.getElementById('category-form-title');
+    const categoryIdInput = document.getElementById('category-id');
+    const categoryNameInput = document.getElementById('category-name');
+
+    if (categoryId) {
+      // Edit mode
+      titleEl.innerHTML = '<i class="fa fa-pencil"></i> Chỉnh sửa danh mục';
+      categoryIdInput.value = categoryId;
+      
+      // Load category data
+      fetch(`/api/admin/categories/${categoryId}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            categoryNameInput.value = data.data.name;
+          }
+        })
+        .catch(err => {
+          console.error('Lỗi tải danh mục:', err);
+          showToast('Không thể tải thông tin danh mục', 'error');
+        });
+    } else {
+      // Create mode
+      titleEl.innerHTML = '<i class="fa fa-plus"></i> Thêm danh mục mới';
+      categoryIdInput.value = '';
+      categoryNameInput.value = '';
+    }
+
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  /**
+   * Đóng form category
+   */
+  function closeCategoryForm() {
+    const modal = document.getElementById('category-form-modal');
+    modal.classList.remove('active');
+    document.getElementById('category-form').reset();
+    document.getElementById('category-id').value = '';
+  }
+
+  /**
+   * Load danh sách categories cho popup quản lý
+   */
+  async function loadCategoriesForManagement() {
+    try {
+      const res = await fetch('/api/admin/categories');
+      if (!res.ok) throw new Error('Tải danh mục thất bại');
+
+      const data = await res.json();
+      if (!data.success) throw new Error('Tải danh mục thất bại');
+
+      displayCategories(data.data);
+      document.getElementById('category-count').textContent = data.data.length;
+
+    } catch (error) {
+      console.error('Lỗi tải danh mục:', error);
+      showToast('Không thể tải danh sách danh mục', 'error');
+      document.getElementById('category-grid').innerHTML = 
+        '<p style="text-align:center; color:#6B7280; padding:40px;">Tải danh mục thất bại</p>';
+    }
+  }
+
+
+  /**
+   * Hiển thị danh sách categories dạng card
+   */
+  function displayCategories(categories) {
+    const grid = document.getElementById('category-grid');
+    
+    if (categories.length === 0) {
+      grid.innerHTML = '<p style="text-align:center; color:#6B7280; padding:40px; grid-column: 1/-1;">Chưa có danh mục nào</p>';
+      return;
+    }
+
+    grid.innerHTML = '';
+    
+    categories.forEach(cat => {
+      const itemCount = cat.itemCount || 0;
+      const hasItems = itemCount > 0;
+      const countClass = hasItems ? 'has-items' : '';
+      
+      const card = document.createElement('div');
+      card.className = 'category-card';
+      card.innerHTML = `
+        <div class="category-card-header">
+          <h4 class="category-card-title">${cat.name}</h4>
+          <span class="category-card-count ${countClass}">
+            ${itemCount} món
+          </span>
+        </div>
+        <div class="category-card-actions">
+          <button type="button" class="btn-category-edit" onclick="openCategoryForm(${cat.id})">
+            <i class="fa fa-pencil"></i> Sửa
+          </button>
+          <button type="button" class="btn-category-delete" 
+                  ${hasItems ? 'disabled' : ''} 
+                  onclick="deleteCategoryWithConfirm(${cat.id}, '${cat.name}', ${itemCount})">
+            <i class="fa fa-trash"></i> Xóa
+          </button>
+        </div>
+      `;
+      
+      grid.appendChild(card);
+    });
+  }
+
+  /**
+   * Xác nhận và xóa category
+   */
+  function deleteCategoryWithConfirm(categoryId, categoryName, itemCount) {
+    if (itemCount > 0) {
+      showToast(
+        `Không thể xóa danh mục "${categoryName}" vì đang có ${itemCount} món ăn`, 
+        'warning'
+      );
+      return;
+    }
+
+    showConfirmDialog(
+      'Xác nhận xóa danh mục',
+      `Bạn có chắc chắn muốn xóa danh mục "${categoryName}"? Hành động này không thể hoàn tác.`,
+      async () => {
+        try {
+          const res = await fetch(`/api/admin/categories/${categoryId}`, {
+            method: 'DELETE'
+          });
+
+          const result = await res.json();
+
+          if (!res.ok || !result.success) {
+            showToast(result.message || 'Không thể xóa danh mục', 'error');
+            return;
+          }
+
+          showToast('Xóa danh mục thành công!', 'success');
+          
+          await loadAllCategoriesForDisplay();
+          await loadCategoriesForManagement();
+          await loadCategories(); 
+          await loadCategoryFilter(); 
+          await loadMenuItems(); 
+
+          displayMenuItems(allMenuItems); 
+
+        } catch (error) {
+          console.error('Lỗi xóa danh mục:', error);
+          showToast('Đã xảy ra lỗi khi xóa danh mục', 'error');
+        }
+      }
+    );
+  }
+
+  /**
+   * Submit form category (Create/Update)
+   */
+  async function handleCategoryFormSubmit(event) {
+    event.preventDefault();
+
+    const categoryId = document.getElementById('category-id').value;
+    const name = document.getElementById('category-name').value.trim();
+
+    if (!name) {
+      showToast('Vui lòng nhập tên danh mục', 'warning');
+      return;
+    }
+
+    const categoryData = { name };
+
+    try {
+      let res, result;
+
+      if (categoryId) {
+        // Update
+        res = await fetch(`/api/admin/categories/${categoryId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(categoryData)
+        });
+      } else {
+        // Create
+        res = await fetch('/api/admin/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(categoryData)
+        });
+      }
+
+      result = await res.json();
+
+      if (!res.ok || !result.success) {
+        showToast(result.message || 'Không thể lưu danh mục', 'error');
+        return;
+      }
+
+      showToast(
+        categoryId ? 'Cập nhật danh mục thành công!' : 'Tạo danh mục thành công!', 
+        'success'
+      );
+
+      closeCategoryForm();
+      
+      await loadAllCategoriesForDisplay(); 
+      await loadCategoriesForManagement();
+      await loadCategories(); 
+      await loadCategoryFilter();
+
+      displayMenuItems(allMenuItems); 
+    } catch (error) {
+      console.error('Lỗi lưu danh mục:', error);
+      showToast('Đã xảy ra lỗi: ' + error.message, 'error');
+    }
+  }
+   // ========== EVENT LISTENERS FOR CATEGORY MANAGEMENT ==========
+  document.addEventListener('DOMContentLoaded', () => {
+    // Nút "Quản lý danh mục"
+    const btnManageCategories = document.getElementById('btn-manage-categories');
+    btnManageCategories.addEventListener('click', openCategoryPopup);
+
+    // Nút đóng popup categories
+    const btnCloseCategoryPopup = document.getElementById('btn-close-category-popup');
+    btnCloseCategoryPopup.addEventListener('click', closeCategoryPopup);
+
+    // Đóng popup khi click outside
+    const categoryPopup = document.getElementById('category-popup');
+    categoryPopup.addEventListener('click', (e) => {
+      if (e.target === categoryPopup) {
+        closeCategoryPopup();
+      }
+    });
+
+    // Nút "Thêm danh mục"
+    const btnAddNewCategory = document.getElementById('btn-add-new-category');
+    btnAddNewCategory.addEventListener('click', () => openCategoryForm(null));
+
+    // Nút đóng form category
+    const btnCloseCategoryForm = document.getElementById('btn-close-category-form');
+    btnCloseCategoryForm.addEventListener('click', closeCategoryForm);
+
+    const btnCancelCategoryForm = document.getElementById('btn-cancel-category-form');
+    btnCancelCategoryForm.addEventListener('click', closeCategoryForm);
+
+    // Đóng form khi click outside
+    const categoryFormModal = document.getElementById('category-form-modal');
+    categoryFormModal.addEventListener('click', (e) => {
+      if (e.target === categoryFormModal) {
+        closeCategoryForm();
+      }
+    });
+
+    // Submit form category
+    const categoryForm = document.getElementById('category-form');
+    categoryForm.addEventListener('submit', handleCategoryFormSubmit);
+  });
+
+  async function toggleAvailability(id, checkbox) {
+    const scrollPosition = window.scrollY;
+
+    try {
+      const res = await fetch(`/api/admin/menu/${id}/toggle-availability`, { method: 'PATCH' });
+      if (!res.ok) throw new Error('Cập nhật thất bại');
+
+      await loadMenuItems();
+
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollPosition);
+      });
+
+      showToast('Trạng thái món ăn đã được cập nhật', 'success');
+
+    } catch (error) {
+      console.error("Lỗi:", error);
+      showToast('Không thể cập nhật trạng thái món ăn', 'error');
+      checkbox.checked = !checkbox.checked;
+    }
+  }
+
+  async function deleteMenuItem(id) {
+    showConfirmDialog(
+            'Xác nhận xóa',
+            'Bạn có chắc chắn muốn xóa món ăn này? Hành động này không thể hoàn tác.',
+            async () => {
+              try {
+                const res = await fetch(`/api/admin/menu/${id}`, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Xóa danh mục thất bại');
+                await loadMenuItems();
+                showToast('Món ăn đã được xóa thành công', 'success');
+              } catch (error) {
+                console.error("Lỗi:", error);
+                showToast('Không thể xóa món ăn. Vui lòng thử lại.', 'error');
+              }
+            }
+    );
+  }
+
+  async function editMenuItem(id) {
+    try {
+      const res = await fetch(`/api/admin/menu/${id}`);
+      if (!res.ok) throw new Error('Tải thông tin món ăn thất bại');
+
+      const data = await res.json();
+      if (!data.success) throw new Error('Tải thông tin món ăn thất bại');
+
+      const item = data.data;
+
+      document.getElementById('item-id').value = item.id;
+      document.getElementById('item-name').value = item.name;
+      document.getElementById('item-price').value = item.price;
+      document.getElementById('item-category').value = item.category ? item.category.id : '';
+      document.getElementById('item-visibility').value = item.visibility || 'PUBLIC';
+      document.getElementById('item-image-url').value = item.imageUrl || '';
+      document.getElementById('item-description').value = item.description || '';
+      document.getElementById('item-allergens').value = item.allergens ? item.allergens.join(', ') : '';
+
+      const itemPreviewDiv = document.getElementById('item-image-preview');
+      const itemPreviewImg = document.getElementById('item-preview-img');
+      const itemStatus = document.getElementById('item-upload-status');
+      if (item.imageUrl) {
+        itemPreviewImg.src = item.imageUrl;
+        itemPreviewDiv.style.display = 'block';
+      } else {
+        itemPreviewImg.src = '';
+        itemPreviewDiv.style.display = 'none';
+      }
+      itemStatus.innerHTML = '';
+
+      document.getElementById('modal-header-title').innerHTML = '<i class="fa fa-pencil"></i> Chỉnh sửa mục menu';
+      document.getElementById('btn-submit-form').innerHTML = '<i class="fa fa-save"></i> Cập nhật';
+
+      scrollToMenuItem(id);
+
+      setTimeout(() => {
+        const modal = document.getElementById('add-item-modal');
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }, 100);
+
+    } catch (error) {
+      console.error("Lỗi:", error);
+      showToast('Không thể tải thông tin món ăn', 'error');
+    }
+  }
+
+  async function editMenuItem(id) {
+    try {
+      const res = await fetch(`/api/admin/menu/${id}`);
+      if (!res.ok) throw new Error('Tải thông tin món ăn thất bại');
+
+      const data = await res.json();
+      if (!data.success) throw new Error('Tải thông tin món ăn thất bại');
+
+      const item = data.data;
+
+      document.getElementById('item-id').value = item.id;
+      document.getElementById('item-name').value = item.name;
+      document.getElementById('item-price').value = item.price;
+      document.getElementById('item-category').value = item.category ? item.category.id : '';
+      document.getElementById('item-visibility').value = item.visibility || 'PUBLIC';
+      document.getElementById('item-image-url').value = item.imageUrl || '';
+      document.getElementById('item-description').value = item.description || '';
+      document.getElementById('item-allergens').value = item.allergens ? item.allergens.join(', ') : '';
+
+      const itemPreviewDiv = document.getElementById('item-image-preview');
+      const itemPreviewImg = document.getElementById('item-preview-img');
+      const itemStatus = document.getElementById('item-upload-status');
+      if (item.imageUrl) {
+        itemPreviewImg.src = item.imageUrl;
+        itemPreviewDiv.style.display = 'block';
+      } else {
+        itemPreviewImg.src = '';
+        itemPreviewDiv.style.display = 'none';
+      }
+      itemStatus.innerHTML = '';
+
+      document.getElementById('modal-header-title').innerHTML = '<i class="fa fa-pencil"></i> Chỉnh sửa mục menu';
+      document.getElementById('btn-submit-form').innerHTML = '<i class="fa fa-save"></i> Cập nhật';
+
+      window.editingItemId = id;
+
+      const modal = document.getElementById('add-item-modal');
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+    } catch (error) {
+      console.error("Lỗi:", error);
+      showToast('Không thể tải thông tin món ăn', 'error');
+    }
+  }
+
+  function closeModal() {
+    const modal = document.getElementById('add-item-modal');
+    modal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+    resetForm();
+    
+    window.editingItemId = null;
+
+  }
+
+  function toggleDetail(row) {
+    const itemId = parseInt(row.getAttribute('data-item-id'));
+    const detail = row.nextElementSibling;
+    const icon = row.querySelector('.toggle-icon');
+
+    if (detail.classList.contains('active')) {
+      detail.classList.remove('active');
+      icon.style.transform = 'rotate(0deg)';
+      expandedItems.delete(itemId);
+    } else {
+      detail.classList.add('active');
+      icon.style.transform = 'rotate(180deg)';
+      expandedItems.add(itemId);
+    }
+  }
+
+  async function loadCategories() {
+    const select = document.getElementById('item-category');
+    try {
+      const res = await fetch('/api/admin/categories');
+      if (!res.ok) throw new Error('Tải danh mục thất bại');
+
+      const data = await res.json();
+      if (!data.success) throw new Error('Tải danh mục thất bại');
+
+      select.innerHTML = '<option value="">-- Chọn danh mục --</option>';
+      data.data.forEach(category => {
+      const option = document.createElement('option');
+      option.value = category.id;
+      option.textContent = category.name;
+      select.appendChild(option);
+    });
+    } catch (error) {
+      console.error("Tải danh mục thất bại:", error);
+      select.innerHTML = '<option value="">Tải danh mục thất bại</option>';
+    }
+  }
+
+  async function handleFormSubmit(event) {
+  event.preventDefault();
+
+  const itemId = document.getElementById('item-id').value;
+  const name = document.getElementById('item-name').value.trim();
+  const price = parseFloat(document.getElementById('item-price').value);
+  const categoryId = parseInt(document.getElementById('item-category').value);
+  const description = document.getElementById('item-description').value.trim();
+  const visibility = document.getElementById('item-visibility').value;
+  const imageUrlInput = document.getElementById('item-image-url').value.trim();
+  const imageFile = document.getElementById('item-image-file').files[0];
+
+  const allergensInput = document.getElementById('item-allergens').value.trim();
+  const allergens = allergensInput
+    ? allergensInput.split(',').map(a => a.trim().toLowerCase()).filter(a => a.length > 0)
+    : [];
+
+  if (!name || !price || !categoryId) {
+    showToast('Vui lòng điền tất cả các trường bắt buộc!', 'warning');
+    return;
+  }
+
+  try {
+    let imageUrl = imageUrlInput;
+
+    //  Upload ảnh MỚI nếu user chọn file (và chưa có URL)
+    if (imageFile && !imageUrlInput) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('name', name);
+
+      const uploadRes = await fetch('/api/admin/uploads/menu-item', {
+        method: 'POST',
+        body: formData
+      });
+
+      const uploadData = await uploadRes.json();
+
+      if (!uploadRes.ok || !uploadData.success) {
+        throw new Error(uploadData.message || 'Upload ảnh thất bại');
+      }
+
+      imageUrl = uploadData.imageUrl;
+      showToast('Upload ảnh thành công!', 'success');
+    }
+
+    //  Tạo/Cập nhật menu item
+    const itemData = {
+      name,
+      price,
+      categoryId,
+      description: description || "",
+      imageUrl: imageUrl || "",
+      visibility: visibility,
+      isAvailable: true,
+      allergens
+    };
+
+    let res, result;
+
+    if (itemId) {
+      res = await fetch(`/api/admin/menu/${itemId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      });
+      result = await res.json();
+
+      if (!res.ok || !result.success) {
+        showToast(result.message || 'Không thể cập nhật món ăn', 'error');
+        return;
+      }
+
+      showToast('Cập nhật món ăn thành công!', 'success');
+
+      sessionStorage.setItem('scrollToItemId', itemId);
+
+    } else {
+      res = await fetch('/api/admin/menu', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      });
+      result = await res.json();
+
+      if (!res.ok || !result.success) {
+        showToast(result.message || 'Không thể tạo món ăn mới', 'error');
+        return;
+      }
+
+      showToast('Tạo món ăn thành công!', 'success');
+       if (result.data && result.data.id) {
+        sessionStorage.setItem('scrollToItemId', result.data.id);
+      }
+    }
+
+    closeModal();
+    resetForm();
+    await loadMenuItems();
+
+  } catch (error) {
+    console.error('Đã xảy ra lỗi:', error);
+    showToast('Đã xảy ra lỗi: ' + error.message, 'error');
+  }
+}
+
+function scrollToMenuItem(itemId, retries = 5) {
+  console.log(' [Attempt] Scrolling to item:', itemId, `(retries left: ${retries})`);
+  
+  const menuRow = document.querySelector(`.menu-row[data-item-id="${itemId}"]`);
+  
+  if (!menuRow) {
+    console.warn(' Menu row not found for item:', itemId);
+    
+    if (retries > 0) {
+      setTimeout(() => scrollToMenuItem(itemId, retries - 1), 200);
+    } else {
+      console.error(' Failed to find menu item after all retries');
+    }
+    return;
+  }
+  
+  const menuItem = menuRow.closest('.menu-list-item');
+  
+  if (!menuItem) {
+    console.warn('Menu item container not found');
+    return;
+  }
+  
+  const detail = menuRow.nextElementSibling;
+  const icon = menuRow.querySelector('.toggle-icon');
+  
+  if (detail && !detail.classList.contains('active')) {
+    detail.classList.add('active');
+    if (icon) icon.style.transform = 'rotate(180deg)';
+    expandedItems.add(itemId);
+  }
+  
+  menuItem.scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'center' 
+  });
+  
+  menuItem.style.transition = 'all 0.5s ease';
+  menuItem.style.backgroundColor = '#FEF3C7';
+  menuItem.style.transform = 'scale(1.01)';
+  menuItem.style.boxShadow = '0 4px 12px rgba(251, 191, 36, 0.3)';
+  
+  setTimeout(() => {
+    menuItem.style.backgroundColor = '';
+    menuItem.style.transform = '';
+    menuItem.style.boxShadow = '';
+  }, 1000);
+  
+  console.log(' Scrolled successfully to item:', itemId);
+}
+
+
+
+  // ========== BUNDLE MANAGEMENT JAVASCRIPT ==========
+  
+  let availableMenuItemsForBundle = [];
+  let selectedBundleItems = [];
+  let currentBundleType = 'COMBO';
+
+  /**
+   * Mở modal tạo Bundle (COMBO)
+   */
+  function openBundleModal() {
+    currentBundleType = 'COMBO';
+    document.getElementById('bundle-modal-title').innerHTML = '<i class="fa fa-boxes-stacked"></i> Tạo Combo mới';
+    document.getElementById('bundle-type').value = 'COMBO';
+    openBundleModalCommon();
+  }
+
+  
+
+  /**
+   * Logic chung để mở modal
+   */
+  function openBundleModalCommon() {
+    const modal = document.getElementById('create-bundle-modal');
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+    
+    // Reset form
+    document.getElementById('create-bundle-form').reset();
+    document.getElementById('bundle-type').value = currentBundleType;
+    selectedBundleItems = [];
+    updateSelectedItemsDisplayBundle();
+    
+    // Load available items
+    loadAvailableItemsForBundle();
+  }
+
+  /**
+   * Đóng modal
+   */
+  function closeBundleModal() {
+    const modal = document.getElementById('create-bundle-modal');
+    modal.classList.add('closing');
+    
+    setTimeout(() => {
+      modal.classList.remove('active', 'closing');
+      document.body.style.overflow = '';
+      document.getElementById('create-bundle-form').reset();
+      selectedBundleItems = [];
+    }, 300);
+  }
+
+  /**
+   * Load available menu items
+   */
+  async function loadAvailableItemsForBundle() {
+    try {
+      const res = await fetch('/api/menu-items/all');
+      if (!res.ok) throw new Error('Tải món ăn thất bại');
+
+      availableMenuItemsForBundle = await res.json();
+      displayAvailableItemsForBundle(availableMenuItemsForBundle);
+
+    } catch (error) {
+      console.error('Error loading items:', error);
+      document.getElementById('available-items-list').innerHTML = 
+        '<p style="grid-column: 1/-1; text-align:center; color:#6B7280; padding:20px;">Không thể tải danh sách món ăn</p>';
+      showToast('Không thể tải danh sách món ăn', 'error');
+    }
+  }
+
+  /**
+   * Display available items
+   */
+  function displayAvailableItemsForBundle(items) {
+    const container = document.getElementById('available-items-list');
+
+    if (items.length === 0) {
+      container.innerHTML = '<p style="grid-column: 1/-1; text-align:center; color:#6B7280; padding:20px;">Không có món ăn nào</p>';
+      return;
+    }
+
+    container.innerHTML = items.map(item => `
+      <div class="item-card-bundle ${isItemSelectedForBundle(item.id) ? 'selected' : ''}" 
+           onclick="toggleItemSelectionBundle(${item.id})">
+        <div class="checkmark"><i class="fa fa-check"></i></div>
+        <img src="${item.imageUrl || 'https://placehold.co/150'}" alt="${item.name}">
+        <h4>${item.name}</h4>
+        <div class="price">${formatPriceVND(item.price)}</div>
+      </div>
+    `).join('');
+  }
+
+  /**
+   * Toggle item selection
+   */
+  function toggleItemSelectionBundle(itemId) {
+    const existingIndex = selectedBundleItems.findIndex(i => i.itemId === itemId);
+
+    if (existingIndex !== -1) {
+      selectedBundleItems.splice(existingIndex, 1);
+    } else {
+      const item = availableMenuItemsForBundle.find(i => i.id === itemId);
+      selectedBundleItems.push({
+        itemId: item.id,
+        name: item.name,
+        price: item.price,
+        imageUrl: item.imageUrl,
+        quantity: 1
+      });
+    }
+
+    updateSelectedItemsDisplayBundle();
+    displayAvailableItemsForBundle(availableMenuItemsForBundle);
+  }
+
+  /**
+   * Check if item is selected
+   */
+  function isItemSelectedForBundle(itemId) {
+    return selectedBundleItems.some(i => i.itemId === itemId);
+  }
+
+  /**
+   * Update selected items display
+   */
+  function updateSelectedItemsDisplayBundle() {
+    const section = document.getElementById('selected-items-section');
+    const container = document.getElementById('selected-items-list');
+    const countEl = document.getElementById('selected-items-count');
+
+    if (selectedBundleItems.length === 0) {
+      section.style.display = 'none';
+      return;
+    }
+
+    section.style.display = 'block';
+    countEl.textContent = selectedBundleItems.length;
+
+    container.innerHTML = selectedBundleItems.map((item, index) => `
+      <div class="selected-item-row-bundle">
+        <div class="selected-item-info-bundle">
+          <img src="${item.imageUrl || 'https://placehold.co/50'}" alt="${item.name}">
+          <div>
+            <h5>${item.name}</h5>
+            <div class="price-small">${formatPriceVND(item.price)} / món</div>
+          </div>
+        </div>
+        <div class="quantity-control-bundle">
+          <button type="button" onclick="updateQuantityBundle(${index}, -1)">-</button>
+          <input type="number" value="${item.quantity}" min="1" 
+                 onchange="setQuantityBundle(${index}, this.value)">
+          <button type="button" onclick="updateQuantityBundle(${index}, 1)">+</button>
+        </div>
+        <button type="button" class="btn-remove-item-bundle" onclick="removeItemFromBundle(${index})">
+          <i class="fa fa-trash"></i>
+        </button>
+      </div>
+    `).join('');
+
+    updatePriceCalculationBundle();
+  }
+
+  /**
+   * Update quantity
+   */
+  function updateQuantityBundle(index, delta) {
+    selectedBundleItems[index].quantity = Math.max(1, selectedBundleItems[index].quantity + delta);
+    updateSelectedItemsDisplayBundle();
+  }
+
+  /**
+   * Set quantity
+   */
+  function setQuantityBundle(index, value) {
+    selectedBundleItems[index].quantity = Math.max(1, parseInt(value) || 1);
+    updateSelectedItemsDisplayBundle();
+  }
+
+  /**
+   * Remove item
+   */
+  function removeItemFromBundle(index) {
+    selectedBundleItems.splice(index, 1);
+    updateSelectedItemsDisplayBundle();
+    displayAvailableItemsForBundle(availableMenuItemsForBundle);
+  }
+
+  /**
+   * Update price calculation
+   */
+  function updatePriceCalculationBundle() {
+    const anchorPrice = selectedBundleItems.reduce((sum, item) => 
+      sum + (item.price * item.quantity), 0);
+
+    const bundlePrice = parseFloat(document.getElementById('bundle-price').value) || 0;
+    const savings = anchorPrice - bundlePrice;
+    const savingsPercent = anchorPrice > 0 ? (savings / anchorPrice * 100).toFixed(1) : 0;
+
+    document.getElementById('anchor-price').textContent = formatPriceVND(anchorPrice);
+    document.getElementById('bundle-price-display').textContent = formatPriceVND(bundlePrice);
+    document.getElementById('savings-amount').textContent = 
+      `${formatPriceVND(savings)} (${savingsPercent}%)`;
+  }
+
+  /**
+   * Format price VND
+   */
+  function formatPriceVND(price) {
+     return new Intl.NumberFormat('vi-VN').format(Math.round(price)) + ' VND';
+  }
+
+  /**
+   * Submit bundle form
+   */
+  async function submitBundleForm() {
+    try {
+      if (selectedBundleItems.length === 0) {
+        showToast('Vui lòng chọn ít nhất 1 món', 'warning');
+        return;
+      }
+
+      const name = document.getElementById('bundle-name').value.trim();
+      const description = document.getElementById('bundle-description').value.trim();
+      const bundleType = document.getElementById('bundle-type').value;
+      const price = parseFloat(document.getElementById('bundle-price').value);
+
+      // cố gắng lấy file từ 2 input khả dĩ
+      const imageFile =
+        document.getElementById('bundle-image-file')?.files?.[0] ||
+        document.getElementById('bundle-image')?.files?.[0];
+
+      if (!name || !price) {
+        showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
+        return;
+      }
+      if (!imageFile) {
+        showToast('Vui lòng chọn ảnh combo', 'warning');
+        return;
+      }
+
+      const bundleDto = {
+        name,
+        description: description || null,
+        bundleType,
+        price,
+        // imageUrl sẽ do backend set sau khi upload file
+        items: selectedBundleItems.map((item, index) => ({
+          itemId: item.itemId,
+          quantity: item.quantity,
+          sortOrder: index
+        }))
+      };
+
+      const form = new FormData();
+      form.append('bundle', new Blob([JSON.stringify(bundleDto)], { type: 'application/json' }));
+      form.append('imageFile', imageFile);
+
+      const res = await fetch('/api/admin/bundles', { method: 'POST', body: form });
+
+      // parse an toàn, phòng khi server trả về HTML error (DOCTYPE)
+      const ct = res.headers.get('content-type') || '';
+      const data = ct.includes('application/json') ? await res.json()
+                                                   : { success: false, message: await res.text() };
+
+      if (!res.ok || data.success === false) {
+        throw new Error(data.message || 'Tạo bundle thất bại');
+      }
+
+      showToast(`Tạo combo thành công!`, 'success');
+      closeBundleModal?.();
+      // reload danh sách combo nếu có trang bundles
+      if (typeof loadBundleList === 'function') await loadBundleList();
+    } catch (error) {
+      console.error('[Bundle Submit] Lỗi:', error);
+      showToast(error.message || 'Không thể tạo bundle', 'error');
+    }
+  }
+
+    // ========== SECTION TOGGLE JAVASCRIPT ==========
+  
+  let currentSection = 'menu-items';
+  
+
+  /**
+   * Chuyển đổi giữa các section
+   */
+  function showSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(section => {
+      section.classList.remove('active');
+    });
+
+    // Remove active from all tabs
+    document.querySelectorAll('.tab-item').forEach(tab => {
+      tab.classList.remove('active');
+    });
+
+    // Show selected section
+    const targetSection = document.getElementById(`section-${sectionName}`);
+    if (targetSection) {
+      targetSection.classList.add('active');
+    }
+
+    // Add active to selected tab
+    const targetTab = document.getElementById(`tab-${sectionName}`);
+    if (targetTab) {
+      targetTab.classList.add('active');
+    }
+
+    currentSection = sectionName;
+
+    // Load data if needed
+    if (sectionName === 'bundles' || sectionName === 'tasting-menu') {
+    // Đợi DOM render xong
+    setTimeout(() => {
+      loadAvailableItemsInline();
+      loadBundleList();
+    }, 100);
+  }
+  }
+
+  /**
+ * Load available menu items for inline bundle form
+ */
+let availableMenuItemsInline = [];
+let selectedBundleItemsInline = [];
+let currentCategoryFilter = 'all';
+
+/**
+ * Load available menu items và hiển thị theo danh mục
+ */
+async function loadAvailableItemsInline() {
+  try {
+    console.log('[Bundle] Đang tải món ăn...');
+    
+    const res = await fetch('/api/admin/menu');
+    console.log('[Bundle] Response status:', res.status);
+    
+    if (!res.ok) {
+      console.error('[Bundle] Response not OK:', res.statusText);
+      throw new Error('Tải món ăn thất bại');
+    }
+
+    const data = await res.json();
+    console.log('[Bundle] Data received:', data);
+    
+    if (!data.success) {
+      console.error('[Bundle] API returned error:', data.message);
+      throw new Error('Tải món ăn thất bại');
+    }
+
+    availableMenuItemsInline = Array.isArray(data) ? data : data.data;
+    console.log('[Bundle] Items loaded:', availableMenuItemsInline.length);
+    
+    // Load category buttons
+    loadCategoryFilterButtons();
+    
+    // Display items by category
+    displayAvailableItemsInlineByCategory();
+
+  } catch (error) {
+    console.error('[Bundle] Error loading items:', error);
+    document.getElementById('available-items-list-inline').innerHTML = 
+      '<p style="text-align:center; color:#6B7280; padding:20px;">Không thể tải danh sách món ăn</p>';
+    showToast('Không thể tải danh sách món ăn', 'error');
+  }
+}
+
+/**
+ * Load category filter buttons
+ */
+function loadCategoryFilterButtons() {
+  const firstButton = document.querySelector('.category-filter-btn[data-category="all"]');
+  
+  if (!firstButton) {
+    console.warn('[Bundle] Category filter buttons not found in DOM yet');
+    return;
+  }
+  const buttonContainer = firstButton.parentElement;
+
+
+  const categories = new Map();
+  
+  availableMenuItemsInline.forEach(item => {
+    if (item.category) {
+      categories.set(item.category.id, item.category.name);
+    }
+  });
+
+  // Render category buttons
+  buttonContainer.querySelectorAll('.category-filter-btn:not([data-category="all"])').forEach(btn => btn.remove());
+
+  
+  // Xóa các nút cũ (trừ nút "Tất cả")
+  buttonContainer.querySelectorAll('.category-filter-btn:not([data-category="all"])').forEach(btn => btn.remove());
+  
+  // Thêm category buttons
+  categories.forEach((name, id) => {
+    const itemCount = availableMenuItemsInline.filter(item => item.category?.id === id).length;
+    
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'category-filter-btn';
+    btn.setAttribute('data-category', id);
+    btn.innerHTML = `${name} (${itemCount})`;
+    btn.style.cssText = 'padding: 8px 16px; background: white; color: #6B7280; border: 2px solid #E5E7EB; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s;';
+    
+    btn.onclick = () => filterBundleItemsByCategory(id);
+    
+    buttonContainer.appendChild(btn);
+  });
+}
+
+/**
+ * Filter món ăn theo category
+ */
+function filterBundleItemsByCategory(categoryId) {
+  currentCategoryFilter = categoryId;
+  
+  // Update active button
+  document.querySelectorAll('.category-filter-btn').forEach(btn => {
+    if (btn.getAttribute('data-category') == categoryId) {
+      btn.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)';
+      btn.style.color = 'white';
+      btn.style.borderColor = '#1a1a1a';
+      btn.classList.add('active');
+    } else {
+      btn.style.background = 'white';
+      btn.style.color = '#6B7280';
+      btn.style.borderColor = '#E5E7EB';
+      btn.classList.remove('active');
+    }
+  });
+  
+  displayAvailableItemsInlineByCategory();
+}
+
+/**
+ * Hiển thị món ăn theo danh mục (NHÓM THEO CATEGORY)
+ */
+function displayAvailableItemsInlineByCategory() {
+  const container = document.getElementById('available-items-list-inline');
+  const searchTerm = document.getElementById('bundle-item-search-inline').value.toLowerCase().trim();
+
+  // Filter items
+  let filteredItems = availableMenuItemsInline;
+
+  // Filter by search
+  if (searchTerm) {
+    filteredItems = filteredItems.filter(item => 
+      item.name.toLowerCase().includes(searchTerm)
+    );
+  }
+
+  // Filter by category
+  if (currentCategoryFilter !== 'all') {
+    filteredItems = filteredItems.filter(item => 
+      item.category && item.category.id == currentCategoryFilter
+    );
+  }
+
+  if (filteredItems.length === 0) {
+    container.innerHTML = '<p style="text-align:center; color:#6B7280; padding:20px;">Không có món ăn nào</p>';
+    return;
+  }
+
+  // ✅ NHÓM MÓN ĂN THEO CATEGORY
+  const grouped = {};
+  filteredItems.forEach(item => {
+    const categoryId = item.category ? item.category.id : 'uncategorized';
+    const categoryName = item.category ? item.category.name : 'Chưa phân loại';
+    
+    if (!grouped[categoryId]) {
+      grouped[categoryId] = {
+        name: categoryName,
+        items: []
+      };
+    }
+    grouped[categoryId].items.push(item);
+  });
+
+  //  RENDER THEO DANH MỤC
+  let html = '';
+  
+  Object.keys(grouped).forEach(categoryId => {
+    const category = grouped[categoryId];
+    
+    html += `
+      <div style="margin-bottom: 24px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px; padding: 8px 12px; background: white; border-radius: 8px; border-left: 4px solid #1a1a1a;">
+          <i class="fa fa-utensils" style="color: #1a1a1a;"></i>
+          <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #111827;">
+            ${category.name}
+            <span style="color: #6B7280; font-weight: 400; margin-left: 6px;">(${category.items.length} món)</span>
+          </h4>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px;">
+          ${category.items.map(item => `
+            <div class="item-card-bundle ${isItemSelectedInline(item.id) ? 'selected' : ''}" 
+                 onclick="toggleItemSelectionInline(${item.id})">
+              <div class="checkmark"><i class="fa fa-check"></i></div>
+              
+              <h4>${item.name}</h4>
+              <div class="price">${formatPriceVND(item.price)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+/**
+ * Toggle item selection inline
+ */
+function toggleItemSelectionInline(itemId) {
+  const existingIndex = selectedBundleItemsInline.findIndex(i => i.itemId === itemId);
+
+  if (existingIndex !== -1) {
+    selectedBundleItemsInline.splice(existingIndex, 1);
+  } else {
+    const item = availableMenuItemsInline.find(i => i.id === itemId);
+    selectedBundleItemsInline.push({
+      itemId: item.id,
+      name: item.name,
+      price: item.price,
+      imageUrl: item.imageUrl,
+      quantity: 1
+    });
+  }
+
+  updateSelectedItemsDisplayInline();
+  displayAvailableItemsInlineByCategory();
+}
+
+/**
+ * Check if item is selected inline
+ */
+function isItemSelectedInline(itemId) {
+  return selectedBundleItemsInline.some(i => i.itemId === itemId);
+}
+
+//  UPDATE: Search handler
+document.addEventListener('DOMContentLoaded', () => {
+  const searchInputInline = document.getElementById('bundle-item-search-inline');
+  if (searchInputInline) {
+    let searchTimeout;
+    searchInputInline.addEventListener('input', () => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        displayAvailableItemsInlineByCategory();
+      }, 300);
+    });
+  }
+});
+
+  /**
+ * Update selected items display inline
+ */
+function updateSelectedItemsDisplayInline() {
+  const container = document.getElementById('selected-items-list-inline');
+  const countEl = document.getElementById('selected-items-count-inline'); // ✅ THÊM DÒNG NÀY
+  
+  if (!container) return;
+
+  if (selectedBundleItemsInline.length === 0) {
+    container.innerHTML = '<p style="color:#6B7280;">Chưa chọn món nào.</p>';
+    document.getElementById('selected-items-section-inline').style.display = 'none';
+    return;
+  }
+  
+  document.getElementById('selected-items-section-inline').style.display = 'block';
+  
+  //  CẬP NHẬT SỐ LƯỢNG (chỉ khi countEl tồn tại)
+  if (countEl) {
+    countEl.textContent = selectedBundleItemsInline.length;
+  }
+
+  container.innerHTML = selectedBundleItemsInline.map(item => `
+    <div class="selected-item-row-bundle">
+      <div class="selected-item-info-bundle">
+        <img src="${item.imageUrl || 'https://placehold.co/80x80?text=Item'}" alt="${item.name}"
+             onerror="this.onerror=null;this.src='https://placehold.co/80x80?text=No+Image'">
+        <div>
+          <h5>${item.name}</h5>
+          <div class="price-small">${formatPriceVND(item.price)}</div>
+        </div>
+      </div>
+
+      <div class="quantity-control-bundle" style="display:flex;align-items:center;gap:8px;">
+        <button type="button" onclick="changeItemQuantityInline(${item.itemId}, -1)">-</button>
+        <span class="qty" style="min-width:24px;text-align:center;">${item.quantity}</span>
+        <button type="button" onclick="changeItemQuantityInline(${item.itemId}, +1)">+</button>
+      </div>
+
+      <div class="subtotal">${formatPriceVND((item.price||0) * (item.quantity||0))}</div>
+    </div>
+  `).join('');
+
+  updatePriceCalculationInline();
+}
+
+  /**
+   * Update quantity inline
+   */
+  function updateQuantityInline(index, delta) {
+    selectedBundleItemsInline[index].quantity = Math.max(1, selectedBundleItemsInline[index].quantity + delta);
+    updateSelectedItemsDisplayInline();
+  }
+
+  /**
+   * Set quantity inline
+   */
+  function setQuantityInline(index, value) {
+    selectedBundleItemsInline[index].quantity = Math.max(1, parseInt(value) || 1);
+    updateSelectedItemsDisplayInline();
+  }
+
+  /**
+   * Remove item inline
+   */
+  function removeItemInline(index) {
+    selectedBundleItemsInline.splice(index, 1);
+    updateSelectedItemsDisplayInline();
+    displayAvailableItemsInline(availableMenuItemsInline);
+  }
+
+
+/**
+ * Update price calculation với business rules (KHÔNG CẦN costPrice từ DB)
+ */
+function updatePriceCalculationInline() {
+  // Tính Giá vốn ước lượng (30% giá bán)
+  const COGS_RATIO = 0.30; // 30% food cost
+  
+  const totalCostPrice = selectedBundleItemsInline.reduce((sum, item) => {
+    const estimatedCost = item.price * COGS_RATIO;
+    return sum + (estimatedCost * item.quantity);
+  }, 0);
+
+  // Tính Anchor Price (Tổng giá lẻ)
+  const anchorPrice = selectedBundleItemsInline.reduce((sum, item) => 
+    sum + (item.price * item.quantity), 0);
+
+  // Giá Bundle người dùng nhập
+  const bundlePrice = parseFloat(document.getElementById('bundle-price-inline').value) || 0;
+
+  // Tính tiết kiệm cho khách
+  const savings = anchorPrice - bundlePrice;
+  const savingsPercent = anchorPrice > 0 ? (savings / anchorPrice * 100) : 0;
+
+  // Tính lợi nhuận
+  const profit = bundlePrice - totalCostPrice;
+  const profitMargin = bundlePrice > 0 ? (profit / bundlePrice * 100) : 0;
+
+  //  Tính giá gợi ý (Sweet Spot: Lợi nhuận 64-66%)
+  const TARGET_PROFIT_MARGIN = 0.64; 
+  const suggestedPrice = totalCostPrice / (1 - TARGET_PROFIT_MARGIN);
+  const suggestedSavings = anchorPrice - suggestedPrice;
+  const suggestedSavingsPercent = anchorPrice > 0 ? (suggestedSavings / anchorPrice * 100) : 0;
+
+  // Hiển thị các giá trị
+  document.getElementById('total-cost-price-inline').textContent = formatPriceVND(totalCostPrice);
+  document.getElementById('anchor-price-inline').textContent = formatPriceVND(anchorPrice);
+  document.getElementById('bundle-price-display-inline').textContent = formatPriceVND(bundlePrice);
+  document.getElementById('profit-amount-inline').textContent = 
+    `${formatPriceVND(profit)} (${profitMargin.toFixed(1)}%)`;
+  document.getElementById('savings-amount-inline').textContent = 
+    `${formatPriceVND(savings)} (${savingsPercent.toFixed(1)}%)`;
+
+  //  VALIDATION & WARNING
+  const warningBox = document.getElementById('pricing-warning-inline');
+  const warningText = document.getElementById('pricing-warning-text');
+  const suggestionBox = document.getElementById('pricing-suggestion-inline');
+  
+  let warnings = [];
+
+  // Warning 1: Giá bundle <= Giá vốn (BÁN LỖ)
+  if (bundlePrice > 0 && bundlePrice <= totalCostPrice) {
+    warnings.push(` Giá bundle (<strong>${formatPriceVND(bundlePrice)}</strong>) phải cao hơn Tổng giá vốn (<strong>${formatPriceVND(totalCostPrice)}</strong>). <strong style="color: #DC2626;">BÁN LỖ!</strong>`);
+  }
+
+  // Warning 2: Giảm giá > 30% (Ảnh hưởng perceived value)
+  if (savingsPercent > 30) {
+    warnings.push(` Giảm giá <strong>${savingsPercent.toFixed(1)}%</strong> (> 30%) có thể khiến khách nghi ngờ chất lượng món ăn lẻ.`);
+  }
+
+  // Warning 3: Lợi nhuận < 50% (Quá thấp)
+  if (bundlePrice > totalCostPrice && profitMargin < 50) {
+    warnings.push(`Tỷ suất lợi nhuận <strong>${profitMargin.toFixed(1)}%</strong> thấp hơn mức khuyến nghị (≥ 50%).`);
+  }
+
+  // Warning 4: Giảm giá < 5% (Không hấp dẫn)
+  if (bundlePrice > 0 && savingsPercent < 5) {
+    warnings.push(` Giảm giá chỉ <strong>${savingsPercent.toFixed(1)}%</strong> có thể chưa đủ hấp dẫn để khách chọn combo.`);
+  }
+
+  // Hiển thị warnings
+  if (warnings.length > 0) {
+    warningBox.style.display = 'block';
+    warningText.innerHTML = warnings.join('<br><br>');
+  } else {
+    warningBox.style.display = 'none';
+  }
+
+  //  Gợi ý giá tối ưu (Sweet Spot)
+  const priceDifference = Math.abs(bundlePrice - suggestedPrice);
+  const shouldShowSuggestion = bundlePrice === 0 || priceDifference > suggestedPrice * 0.1;
+
+  if (shouldShowSuggestion && anchorPrice > 0) {
+    suggestionBox.style.display = 'block';
+    const roundedSuggestedPrice = Math.round(suggestedPrice / 1000) * 1000; 
+    document.getElementById('suggested-price-inline').textContent = formatPriceVND(roundedSuggestedPrice);
+    
+    // Tính lại % với giá gợi ý
+    const recalcSavings = anchorPrice - roundedSuggestedPrice;
+    const recalcSavingsPercent = (recalcSavings / anchorPrice * 100).toFixed(1);
+    
+    document.getElementById('suggested-savings-percent-inline').textContent = recalcSavingsPercent;
+  } else {
+    suggestionBox.style.display = 'none';
+  }
+}
+
+
+/**
+ * HỦY CHỈNH SỬA - Thoát chế độ Update về Create
+ */
+function cancelEditBundleInline() {
+  showConfirmation({
+    title: 'Hủy chỉnh sửa?',
+    message: 'Các thay đổi chưa lưu sẽ bị mất. Bạn có chắc muốn hủy?',
+    confirmText: 'Có, hủy',
+    cancelText: 'Không',
+    onConfirm: () => {
+      resetBundleFormInline();
+      showToast('Đã hủy chỉnh sửa', 'info');
+    }
+  });
+}
+
+  /**
+   * Reset bundle form inline
+   */
+  function resetBundleFormInline() {
+  const form = document.getElementById('bundle-form-inline');
+  const submitBtn = document.getElementById('btn-submit-bundle-inline');
+  const cancelBtn = document.getElementById('btn-cancel-edit-inline');
+
+    if (!form || !submitBtn || !cancelBtn) {
+    console.error('[Bundle Reset] Missing form elements');
+    return;
+    }
+
+  // Reset form fields
+  form.reset();
+  form.removeAttribute('data-bundle-id');
+
+  resetImagePreview('bundle');
+
+  // Clear selected items
+  selectedBundleItemsInline = [];
+  updateSelectedItemsDisplayInline();
+  displayAvailableItemsInlineByCategory();
+
+  submitBtn.innerHTML = '<i class="fa fa-plus-circle"></i> Tạo combo';
+  cancelBtn.style.display = 'none';
+}
+
+ /**
+ * Submit inline bundle form (CREATE + UPDATE)
+ */
+document.addEventListener('DOMContentLoaded', () => {
+  const bundleFormInline = document.getElementById('bundle-form-inline');
+  if (bundleFormInline) {
+    bundleFormInline.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      if (selectedBundleItemsInline.length === 0) {
+        showToast('Vui lòng chọn ít nhất 1 món', 'warning');
+        return;
+      }
+
+      const name = document.getElementById('bundle-name-inline').value.trim();
+      const description = document.getElementById('bundle-description-inline').value.trim();
+      const price = parseFloat(document.getElementById('bundle-price-inline').value);
+      const imageUrlInput = document.getElementById('bundle-image-url-inline').value.trim();
+      const imageFile = document.getElementById('bundle-image-file').files[0];
+
+      if (!name || !price) {
+        showToast('Vui lòng điền đầy đủ thông tin bắt buộc', 'warning');
+        return;
+      }
+
+      const validation = validateBundleConstraintsInline();
+      if (!validation.ok) {
+        const brief = validation.errors.slice(0, 3).join(' ');
+        showToast(brief + (validation.errors.length > 3 ? ' ...' : ''), 'warning');
+        return;
+      }
+
+      const bundleId = bundleFormInline.getAttribute('data-bundle-id');
+      const isEditMode = !!bundleId;
+
+      try {
+        // Common DTO
+        const bundleDto = {
+          name,
+          description: description || null,
+          bundleType: 'COMBO',
+          price,
+          imageUrl: imageUrlInput || null, // ignored on create (multipart sends file)
+          items: selectedBundleItemsInline.map((item, index) => ({
+            itemId: item.itemId,
+            quantity: item.quantity,
+            sortOrder: index
+          }))
+        };
+
+        let res, data;
+
+        if (isEditMode) {
+          // If user picked a new image in EDIT mode, upload to get URL first
+          if (imageFile) {
+            const uploadForm = new FormData();
+            uploadForm.append('image', imageFile);
+            uploadForm.append('name', name);
+
+            const uploadRes = await fetch('/api/admin/uploads/bundle', { method: 'POST', body: uploadForm });
+            const uploadCt = uploadRes.headers.get('content-type') || '';
+            const uploadData = uploadCt.includes('application/json')
+              ? await uploadRes.json()
+              : { success: false, message: await uploadRes.text() };
+
+            if (!uploadRes.ok || uploadData.success === false) {
+              throw new Error(uploadData.message || 'Upload ảnh thất bại');
+            }
+            bundleDto.imageUrl = uploadData.imageUrl;
+          }
+
+          res = await fetch(`/api/admin/bundles/${bundleId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bundleDto)
+          });
+          const ct = res.headers.get('content-type') || '';
+          data = ct.includes('application/json') ? await res.json() : { success: false, message: await res.text() };
+        } else {
+          // CREATE must call multipart endpoint with file
+          if (!imageFile) {
+            showToast('Vui lòng chọn ảnh combo', 'warning');
+            return;
+          }
+          const form = new FormData();
+          form.append('bundle', new Blob([JSON.stringify(bundleDto)], { type: 'application/json' }));
+          form.append('imageFile', imageFile);
+
+          res = await fetch('/api/admin/bundles', { method: 'POST', body: form });
+          const ct = res.headers.get('content-type') || '';
+          data = ct.includes('application/json') ? await res.json() : { success: false, message: await res.text() };
+        }
+
+        if (!res.ok || data.success === false) {
+          throw new Error(data.message || (isEditMode ? 'Cập nhật combo thất bại' : 'Tạo combo thất bại'));
+        }
+
+        showToast(isEditMode ? 'Cập nhật combo thành công!' : 'Tạo combo thành công!', 'success');
+        const editedBundleId = isEditMode ? bundleId : (data.data?.id || null);
+        resetBundleFormInline();
+        await loadBundleList();
+
+         if (editedBundleId) {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              scrollToBundleRow(editedBundleId);
+            }, 100); 
+          });
+        }
+
+      } catch (error) {
+        console.error('[Bundle Submit] Lỗi:', error);
+        showToast(error.message || 'Không thể lưu combo', 'error');
+      }
+    });
+  }
+});
+function scrollToBundleRow(bundleId, retries = 3) {
+  console.log('🎯 Scrolling to bundle:', bundleId, `(retries left: ${retries})`);
+  
+  const bundleRow = document.querySelector(`.bundle-menu-row[data-bundle-id="${bundleId}"]`);
+  
+  if (!bundleRow) {
+    console.warn('⚠️ Bundle row not found for ID:', bundleId);
+    
+    if (retries > 0) {
+      setTimeout(() => scrollToBundleRow(bundleId, retries - 1), 200);
+    }
+    return;
+  }
+  
+  const menuItem = bundleRow.closest('.menu-list-item');
+  
+  if (!menuItem) {
+    console.warn('⚠️ Menu item container not found');
+    return;
+  }
+  
+  // Scroll smooth
+  menuItem.scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'center' 
+  });
+  
+  // Highlight effect
+  menuItem.style.transition = 'all 0.5s ease';
+  menuItem.style.backgroundColor = '#FEF3C7';
+  menuItem.style.transform = 'scale(1.02)';
+  
+  setTimeout(() => {
+    menuItem.style.backgroundColor = '';
+    menuItem.style.transform = '';
+  }, 2000);
+  
+  console.log('Scrolled successfully to bundle:', bundleId);
+}
+
+  /**
+ * Load danh sách bundles hiện có
+ */
+// Thêm biến global cho pagination
+let currentBundlePage = 1;
+const BUNDLES_PER_PAGE = 6;
+let allBundles = [];
+
+/**
+ * Load danh sách bundles với phân trang
+ */
+async function loadBundleList() {
+  const container = document.getElementById('bundle-list');
+  const countEl = document.getElementById('bundle-count');
+
+  try {
+    const res = await fetch('/api/admin/bundles/type/COMBO?includeInactive=true');
+    
+    if (!res.ok) {
+      throw new Error('Tải danh sách combo thất bại');
+    }
+
+    const data = await res.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Tải danh sách combo thất bại');
+    }
+
+    allBundles = data.data;
+    countEl.textContent = allBundles.length;
+
+    displayBundlesPage(currentBundlePage);
+
+  } catch (error) {
+    console.error('[Bundle List] Lỗi tải combo:', error);
+    
+    container.innerHTML = `
+      <div style="grid-column: 1/-1; text-align: center; padding: 40px 20px; color: #DC2626;">
+        <i class="fa fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5; display: block;"></i>
+        <p style="margin: 0; font-size: 16px; font-weight: 600;">Không thể tải danh sách combo</p>
+        <p style="margin: 8px 0 0; font-size: 14px; color: #6B7280;">${error.message}</p>
+        <button onclick="loadBundleList()" 
+                style="margin-top: 16px; padding: 10px 20px; background: #DC2626; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+          <i class="fa fa-refresh"></i> Thử lại
+        </button>
+      </div>
+    `;
+    showToast('Không thể tải danh sách combo', 'error');
+  }
+}
+
+// Bundle list row expand/collapse state
+let expandedBundles = new Set();
+
+function toggleBundleDetail(row) {
+  const bundleId = parseInt(row.getAttribute('data-bundle-id'));
+  const detail = row.nextElementSibling;
+  const icon = row.querySelector('.toggle-icon');
+
+  if (detail.classList.contains('active')) {
+    detail.classList.remove('active');
+    icon.style.transform = 'rotate(0deg)';
+    expandedBundles.delete(bundleId);
+  } else {
+    detail.classList.add('active');
+    icon.style.transform = 'rotate(180deg)';
+    expandedBundles.add(bundleId);
+  }
+}
+
+function displayBundlesPage(page) {
+  const container = document.getElementById('bundle-list');
+
+  // Switch container to list mode instead of grid
+  container.classList.remove('bundle-grid');
+  container.style.display = 'block';
+
+  if (allBundles.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 40px 20px; color: #6B7280; background: white; border: 1px solid var(--color-border); border-radius: 12px;">
+        <i class="fa fa-inbox" style="font-size: 48px; margin-bottom: 12px; opacity: 0.3;"></i>
+        <p style="margin: 0;">Chưa có combo nào. Hãy tạo combo đầu tiên!</p>
+      </div>
+    `;
+    return;
+  }
+
+  const totalPages = Math.ceil(allBundles.length / BUNDLES_PER_PAGE);
+  const startIndex = (page - 1) * BUNDLES_PER_PAGE;
+  const endIndex = startIndex + BUNDLES_PER_PAGE;
+  const bundlesToShow = allBundles.slice(startIndex, endIndex);
+
+  // Header row (like menu item list)
+  let html = `
+    <div class="menu-list-item" style="border: 1px solid var(--color-border); border-radius: 8px; overflow: hidden; margin-bottom: 12px;">
+      <div class="bundle-menu-row" style="background:#F9FAFB; cursor: default;">
+        <span class="menu-name" style="font-weight:700;">Tên combo</span>
+        <span style="font-weight:700; padding-right:45px;">Giá</span>
+        <span style="font-weight:700;">Số món</span>
+        <span style="font-weight:700; visibility:hidden;">.</span>
+        <i class="fa" style="opacity:0;"></i>
+      </div>
+    </div>
+  `;
+
+
+  // Rows
+  html += bundlesToShow.map(bundle => {
+    const items = Array.isArray(bundle.items) ? bundle.items : [];
+    const itemsCount = items.length;
+    const isExpanded = expandedBundles.has(bundle.id);
+    const detailClass = isExpanded ? 'menu-detail active' : 'menu-detail';
+    const iconRotation = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+
+    const itemNames = items.map(item => 
+      item.item?.name || item.menuItem?.name || item.name || item.itemName || 'Unknown Item'
+    );
+
+    return `
+      <div class="menu-list-item">
+        <div class="bundle-menu-row" onclick="toggleBundleDetail(this)" data-bundle-id="${bundle.id}">
+          <span class="menu-name">${bundle.name}</span>
+          <span >${formatPriceVND(bundle.price)}</span>
+          <span>${itemsCount}</span>
+          <span>${bundle.isActive ? 'Bật' : 'Tắt'}</span>
+          <i class="fa fa-chevron-down toggle-icon" style="transform: ${iconRotation}"></i>
+        </div>
+
+        <div class="${detailClass}">
+          <div class="bundle-detail-grid">
+            <div class="bundle-card">
+              <div class="bundle-card-image">
+                <img src="${bundle.imageUrl || 'https://placehold.co/800x300?text=No+Image'}" alt="${bundle.name}"
+                     onerror="this.onerror=null;this.src='https://placehold.co/800x300?text=No+Image'">
+                <span class="bundle-badge ${bundle.isActive ? 'available' : 'unavailable'}">
+                  ${bundle.isActive ? 'Hiệu lực' : 'Không hiệu lực'}
+                </span>
+              </div>
+              <div class="bundle-card-content">
+                <div class="bundle-card-header">
+                  <h3>${bundle.name}</h3>
+                  <span class="bundle-card-price">${formatPriceVND(bundle.price)}</span>
+                </div>
+                ${bundle.description ? `<p class="bundle-card-desc">${bundle.description}</p>` : '<p class="bundle-card-desc" style="opacity:.8;">Không có mô tả.</p>'}
+                ${itemNames.length > 0 ? `
+                  <div class="bundle-card-items">
+                    <div class="bundle-card-items-title">
+                      <i class="fa fa-utensils"></i> Món trong combo (${itemNames.length})
+                    </div>
+                    <div class="bundle-card-items-list">
+                      ${itemNames.map(n => `<span class="bundle-item-tag">${n}</span>`).join('')}
+                    </div>
+                  </div>
+                ` : `
+                  <div class="bundle-card-items">
+                    <div class="bundle-card-items-title">
+                      <i class="fa fa-info-circle"></i> Chưa có món ăn
+                    </div>
+                  </div>
+                `}
+                <div class="bundle-card-footer">
+                  <div class="toggle-switch" onclick="event.stopPropagation()">
+                    <label class="switch">
+                      <input type="checkbox" ${bundle.isActive ? 'checked' : ''} onchange="toggleBundleActive(${bundle.id}, this)">
+                      <span class="slider"></span>
+                    </label>
+                  </div>
+                  <div class="action-buttons" style="display:flex;gap:12px;">
+                    <!-- Nút Edit - Màu trắng với viền -->
+                    <a href="javascript:void(0)" 
+                      onclick="editBundleInline(${bundle.id})"
+                      style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:#FFFFFF;color:#000000;border:2px solid #E5E5E5;border-radius:8px;text-decoration:none;transition:all 0.3s;"
+                      onmouseover="this.style.background='#F5F5F5';this.style.borderColor='#D4D4D4';this.style.transform='scale(1.05)'"
+                      onmouseout="this.style.background='#FFFFFF';this.style.borderColor='#E5E5E5';this.style.transform='scale(1)'">
+                      <i class="fa fa-pencil" style="font-size:18px;"></i>
+                    </a>
+                    
+                    <!-- Nút Delete - Màu đỏ nhẹ nhàng, dễ nhìn -->
+                    <a href="javascript:void(0)" 
+                      onclick="deleteBundleWithConfirm(${bundle.id}, '${bundle.name.replace(/'/g, "\\'")}')"
+                      style="display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;background:#DC2626;color:#FFFFFF;border:2px solid #DC2626;border-radius:8px;text-decoration:none;transition:all 0.3s;"
+                      onmouseover="this.style.background='#B91C1C';this.style.borderColor='#B91C1C';this.style.transform='scale(1.05)'"
+                      onmouseout="this.style.background='#DC2626';this.style.borderColor='#DC2626';this.style.transform='scale(1)'">
+                      <i class="fa fa-trash" style="font-size:18px;"></i>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div> 
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Pagination
+  const paginationHTML = totalPages > 1 ? `
+    <div style="display: flex; justify-content: center; align-items: center; gap: 12px; padding: 24px 0; border-top: 2px solid var(--color-border); margin-top: 16px;">
+      <button onclick="changeBundlePage(${page - 1})" ${page === 1 ? 'disabled' : ''} class="pagination-btn">
+        <i class="fa fa-chevron-left"></i> Trước
+      </button>
+      <div style="display: flex; gap: 8px;">
+        ${Array.from({length: totalPages}, (_, i) => i + 1).map(p => `
+          <button onclick="changeBundlePage(${p})" class="pagination-page-btn ${p === page ? 'active' : ''}">${p}</button>
+        `).join('')}
+      </div>
+      <button onclick="changeBundlePage(${page + 1})" ${page === totalPages ? 'disabled' : ''} class="pagination-btn">
+        Sau <i class="fa fa-chevron-right"></i>
+      </button>
+      <span style="margin-left: 16px; color: #6B7280; font-size: 14px;">
+        Trang ${page} / ${totalPages}
+        <span style="color: #9CA3AF;">•</span>
+        Hiển thị ${startIndex + 1}-${Math.min(endIndex, allBundles.length)} / ${allBundles.length}
+      </span>
+    </div>
+  ` : '';
+
+  container.innerHTML = html + paginationHTML;
+}
+
+/**
+ * Chuyển trang
+ */
+function changeBundlePage(newPage) {
+  const totalPages = Math.ceil(allBundles.length / BUNDLES_PER_PAGE);
+  
+  if (newPage < 1 || newPage > totalPages) {
+    return;
+  }
+  
+  currentBundlePage = newPage;
+  displayBundlesPage(currentBundlePage);
+  
+  // Scroll to top of bundle list
+  document.querySelector('.bundle-list-container').scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'start' 
+  });
+}
+
+/**
+ * Edit bundle inline (Populate form từ DB)
+ */
+async function editBundleInline(bundleId) {
+  try {
+    console.log('[Bundle Edit] Loading bundle ID:', bundleId);
+    
+    // Fetch bundle data
+    const res = await fetch(`/api/admin/bundles/${bundleId}`);
+    
+    if (!res.ok) {
+      throw new Error('Không thể tải thông tin combo');
+    }
+
+    const data = await res.json();
+    
+    if (!data.success) {
+      throw new Error(data.message || 'Không thể tải thông tin combo');
+    }
+
+    const bundle = data.data;
+    console.log('[Bundle Edit] Data loaded:', bundle);
+
+    //  CHECK: Elements tồn tại không?
+    const formElements = {
+      name: document.getElementById('bundle-name-inline'),
+      price: document.getElementById('bundle-price-inline'),
+      imageUrl: document.getElementById('bundle-image-url-inline'),
+      description: document.getElementById('bundle-description-inline'),
+      form: document.getElementById('bundle-form-inline'),
+      submitBtn: document.getElementById('btn-submit-bundle-inline'),
+      cancelBtn: document.getElementById('btn-cancel-edit-inline')
+    };
+
+    // Validate all elements exist
+    const missingElements = Object.entries(formElements)
+      .filter(([key, el]) => !el)
+      .map(([key]) => key);
+
+    if (missingElements.length > 0) {
+      console.error('[Bundle Edit] Missing elements:', missingElements);
+      throw new Error(`Không tìm thấy các phần tử: ${missingElements.join(', ')}`);
+    }
+
+    //  Populate form fields
+    formElements.name.value = bundle.name;
+    formElements.price.value = bundle.price;
+    formElements.imageUrl.value = bundle.imageUrl || '';
+    formElements.description.value = bundle.description || '';
+    //  Show preview when editing combo
+    const bPrevDiv = document.getElementById('bundle-image-preview');
+    const bPrevImg = document.getElementById('bundle-preview-img');
+    const bStatus = document.getElementById('bundle-upload-status');
+    if (bundle.imageUrl) {
+      bPrevImg.src = bundle.imageUrl;
+      bPrevDiv.style.display = 'block';
+    } else {
+      bPrevImg.src = '';
+      bPrevDiv.style.display = 'none';
+    }
+    bStatus.innerHTML = '';
+    
+    // Set hidden field để biết đang edit
+    formElements.form.setAttribute('data-bundle-id', bundleId);
+
+    // Populate selected items
+    selectedBundleItemsInline = bundle.items.map(item => ({
+      itemId: item.item?.id || item.menuItem?.id,
+      name: item.item?.name || item.menuItem?.name || item.itemName,
+      price: item.item?.price || item.menuItem?.price || 0,
+      imageUrl: item.item?.imageUrl || item.menuItem?.imageUrl || '',
+      quantity: item.quantity
+    }));
+
+    console.log('[Bundle Edit] Selected items:', selectedBundleItemsInline);
+
+    //  Update UI
+    updateSelectedItemsDisplayInline();
+    displayAvailableItemsInlineByCategory();
+
+    //  CHUYỂN SANG CHẾ ĐỘ UPDATE
+    formElements.submitBtn.innerHTML = '<i class="fa fa-save"></i> Cập nhật combo';
+    formElements.cancelBtn.style.display = 'inline-block';
+
+    //  Scroll to form
+    const infoSection = document.querySelector('#bundle-name-inline')?.closest('div[style*="background: white"]');
+    if (infoSection) {
+      infoSection.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    } else {
+      document.querySelector('#section-bundles header')?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
+
+    showToast('Đã tải thông tin combo để chỉnh sửa', 'info');
+
+  } catch (error) {
+    console.error('[Bundle Edit] Lỗi:', error);
+    showToast(error.message || 'Không thể tải thông tin combo', 'error');
+  }
+}
+async function toggleBundleActive(id, checkbox) {
+  const desired = checkbox.checked;
+  const prev = !desired;
+  const keepScroll = window.scrollY;
+  try {
+    const res = await fetch(`/api/admin/bundles/${id}/toggle?isActive=${desired}`, { method: 'PATCH' });
+    const data = await res.json();
+    if (!res.ok || data.success === false) throw new Error(data.message || 'Toggle thất bại');
+    showToast(desired ? 'Đã bật combo' : 'Đã tắt combo', 'success');
+    await loadBundleList();
+    window.scrollTo(0, keepScroll);
+  } catch (e) {
+    checkbox.checked = prev;
+    showToast(e.message || 'Không thể cập nhật trạng thái combo', 'error');
+  }
+}
+/* ===================== BUNDLE CONSTRAINTS ===================== */
+function computeTotalItemsInline() {
+  return selectedBundleItemsInline.reduce((sum, it) => sum + (it.quantity || 0), 0);
+}
+
+function computeTotalValueInline() {
+  return selectedBundleItemsInline.reduce((sum, it) => sum + (it.price || 0) * (it.quantity || 0), 0);
+}
+
+function getMaxQuantityPerItemInline(totalItems) {
+  // maxQuantityPerItem = ceil(0.4 × totalItemsInCombo), tối thiểu 1
+  return Math.max(1, Math.ceil(0.4 * totalItems));
+}
+
+/**
+ * Tăng/giảm số lượng 1 món, có kiểm tra ràng buộc 40% theo tổng số lượng.
+ * Dùng cho nút +/- trong UI: changeItemQuantityInline(itemId, +1 | -1)
+ */
+function changeItemQuantityInline(itemId, delta) {
+  const idx = selectedBundleItemsInline.findIndex(i => i.itemId === itemId);
+  if (idx === -1) return;
+
+  const item = selectedBundleItemsInline[idx];
+  const currentQty = item.quantity || 1;
+
+  if (delta > 0) {
+    // Mô phỏng tổng sau khi tăng
+    const newQty = currentQty + 1;
+    const newTotalItems = computeTotalItemsInline() + 1;
+    const maxPerItem = getMaxQuantityPerItemInline(newTotalItems);
+
+    if (newQty > maxPerItem) {
+      showToast(`Số lượng tối đa cho mỗi món là ${maxPerItem} (theo 40% tổng số lượng combo).`, 'warning');
+      return;
+    }
+
+    item.quantity = newQty;
+  } else if (delta < 0) {
+    const newQty = Math.max(1, currentQty - 1);
+    item.quantity = newQty;
+  }
+
+  updateSelectedItemsDisplayInline?.();
+  displayAvailableItemsInlineByCategory?.();
+  updatePriceCalculationInline?.();
+}
+
+/**
+ * Validate tất cả ràng buộc trước khi submit:
+ * - Rule số lượng: qty ≤ ceil(0.4 × totalItems)
+ */
+function validateBundleConstraintsInline() {
+  const errors = [];
+  const totalItems = computeTotalItemsInline();
+  const maxPerItem = getMaxQuantityPerItemInline(totalItems);
+
+  selectedBundleItemsInline.forEach(it => {
+    const qty = it.quantity || 0;
+    if (qty > maxPerItem) {
+      errors.push(`"${it.name}" vượt số lượng tối đa ${maxPerItem} (rule 40%).`);
+    }
+  });
+
+  return {
+    ok: errors.length === 0,
+    errors,
+    message: errors.length ? `Combo vi phạm ràng buộc:\n- ${errors.join('\n- ')}` : 'OK'
+  };
+}
+
+/**
+ * Reset form về chế độ Create
+ */
+function resetBundleFormInline() {
+  const form = document.getElementById('bundle-form-inline');
+  const submitBtn = document.getElementById('btn-submit-bundle-inline');
+  const cancelBtn = document.getElementById('btn-cancel-edit-inline');
+
+  // CHECK: Elements tồn tại không?
+  if (!form || !submitBtn || !cancelBtn) {
+    console.error('[Bundle Reset] Missing form elements');
+    return;
+  }
+
+  // Reset form fields
+  form.reset();
+  form.removeAttribute('data-bundle-id');
+
+  resetImagePreview('bundle');
+
+
+  // Clear selected items
+  selectedBundleItemsInline = [];
+  updateSelectedItemsDisplayInline();
+  displayAvailableItemsInlineByCategory();
+
+  // CHUYỂN VỀ CHẾ ĐỘ CREATE
+  submitBtn.innerHTML = '<i class="fa fa-plus-circle"></i> Tạo combo';
+  cancelBtn.style.display = 'none'; // Ẩn nút Hủy
+}
+/**
+ *  CUSTOM CONFIRMATION DIALOG (for Cancel Edit)
+ */
+function showConfirmation(options) {
+  const {
+    title = 'Xác nhận',
+    message = 'Bạn có chắc chắn muốn thực hiện hành động này?',
+    confirmText = 'Xác nhận',
+    cancelText = 'Hủy',
+    onConfirm = () => {},
+    onCancel = () => {}
+  } = options;
+
+  const overlay = document.getElementById('cancel-edit-dialog-overlay');
+  const titleEl = document.getElementById('cancel-dialog-title');
+  const messageEl = document.getElementById('cancel-dialog-message');
+  const cancelBtn = document.getElementById('btn-cancel-no');
+  const confirmBtn = document.getElementById('btn-cancel-yes');
+
+  // Set content
+  titleEl.textContent = title;
+  messageEl.textContent = message;
+  cancelBtn.innerHTML = `<i class="fa fa-times"></i> ${cancelText}`;
+  confirmBtn.innerHTML = `<i class="fa fa-check"></i> ${confirmText}`;
+
+  // Show dialog
+  overlay.classList.add('active');
+  document.body.style.overflow = 'hidden';
+
+  // Handle Cancel
+  const handleCancel = () => {
+    overlay.classList.add('closing');
+    setTimeout(() => {
+      overlay.classList.remove('active', 'closing');
+      document.body.style.overflow = '';
+    }, 300);
+    cancelBtn.removeEventListener('click', handleCancel);
+    confirmBtn.removeEventListener('click', handleConfirm);
+    overlay.removeEventListener('click', handleOverlayClick);
+    onCancel();
+  };
+
+  // Handle Confirm
+  const handleConfirm = () => {
+    overlay.classList.add('closing');
+    setTimeout(() => {
+      overlay.classList.remove('active', 'closing');
+      document.body.style.overflow = '';
+    }, 300);
+    cancelBtn.removeEventListener('click', handleCancel);
+    confirmBtn.removeEventListener('click', handleConfirm);
+    overlay.removeEventListener('click', handleOverlayClick);
+    onConfirm();
+  };
+
+  // Handle Click Outside
+  const handleOverlayClick = (e) => {
+    if (e.target === overlay) {
+      handleCancel();
+    }
+  };
+
+  // Add event listeners
+  cancelBtn.addEventListener('click', handleCancel);
+  confirmBtn.addEventListener('click', handleConfirm);
+  overlay.addEventListener('click', handleOverlayClick);
+}
+/**
+ * Xóa bundle với confirm dialog
+ */
+function deleteBundleWithConfirm(bundleId, bundleName) {
+  showConfirmDialog(
+    'Xác nhận xóa combo',
+    `Bạn có chắc chắn muốn xóa combo "${bundleName}"? Hành động này không thể hoàn tác.`,
+    async () => {
+      try {
+        const res = await fetch(`/api/admin/bundles/${bundleId}`, {
+          method: 'DELETE'
+        });
+
+        const result = await res.json();
+
+        if (!res.ok || !result.success) {
+          showToast(result.message || 'Không thể xóa combo', 'error');
+          return;
+        }
+
+        showToast('Xóa combo thành công!', 'success');
+        await loadBundleList(); // Reload danh sách
+
+      } catch (error) {
+        console.error('Lỗi xóa combo:', error);
+        showToast('Đã xảy ra lỗi khi xóa combo', 'error');
+      }
+    }
+  );
+}
+
+
+
+</script>
+
+</body>
+</html>

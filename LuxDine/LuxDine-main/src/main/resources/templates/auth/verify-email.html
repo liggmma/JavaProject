@@ -1,0 +1,198 @@
+<!-- templates/auth/verify-email.html -->
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Xác minh email — LuxDine</title>
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet"/>
+    <style>
+        :root {
+            --c1: #0a0a23;
+            --bd: #e5e7eb;
+            --tx: #111827;
+            --mut: #6b7280;
+        }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, Arial, sans-serif;
+            background: linear-gradient(180deg, #fff, #f9fafb)
+        }
+
+        .wrap {
+            max-width: 560px;
+            margin: 56px auto;
+            padding: 24px
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--bd);
+            border-radius: 12px;
+            padding: 28px
+        }
+
+        .title {
+            margin: 0 0 6px;
+            color: var(--c1)
+        }
+
+        .mut {
+            color: var(--mut)
+        }
+
+        .input {
+            width: 100%;
+            border: 1px solid var(--bd);
+            border-radius: 8px;
+            padding: 12px;
+            font: inherit
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 18px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .btn--pri {
+            background: var(--c1);
+            color: #fff
+        }
+
+        .row {
+            display: flex;
+            gap: 12px;
+            align-items: center
+        }
+
+        .ok {
+            color: #16a34a
+        }
+
+        .err {
+            color: #ef4444
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <h1 class="title">Xác minh email</h1>
+        <p class="mut">Mã 6 chữ số sẽ được gửi tới <strong th:text="${email}">email@example.com</strong>. Vui lòng kiểm
+            tra hộp thư.</p>
+
+        <div class="mut" id="status"></div>
+
+        <form class="form" style="margin-top:16px">
+            <input id="csrf" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" type="hidden"/>
+            <input id="emailVal" th:value="${email}" type="hidden"/>
+            <label class="mut" for="code">Mã OTP</label>
+            <input class="input" id="code" maxlength="6" name="code" pattern="[0-9]{6}" placeholder="••••••" required/>
+            <div style="height:12px"></div>
+            <button class="btn btn--pri" type="submit">Xác nhận</button>
+        </form>
+
+        <div style="height:12px"></div>
+        <button class="btn" disabled id="resend" type="button">Gửi lại</button>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const csrf = document.getElementById('csrf').value;
+        const statusEl = document.getElementById('status');
+        const form = document.querySelector('.form');
+        const code = document.getElementById('code');
+        const resend = document.getElementById('resend');
+        let t = null;
+
+        function msg(text, ok) {
+            statusEl.textContent = text;
+            statusEl.className = ok ? 'ok' : 'err';
+        }
+
+        function cooldown(seconds = 60) {
+            if (t) {
+                clearInterval(t);
+                t = null;
+            }
+            let left = seconds;
+            resend.disabled = true;
+            resend.textContent = `Gửi lại (${left}s)`;
+            t = setInterval(() => {
+                left--;
+                resend.textContent = `Gửi lại (${left}s)`;
+                if (left <= 0) {
+                    clearInterval(t);
+                    t = null;
+                    resend.disabled = false;
+                    resend.textContent = 'Gửi lại';
+                }
+            }, 1000);
+        }
+
+        function post(url, data) {
+            return fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRF-TOKEN': csrf
+                },
+                credentials: 'same-origin',
+                body: new URLSearchParams(data)
+            })
+                .then(r => r.text())
+                .then(text => {
+                    try {
+                        return JSON.parse(text);
+                    } catch {
+                        return {ok: false, message: text || 'Lỗi máy chủ.'};
+                    }
+                })
+                .catch(() => ({ok: false, message: 'Lỗi mạng. Thử lại.'}));
+        }
+
+        async function sendOtp() {
+            msg('Đang gửi mã xác minh...', true);
+            const res = await post('/auth/otp/send', {});
+            if (res.ok) {
+                msg('Đã gửi mã OTP. Vui lòng kiểm tra email.', true);
+                cooldown(60);                 // reset đếm ngược sau khi gửi thành công
+            } else {
+                // Nếu BE trả thông điệp dạng "… 5s." thì vẫn đếm ngược theo số giây đó
+                const m = (res.message || '').match(/(\d+)\s*s/);
+                if (m) cooldown(parseInt(m[1], 10));
+                msg(res.message || 'Không gửi được OTP. Thử lại sau.', false);
+            }
+        }
+
+        resend.addEventListener('click', sendOtp);
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const v = code.value.trim();
+            if (!/^\d{6}$/.test(v)) {
+                code.focus();
+                return;
+            }
+            const res = await post('/auth/otp/verify', {code: v});
+            if (res.ok) {
+                window.location.href = '/auth/verify/finish';
+            } else {
+                msg(res.message || 'Mã OTP không hợp lệ.', false);
+            }
+        });
+
+        // ✅ Vừa vào trang: khóa nút và đếm ngược 60s (không tự gửi OTP lại)
+        cooldown(60);
+    })();
+</script>
+</body>
+</html>

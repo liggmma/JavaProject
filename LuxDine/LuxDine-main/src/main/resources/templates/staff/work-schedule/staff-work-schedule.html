@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Lịch Làm Việc - LuxDine</title>
+
+        <!-- Typography: Inter -->
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Include Staff Styles -->
+        <th:block
+            th:replace="~{staff/fragments/staff-header :: staffStyles}"
+        ></th:block>
+
+        <style>
+            /* ========== Work Schedule Specific Styles ========== */
+            .schedule-container {
+                max-width: 1200px;
+                margin: 0 auto;
+                padding: var(--space-xl) var(--space-lg);
+            }
+
+            .schedule-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: var(--space-xl);
+                flex-wrap: wrap;
+                gap: var(--space-md);
+            }
+
+            .schedule-title {
+                font-size: var(--h1-size);
+                font-weight: var(--h1-weight);
+                color: var(--color-primary);
+                margin: 0;
+            }
+
+            .week-navigation {
+                display: flex;
+                align-items: center;
+                gap: var(--space-md);
+            }
+
+            .week-nav-btn {
+                padding: var(--space-sm) var(--space-md);
+                background: var(--color-surface);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                font-weight: 500;
+                color: var(--color-text);
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .week-nav-btn:hover {
+                background: var(--color-bg);
+                border-color: var(--color-primary);
+                color: var(--color-primary);
+            }
+
+            .current-week {
+                font-weight: 600;
+                color: var(--color-primary);
+                font-size: 18px;
+            }
+
+            .schedule-calendar {
+                background: var(--color-surface);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+                box-shadow: var(--shadow-card);
+            }
+
+            .calendar-header {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                background: var(--color-primary);
+                color: white;
+            }
+
+            .calendar-day-header {
+                padding: var(--space-md);
+                text-align: center;
+                font-weight: 600;
+                font-size: 14px;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .calendar-day-header:last-child {
+                border-right: none;
+            }
+
+            .calendar-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                min-height: 500px;
+            }
+
+            .calendar-day {
+                border-right: 1px solid var(--color-border);
+                border-bottom: 1px solid var(--color-border);
+                padding: var(--space-md);
+                min-height: 150px;
+                background: var(--color-surface);
+            }
+
+            .calendar-day:nth-child(7n) {
+                border-right: none;
+            }
+
+            .calendar-day.today {
+                background: #fffbeb;
+            }
+
+            .day-number {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--color-text);
+                margin-bottom: var(--space-sm);
+            }
+
+            .today .day-number {
+                color: var(--color-secondary);
+            }
+
+            .shift-item {
+                margin-top: var(--space-sm);
+                padding: var(--space-sm);
+                border-radius: var(--radius-sm);
+                font-size: 13px;
+                font-weight: 500;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+
+            .shift-item.morning {
+                background: #dbeafe;
+                color: #1e40af;
+                border-left: 3px solid #3b82f6;
+            }
+
+            .shift-item.afternoon {
+                background: #fed7aa;
+                color: #9a3412;
+                border-left: 3px solid #f97316;
+            }
+
+            .shift-item.evening {
+                background: #e9d5ff;
+                color: #6b21a8;
+                border-left: 3px solid #a855f7;
+            }
+
+            .shift-item.custom {
+                background: #f3e8ff;
+                color: #7c3aed;
+                border-left: 3px solid #7c3aed;
+            }
+
+            .shift-name {
+                font-weight: 600;
+            }
+
+            .shift-time {
+                font-size: 12px;
+                opacity: 0.8;
+            }
+
+            .no-shift {
+                color: var(--color-text-muted);
+                font-size: 13px;
+                margin-top: var(--space-sm);
+                text-align: center;
+            }
+
+            .summary-card {
+                background: linear-gradient(
+                    135deg,
+                    var(--color-primary) 0%,
+                    #1e293b 100%
+                );
+                color: white;
+                padding: var(--space-lg);
+                border-radius: var(--radius-lg);
+                margin-bottom: var(--space-xl);
+                box-shadow: var(--shadow-hover);
+            }
+
+            .summary-title {
+                font-size: 18px;
+                font-weight: 600;
+                margin-bottom: var(--space-md);
+            }
+
+            .summary-stats {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+                gap: var(--space-md);
+            }
+
+            .stat-item {
+                background: rgba(255, 255, 255, 0.1);
+                padding: var(--space-md);
+                border-radius: var(--radius-md);
+            }
+
+            .stat-value {
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 4px;
+            }
+
+            .stat-label {
+                font-size: 14px;
+                opacity: 0.8;
+            }
+
+            .legend {
+                display: flex;
+                gap: var(--space-lg);
+                margin-top: var(--space-lg);
+                flex-wrap: wrap;
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: var(--space-sm);
+                font-size: 14px;
+            }
+
+            .legend-color {
+                width: 16px;
+                height: 16px;
+                border-radius: 4px;
+            }
+
+            .legend-color.morning {
+                background: #3b82f6;
+            }
+
+            .legend-color.afternoon {
+                background: #f97316;
+            }
+
+            .legend-color.evening {
+                background: #a855f7;
+            }
+
+            .legend-color.custom {
+                background: #7c3aed;
+            }
+
+            @media (max-width: 768px) {
+                .schedule-header {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .week-navigation {
+                    justify-content: center;
+                }
+
+                .calendar-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .calendar-day {
+                    border-right: none;
+                }
+
+                .calendar-header {
+                    display: none;
+                }
+
+                .day-number::before {
+                    content: attr(data-day-name);
+                    display: block;
+                    font-size: 12px;
+                    font-weight: 400;
+                    opacity: 0.7;
+                    margin-bottom: 4px;
+                }
+            }
+        </style>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-styles}"></th:block>
+    </head>
+    <body>
+        <!-- Navigation -->
+        <div th:replace="~{staff/fragments/staff-header :: staffHeader}"></div>
+
+        <!-- Main Content -->
+        <div class="schedule-container">
+            <!-- Summary Card -->
+            <div class="summary-card">
+                <div class="summary-title">Tổng quan tuần này</div>
+                <div class="summary-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" th:text="${mySchedule.size()}">
+                            0
+                        </div>
+                        <div class="stat-label">Tổng ca làm việc</div>
+                    </div>
+                    <div class="stat-item">
+                        <div
+                            class="stat-value"
+                            th:text="${#lists.size(#lists.toList(mySchedule.?[shiftType == 'MORNING']))}"
+                        >
+                            0
+                        </div>
+                        <div class="stat-label">Ca sáng</div>
+                    </div>
+                    <div class="stat-item">
+                        <div
+                            class="stat-value"
+                            th:text="${#lists.size(#lists.toList(mySchedule.?[shiftType == 'AFTERNOON']))}"
+                        >
+                            0
+                        </div>
+                        <div class="stat-label">Ca chiều</div>
+                    </div>
+                    <div class="stat-item">
+                        <div
+                            class="stat-value"
+                            th:text="${#lists.size(#lists.toList(mySchedule.?[shiftType == 'EVENING']))}"
+                        >
+                            0
+                        </div>
+                        <div class="stat-label">Ca tối</div>
+                    </div>
+                    <div class="stat-item">
+                        <div
+                            class="stat-value"
+                            th:text="${#lists.size(#lists.toList(mySchedule.?[shiftType == 'CUSTOM']))}"
+                        >
+                            0
+                        </div>
+                        <div class="stat-label">Ca tùy chỉnh</div>
+                    </div>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color morning"></div>
+                        <span>Ca sáng (08:00 - 12:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color afternoon"></div>
+                        <span>Ca chiều (13:00 - 17:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color evening"></div>
+                        <span>Ca tối (18:00 - 22:00)</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color custom"></div>
+                        <span>Ca tùy chỉnh</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Header -->
+            <div class="schedule-header">
+                <h1 class="schedule-title">Lịch Làm Việc Của Tôi</h1>
+                <div class="week-navigation">
+                    <button class="week-nav-btn" onclick="navigateWeek(-1)">
+                        ← Tuần trước
+                    </button>
+                    <span
+                        class="current-week"
+                        th:text="${#temporals.format(weekStart, 'dd/MM/yyyy')} + ' - ' + ${#temporals.format(weekStart.plusDays(6), 'dd/MM/yyyy')}"
+                    >
+                        28/10/2024 - 03/11/2024
+                    </span>
+                    <button class="week-nav-btn" onclick="navigateWeek(1)">
+                        Tuần sau →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Calendar -->
+            <div class="schedule-calendar">
+                <div class="calendar-header">
+                    <div class="calendar-day-header">Thứ Hai</div>
+                    <div class="calendar-day-header">Thứ Ba</div>
+                    <div class="calendar-day-header">Thứ Tư</div>
+                    <div class="calendar-day-header">Thứ Năm</div>
+                    <div class="calendar-day-header">Thứ Sáu</div>
+                    <div class="calendar-day-header">Thứ Bảy</div>
+                    <div class="calendar-day-header">Chủ Nhật</div>
+                </div>
+                <div class="calendar-grid">
+                    <!-- Loop through 7 days -->
+                    <th:block th:each="dayOffset : ${#numbers.sequence(0, 6)}">
+                        <th:block
+                            th:with="currentDate=${weekStart.plusDays(dayOffset)}, 
+                                       isToday=${currentDate.equals(#temporals.createToday())}"
+                        >
+                            <div
+                                class="calendar-day"
+                                th:classappend="${isToday} ? 'today' : ''"
+                            >
+                                <div
+                                    class="day-number"
+                                    th:attr="data-day-name=${#temporals.dayOfWeekName(currentDate)}"
+                                    th:text="${#temporals.format(currentDate, 'dd/MM')}"
+                                >
+                                    28/10
+                                </div>
+
+                                <!-- Display shifts for this day -->
+                                <th:block th:each="shift : ${mySchedule}">
+                                    <div
+                                        th:if="${shift.workDate.equals(currentDate)}"
+                                        class="shift-item"
+                                        th:classappend="${#strings.toLowerCase(shift.shiftType)}"
+                                    >
+                                        <span
+                                            class="shift-name"
+                                            th:text="${shift.shiftType == 'CUSTOM' && shift.customShiftName != null ? shift.customShiftName : shift.shiftDisplayName}"
+                                            >Ca sáng</span
+                                        >
+                                        <span
+                                            class="shift-time"
+                                            th:text="${shift.startTime} + ' - ' + ${shift.endTime}"
+                                            >08:00 - 12:00</span
+                                        >
+                                        <span
+                                            class="shift-time"
+                                            th:if="${shift.notes != null and !#strings.isEmpty(shift.notes)}"
+                                            th:text="${shift.notes}"
+                                        ></span>
+                                    </div>
+                                </th:block>
+                            </div>
+                        </th:block>
+                    </th:block>
+                </div>
+            </div>
+        </div>
+
+        <script th:inline="javascript">
+            /*<![CDATA[*/
+            const currentWeekStart = /*[[${weekStart}]]*/ null;
+
+            function navigateWeek(offset) {
+                const date = new Date(currentWeekStart);
+                date.setDate(date.getDate() + offset * 7);
+
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, "0");
+                const day = String(date.getDate()).padStart(2, "0");
+                const newDate = `${year}-${month}-${day}`;
+
+                window.location.href =
+                    "/staff/work-schedule?weekStart=" + newDate;
+            }
+            /*]]>*/
+        </script>
+
+        <!-- AI Chatbot Widget -->
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-widget}"></th:block>
+        <th:block th:replace="~{customer/fragments/ai-chatbot-widget :: chatbot-scripts}"></th:block>
+
+    </body>
+</html>

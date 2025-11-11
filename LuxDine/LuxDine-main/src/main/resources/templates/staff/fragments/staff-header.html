@@ -1,0 +1,257 @@
+<!-- templates/staff/fragments/staff-header.html -->
+
+<!-- Staff CSS Styles -->
+<th:block th:fragment="staffStyles">
+    <style>
+        /* ========== Design Tokens (LuxDine Staff) ========== */
+        :root {
+            --color-primary: #0a0a23;
+            --color-secondary: #f97316;
+            --color-bg: #f9fafb;
+            --color-border: #e5e7eb;
+            --color-text: #111827;
+            --color-text-muted: #6b7280;
+            --color-success: #22c55e;
+            --color-warning: #facc15;
+            --color-error: #ef4444;
+            --color-info: #3b82f6;
+            --color-accent: #8b5cf6;
+            --radius-sm: 6px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-hover: 0 4px 14px rgba(0, 0, 0, 0.1);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-xxl: 64px;
+            --font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto,
+                Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+            --h1-size: 32px;
+            --h1-lh: 1.2;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-lh: 1.3;
+            --h2-weight: 600;
+            --h3-size: 20px;
+            --h3-lh: 1.4;
+            --h3-weight: 500;
+            --body-size: 16px;
+            --body-lh: 1.5;
+            --body-weight: 400;
+            --small-size: 14px;
+            --small-lh: 1.4;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+        body {
+            font-family: var(--font-family);
+            font-size: var(--body-size);
+            line-height: var(--body-lh);
+            color: var(--color-text);
+            background: var(--color-bg);
+        }
+
+        /* Navigation */
+        .navbar {
+            background: #fff;
+            border-bottom: 1px solid var(--color-border);
+            padding: 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: var(--space-md) var(--space-lg);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            font-weight: 700;
+            color: var(--color-primary);
+            font-size: 20px;
+        }
+
+        .brand__logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: linear-gradient(
+                135deg,
+                var(--color-primary) 0%,
+                #1a1a3a 50%,
+                #0f0f23 100%
+            );
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 900;
+            font-size: 18px;
+            box-shadow: 0 4px 12px rgba(10, 10, 35, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+        .brand__logo::before {
+            content: "🍽️";
+            position: absolute;
+            font-size: 24px;
+            z-index: 2;
+        }
+
+        .nav {
+            display: flex;
+            gap: var(--space-sm);
+            align-items: center;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-sm) var(--space-md);
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            font-size: var(--small-size);
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .nav-item:hover {
+            background: var(--color-bg);
+            color: var(--color-text);
+        }
+
+        .nav-item.active {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .nav-item i {
+            font-size: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .nav-container {
+                flex-direction: column;
+                gap: var(--space-md);
+                align-items: stretch;
+            }
+
+            .nav {
+                justify-content: center;
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</th:block>
+
+<header th:fragment="staffHeader">
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="brand">
+                <div class="brand__logo"></div>
+                <span>LuxDine</span>
+            </div>
+            <div class="nav">
+                <a
+                    href="/staff/floor-plan"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'floor-plan'} ? ' active' : ''"
+                >
+                    Trạng thái bàn
+                </a>
+                <a
+                    href="/staff/reservations"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'reservations'} ? ' active' : ''"
+                >
+                    Đơn đặt bàn
+                </a>
+                <a
+                    href="/staff/orders"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'orders'} ? ' active' : ''"
+                >
+                    Đơn gọi món
+                </a>
+                <a
+                    href="/staff/kitchen"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'kitchen'} ? ' active' : ''"
+                >
+                    Bếp
+                </a>
+                <a
+                    href="/staff/work-schedule"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'work-schedule'} ? ' active' : ''"
+                >
+                    Lịch làm việc
+                </a>
+                <a
+                    href="/staff/chat"
+                    class="nav-item"
+                    th:classappend="${currentPage == 'chat'} ? ' active' : ''"
+                >
+                    Chat
+                </a>
+                <form
+                    th:action="@{/logout}"
+                    method="post"
+                    style="display: inline"
+                >
+                    <input
+                        type="hidden"
+                        th:name="${_csrf.parameterName}"
+                        th:value="${_csrf.token}"
+                    />
+                    <button
+                        type="submit"
+                        class="nav-item"
+                        style="
+                            background: none;
+                            border: none;
+                            color: var(--color-text-muted);
+                            font-weight: 500;
+                            font-size: var(--small-size);
+                            cursor: pointer;
+                            display: flex;
+                            align-items: center;
+                            gap: var(--space-xs);
+                            padding: var(--space-sm) var(--space-md);
+                            border-radius: var(--radius-md);
+                            transition: all 0.2s ease;
+                            white-space: nowrap;
+                        "
+                    >
+                        Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
+</header>

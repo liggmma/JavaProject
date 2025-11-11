@@ -1,0 +1,3036 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Bảng chấm công - LuxDine</title>
+
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+            rel="stylesheet"
+        />
+
+        <th:block
+            th:replace="~{admin/fragments/admin-header :: adminStyles}"
+        ></th:block>
+
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: "Inter", sans-serif;
+                margin: 0;
+                padding: 0;
+                background: var(--color-bg);
+            }
+
+            .main-content {
+                padding: 32px;
+                max-width: 1600px;
+                margin: 0 auto;
+            }
+
+            .page-header {
+                margin-bottom: 24px;
+            }
+
+            .page-title {
+                font-size: 32px;
+                font-weight: 700;
+                margin-bottom: 8px;
+                color: var(--color-text);
+            }
+
+            /* Controls */
+            .controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 24px;
+                gap: 16px;
+                flex-wrap: wrap;
+            }
+
+            .controls-left {
+                display: flex;
+                gap: 12px;
+                align-items: center;
+                flex: 1;
+            }
+
+            .controls-right {
+                display: flex;
+                gap: 12px;
+            }
+
+            .search-box {
+                position: relative;
+                flex: 0 1 300px;
+            }
+
+            .search-box input {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 14px;
+            }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 3px rgba(10, 10, 35, 0.1);
+            }
+
+            .search-box::before {
+                display: none;
+            }
+
+            .dropdown-select {
+                padding: 10px 32px 10px 12px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 14px;
+                background: white;
+                cursor: pointer;
+                appearance: none;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 12px center;
+            }
+
+            .date-nav {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                background: white;
+                padding: 6px;
+                border-radius: 8px;
+                border: 1px solid var(--color-border);
+            }
+
+            .date-nav button {
+                padding: 6px 10px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                border-radius: 4px;
+                font-size: 18px;
+                transition: background 0.2s;
+            }
+
+            .date-nav button:hover {
+                background: var(--color-bg);
+            }
+
+            .date-nav span {
+                padding: 0 12px;
+                font-weight: 600;
+                font-size: 14px;
+                min-width: 200px;
+                text-align: center;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                background: white;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                transition: all 0.2s;
+            }
+
+            .btn:hover {
+                border-color: var(--color-primary);
+                background: var(--color-bg);
+            }
+
+            .btn-primary {
+                background: var(--color-primary);
+                color: white;
+                border-color: var(--color-primary);
+            }
+
+            .btn-primary:hover {
+                background: #06061a;
+            }
+
+            /* View tabs */
+            .view-tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 24px;
+                border-bottom: 2px solid var(--color-border);
+                overflow-x: auto;
+            }
+
+            .view-tab {
+                padding: 12px 20px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--color-text-muted);
+                border-bottom: 3px solid transparent;
+                margin-bottom: -2px;
+                transition: all 0.2s;
+                white-space: nowrap;
+            }
+
+            .view-tab:hover {
+                color: var(--color-text);
+            }
+
+            .view-tab.active {
+                color: var(--color-primary);
+                border-bottom-color: var(--color-primary);
+            }
+
+            /* Shift grid view */
+            .shift-grid {
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 16px;
+                margin-bottom: 24px;
+            }
+
+            .shift-column {
+                background: white;
+                border-radius: 12px;
+                padding: 16px;
+                border: 1px solid var(--color-border);
+                min-height: 400px;
+            }
+
+            .shift-header {
+                font-weight: 700;
+                font-size: 16px;
+                margin-bottom: 8px;
+                color: var(--color-text);
+            }
+
+            .shift-time {
+                color: var(--color-text-muted);
+                font-size: 14px;
+                margin-bottom: 16px;
+            }
+
+            .employee-card {
+                background: var(--color-bg);
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: 2px solid transparent;
+            }
+
+            .employee-card:hover {
+                border-color: var(--color-primary);
+                box-shadow: var(--shadow-elev);
+            }
+
+            .employee-name {
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: var(--color-text);
+            }
+
+            .time-info {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: var(--color-text-muted);
+                margin-bottom: 4px;
+            }
+
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+                margin-top: 8px;
+            }
+
+            .status-badge.on-time {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            .status-badge.late {
+                background: #e9d5ff;
+                color: #6b21a8;
+            }
+
+            .status-badge.incomplete {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .status-badge.not-checked {
+                background: #fed7aa;
+                color: #9a3412;
+            }
+
+            .status-badge.on-leave {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            /* Employee list view */
+            .employee-list {
+                display: none;
+            }
+
+            .employee-list.active {
+                display: block;
+            }
+
+            .employee-row {
+                background: white;
+                border-radius: 8px;
+                padding: 16px;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                border: 1px solid var(--color-border);
+            }
+
+            .employee-info {
+                flex: 1;
+            }
+
+            .employee-code {
+                font-size: 13px;
+                color: var(--color-text-muted);
+                margin-top: 4px;
+            }
+
+            .shift-status {
+                display: flex;
+                gap: 16px;
+            }
+
+            .employee-table {
+                width: 100%;
+                background: white;
+                border-radius: 8px;
+                overflow: hidden;
+                border-collapse: collapse;
+                border: 1px solid var(--color-border);
+                table-layout: fixed;
+            }
+
+            .employee-table thead {
+                background: var(--color-bg);
+            }
+
+            .employee-table th {
+                padding: 12px 16px;
+                text-align: left;
+                font-weight: 600;
+                color: var(--color-text);
+                border-bottom: 1px solid var(--color-border);
+            }
+
+            .employee-table th:first-child {
+                width: 200px;
+                text-align: left;
+            }
+
+            .employee-table th:not(:first-child) {
+                width: auto;
+                text-align: center;
+            }
+
+            .employee-table td {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--color-border);
+                color: var(--color-text);
+            }
+
+            .employee-table td:first-child {
+                text-align: left;
+            }
+
+            .employee-table td:not(:first-child) {
+                text-align: center;
+            }
+
+            .employee-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .employee-table tbody tr:hover {
+                background: var(--color-bg);
+            }
+
+            /* Calendar view */
+            .calendar-view {
+                display: none;
+            }
+
+            .calendar-view.active {
+                display: block;
+            }
+
+            .calendar-table {
+                width: 100%;
+                background: white;
+                border-radius: 12px;
+                overflow: hidden;
+                border: 1px solid var(--color-border);
+            }
+
+            .calendar-table table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .calendar-table th {
+                background: var(--color-bg);
+                padding: 12px 8px;
+                text-align: center;
+                font-weight: 600;
+                font-size: 13px;
+                border-bottom: 2px solid var(--color-border);
+                color: var(--color-text);
+            }
+
+            .calendar-table th.employee-col,
+            .calendar-table th.shift-col {
+                text-align: left;
+                padding-left: 16px;
+                min-width: 200px;
+            }
+
+            .calendar-table td {
+                padding: 12px 8px;
+                text-align: center;
+                border-bottom: 1px solid var(--color-border);
+                border-right: 1px solid var(--color-border);
+            }
+
+            .calendar-table td.employee-col,
+            .calendar-table td.shift-col {
+                text-align: left;
+                padding-left: 16px;
+                font-weight: 500;
+                background: var(--color-bg);
+            }
+
+            .status-dot {
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                display: inline-block;
+            }
+
+            .status-dot.on-time {
+                background: #3b82f6;
+            }
+
+            .status-dot.late {
+                background: #a855f7;
+            }
+
+            .status-dot.incomplete {
+                background: #ef4444;
+            }
+
+            .status-dot.not-checked {
+                background: #f97316;
+            }
+
+            .status-dot.on-leave {
+                background: #9ca3af;
+            }
+
+            /* Legend */
+            .legend {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                gap: 16px;
+                margin-top: 24px;
+                padding: 16px;
+                background: white;
+                border-radius: 12px;
+                border: 1px solid var(--color-border);
+            }
+
+            .legend-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                padding: 8px 16px;
+                border-radius: 20px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+
+            .legend-item:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-card);
+            }
+
+            .legend-item.on-time {
+                background: #dbeafe;
+                color: #1e40af;
+            }
+
+            .legend-item.late {
+                background: #e9d5ff;
+                color: #6b21a8;
+            }
+
+            .legend-item.incomplete {
+                background: #fee2e2;
+                color: #991b1b;
+            }
+
+            .legend-item.not-checked {
+                background: #fed7aa;
+                color: #9a3412;
+            }
+
+            .legend-item.on-leave {
+                background: #e5e7eb;
+                color: #374151;
+            }
+
+            /* Modal */
+            .modal {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 1000;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .modal.active {
+                display: flex;
+            }
+
+            .modal-content {
+                background: white;
+                border-radius: 16px;
+                width: 90%;
+                max-width: 800px;
+                max-height: 90vh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+
+            .modal-header {
+                padding: 24px;
+                border-bottom: 1px solid var(--color-border);
+                display: flex;
+                justify-content: space-between;
+                align-items: start;
+                flex-shrink: 0;
+            }
+
+            .modal-title-section {
+                flex: 1;
+            }
+
+            .modal-title {
+                font-size: 24px;
+                font-weight: 700;
+                margin-bottom: 12px;
+            }
+
+            .modal-subtitle {
+                display: flex;
+                gap: 16px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .modal-subtitle-item {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 14px;
+                color: var(--color-text);
+            }
+            
+            .modal-subtitle-item svg {
+                flex-shrink: 0;
+                color: var(--color-primary);
+                opacity: 0.8;
+            }
+            
+            .modal-subtitle-item #modalEmployeeName,
+            .modal-subtitle-item #modalEmployeeCode {
+                font-weight: 600;
+                color: var(--color-text);
+            }
+
+            .modal-close {
+                padding: 8px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                font-size: 24px;
+                color: var(--color-text-muted);
+                line-height: 1;
+            }
+
+            .modal-close:hover {
+                color: var(--color-text);
+            }
+
+            .modal-tabs {
+                display: flex;
+                gap: 8px;
+                padding: 16px 24px 0;
+                border-bottom: 1px solid var(--color-border);
+                flex-shrink: 0;
+            }
+
+            .modal-tab {
+                padding: 12px 20px;
+                border: none;
+                background: transparent;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--color-text-muted);
+                border-bottom: 3px solid transparent;
+                margin-bottom: -1px;
+                transition: all 0.2s;
+            }
+
+            .modal-tab:hover {
+                color: var(--color-text);
+            }
+
+            .modal-tab.active {
+                color: var(--color-primary);
+                border-bottom-color: var(--color-primary);
+            }
+
+            .modal-body {
+                padding: 24px;
+                overflow-y: auto;
+                flex: 1;
+            }
+
+            .tab-content {
+                display: none;
+            }
+
+            .tab-content.active {
+                display: block;
+            }
+
+            .form-group {
+                margin-bottom: 20px;
+            }
+
+            .form-label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: var(--color-text);
+            }
+
+            .form-input,
+            .form-select {
+                width: 100%;
+                padding: 10px 12px;
+                border: 1.5px solid var(--color-border);
+                border-radius: 8px;
+                font-size: 14px;
+            }
+
+            .form-input:focus,
+            .form-select:focus {
+                outline: none;
+                border-color: var(--color-primary);
+                box-shadow: 0 0 0 3px rgba(10, 10, 35, 0.1);
+            }
+
+            .radio-group {
+                display: flex;
+                gap: 24px;
+                margin-bottom: 20px;
+            }
+
+            .radio-option {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .radio-option input[type="radio"] {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+            }
+
+            .radio-option label {
+                cursor: pointer;
+            }
+
+            .time-inputs {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+
+            .checkbox-group {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 8px;
+            }
+
+            .checkbox-group input[type="checkbox"] {
+                width: 18px;
+                height: 18px;
+                cursor: pointer;
+            }
+
+            .checkbox-group label {
+                cursor: pointer;
+                font-weight: 500;
+            }
+
+            .modal-footer {
+                padding: 16px 24px;
+                border-top: 1px solid var(--color-border);
+                display: flex;
+                justify-content: space-between;
+                gap: 12px;
+                flex-shrink: 0;
+            }
+
+            .modal-footer-left {
+                display: flex;
+                gap: 12px;
+            }
+
+            .modal-footer-right {
+                display: flex;
+                gap: 12px;
+            }
+
+            .btn-secondary {
+                background: white;
+                color: var(--color-text);
+            }
+
+            .btn-danger {
+                background: var(--color-error);
+                color: white;
+                border-color: var(--color-error);
+            }
+
+            .btn-danger:hover {
+                background: #dc2626;
+            }
+
+            /* History table */
+            .history-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .history-table th {
+                background: var(--color-bg);
+                padding: 12px;
+                text-align: left;
+                font-weight: 600;
+                font-size: 13px;
+                border-bottom: 2px solid var(--color-border);
+            }
+
+            .history-table td {
+                padding: 12px;
+                border-bottom: 1px solid var(--color-border);
+                font-size: 14px;
+            }
+
+            .empty-state {
+                text-align: center;
+                padding: 40px;
+                color: var(--color-text-muted);
+            }
+
+            .sidebar-label {
+                font-weight: 700;
+                font-size: 18px;
+                margin-bottom: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .add-shift-btn {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                border: 2px dashed var(--color-border);
+                background: white;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+                color: var(--color-text-muted);
+                transition: all 0.2s;
+            }
+
+            .add-shift-btn:hover {
+                border-color: var(--color-primary);
+                color: var(--color-primary);
+                background: var(--color-bg);
+            }
+
+            .loading {
+                text-align: center;
+                padding: 40px;
+                color: var(--color-text-muted);
+            }
+
+            /* Toast Notification */
+            .toast {
+                position: fixed;
+                top: 20px;
+                right: -400px;
+                background: white;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                padding: 16px 20px;
+                min-width: 320px;
+                max-width: 500px;
+                z-index: 10000;
+                transition: right 0.3s ease;
+                border-left: 4px solid;
+            }
+
+            .toast.show {
+                right: 20px;
+            }
+
+            .toast.success {
+                border-left-color: #22c55e;
+            }
+
+            .toast.error {
+                border-left-color: #ef4444;
+            }
+
+            .toast.warning {
+                border-left-color: #f59e0b;
+            }
+
+            .toast.info {
+                border-left-color: #3b82f6;
+            }
+
+            .toast-content {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .toast-icon {
+                width: 24px;
+                height: 24px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 16px;
+                font-weight: 600;
+                flex-shrink: 0;
+            }
+
+            .toast.success .toast-icon {
+                background: #22c55e;
+                color: white;
+            }
+
+            .toast.error .toast-icon {
+                background: #ef4444;
+                color: white;
+            }
+
+            .toast.warning .toast-icon {
+                background: #f59e0b;
+                color: white;
+            }
+
+            .toast.info .toast-icon {
+                background: #3b82f6;
+                color: white;
+            }
+
+            .toast-message {
+                flex: 1;
+                font-size: 14px;
+                font-weight: 500;
+                color: var(--color-text);
+            }
+
+            /* Confirm Modal */
+            .confirm-modal {
+                display: none;
+                position: fixed;
+                z-index: 9999;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                animation: fadeIn 0.2s ease;
+            }
+
+            .confirm-modal-content {
+                position: relative;
+                background-color: white;
+                margin: 10% auto;
+                padding: 0;
+                border-radius: 12px;
+                width: 90%;
+                max-width: 420px;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+                animation: slideIn 0.3s ease;
+            }
+
+            .confirm-modal-header {
+                padding: 24px 24px 16px 24px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            }
+
+            .confirm-modal-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: #fef2f2;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                color: #ef4444;
+            }
+
+            .confirm-modal-title {
+                font-size: 18px;
+                font-weight: 600;
+                color: var(--color-text);
+            }
+
+            .confirm-modal-body {
+                padding: 0 24px 24px 24px;
+                font-size: 14px;
+                color: var(--color-text-muted);
+                line-height: 1.5;
+            }
+
+            .confirm-modal-footer {
+                display: flex;
+                gap: 12px;
+                padding: 16px 24px;
+                border-top: 1px solid var(--color-border);
+                justify-content: flex-end;
+            }
+
+            .confirm-modal-footer .btn {
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s;
+                border: none;
+            }
+
+            .confirm-modal-footer .btn-cancel {
+                background: var(--color-bg);
+                color: var(--color-text);
+            }
+
+            .confirm-modal-footer .btn-cancel:hover {
+                background: #e5e7eb;
+            }
+
+            .confirm-modal-footer .btn-confirm {
+                background: #ef4444;
+                color: white;
+            }
+
+            .confirm-modal-footer .btn-confirm:hover {
+                background: #dc2626;
+            }
+
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+
+            @keyframes slideIn {
+                from {
+                    transform: translateY(-20px);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <th:block
+            th:replace="~{admin/fragments/admin-header :: adminHeader}"
+        ></th:block>
+
+        <div class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">Bảng chấm công</h1>
+            </div>
+
+            <div class="controls">
+                <div class="controls-left">
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            id="searchInput"
+                            placeholder="Tìm kiếm nhân viên"
+                        />
+                    </div>
+
+                    <select id="viewTypeSelect" class="dropdown-select">
+                        <option value="day">Theo ngày</option>
+                        <option value="week">Theo tuần</option>
+                        <option value="month">Theo tháng</option>
+                    </select>
+
+                    <div class="date-nav">
+                        <button id="prevDate">‹</button>
+                        <span id="currentDate">Thứ 5, Ngày 30/10</span>
+                        <button id="nextDate">›</button>
+                    </div>
+                </div>
+
+                <div class="controls-right">
+                    <select id="displayModeSelect" class="dropdown-select">
+                        <option value="shift">Xem theo ca</option>
+                        <option value="employee">Xem theo nhân viên</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Shift View -->
+            <div id="shiftView" class="shift-view">
+                <div class="shift-grid">
+                    <div class="shift-column">
+                        <div class="shift-header">Ca sáng</div>
+                        <div class="shift-time">08:00 - 12:00</div>
+                        <div id="morningShift"></div>
+                    </div>
+
+                    <div class="shift-column">
+                        <div class="shift-header">Ca chiều</div>
+                        <div class="shift-time">13:00 - 17:00</div>
+                        <div id="afternoonShift"></div>
+                    </div>
+
+                    <div class="shift-column">
+                        <div class="shift-header">Ca tối</div>
+                        <div class="shift-time">18:00 - 22:00</div>
+                        <div id="eveningShift"></div>
+                    </div>
+
+                    <div class="shift-column">
+                        <div class="shift-header">Ca tùy chỉnh</div>
+                        <div class="shift-time">Linh hoạt</div>
+                        <div id="customShift"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee List View -->
+            <div id="employeeView" class="employee-list">
+                <div id="employeeListContainer"></div>
+            </div>
+
+            <!-- Calendar View -->
+            <div id="calendarView" class="calendar-view">
+                <div class="calendar-table">
+                    <table id="calendarTable">
+                        <thead>
+                            <tr id="calendarHeader"></tr>
+                        </thead>
+                        <tbody id="calendarBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="legend">
+                <div class="legend-item on-time">
+                    <span class="status-dot on-time"></span>
+                    Đúng giờ
+                </div>
+                <div class="legend-item late">
+                    <span class="status-dot late"></span>
+                    Đi muộn / Về sớm
+                </div>
+                <div class="legend-item incomplete">
+                    <span class="status-dot incomplete"></span>
+                    Chấm công thiếu
+                </div>
+                <div class="legend-item not-checked">
+                    <span class="status-dot not-checked"></span>
+                    Chưa chấm công
+                </div>
+                <div class="legend-item on-leave">
+                    <span class="status-dot on-leave"></span>
+                    Nghỉ làm
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Modal -->
+        <div id="attendanceModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="modal-title-section">
+                        <h2 class="modal-title">Chấm công</h2>
+                        <div class="modal-subtitle">
+                            <span class="modal-subtitle-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="12" cy="7" r="4"></circle>
+                                </svg>
+                                <span style="font-weight: 500; color: #666;">Nhân viên:</span>
+                                <span id="modalEmployeeName">Le Hoang</span>
+                            </span>
+                            <span class="modal-subtitle-item">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                                </svg>
+                                <span style="font-weight: 500; color: #666;">Mã NV:</span>
+                                <span id="modalEmployeeCode">NV000004</span>
+                            </span>
+                            <span
+                                class="status-badge not-checked"
+                                id="modalStatus"
+                            >
+                                Chưa chấm công
+                            </span>
+                        </div>
+                    </div>
+                    <button class="modal-close" id="closeModal">&times;</button>
+                </div>
+
+                <div class="modal-tabs">
+                    <button class="modal-tab active" data-tab="attendance">
+                        Chấm công
+                    </button>
+                    <button class="modal-tab" data-tab="history">
+                        Lịch sử chấm công
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <!-- Attendance Tab -->
+                    <div id="attendanceTab" class="tab-content active">
+                        <div class="form-group">
+                            <label class="form-label">Thời gian</label>
+                            <input
+                                type="date"
+                                id="attendanceDate"
+                                class="form-input"
+                            />
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Ca làm việc</label>
+                            <select id="shiftTypeSelect" class="form-select">
+                                <option value="MORNING">
+                                    Ca sáng (08:00 - 12:00)
+                                </option>
+                                <option value="AFTERNOON">
+                                    Ca chiều (13:00 - 17:00)
+                                </option>
+                                <option value="EVENING">
+                                    Ca tối (18:00 - 22:00)
+                                </option>
+                                <option value="CUSTOM">Ca tùy chỉnh</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Ghi chú</label>
+                            <input
+                                type="text"
+                                id="attendanceNotes"
+                                class="form-input"
+                                placeholder="Nhập ghi chú..."
+                            />
+                        </div>
+
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="workingRadio"
+                                    name="attendanceType"
+                                    value="working"
+                                    checked
+                                />
+                                <label for="workingRadio">Đi làm</label>
+                            </div>
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="approvedLeaveRadio"
+                                    name="attendanceType"
+                                    value="approved"
+                                />
+                                <label for="approvedLeaveRadio"
+                                    >Nghỉ có phép</label
+                                >
+                            </div>
+                            <div class="radio-option">
+                                <input
+                                    type="radio"
+                                    id="unapprovedLeaveRadio"
+                                    name="attendanceType"
+                                    value="unapproved"
+                                />
+                                <label for="unapprovedLeaveRadio"
+                                    >Nghỉ không phép</label
+                                >
+                            </div>
+                        </div>
+
+                        <div id="timeInputsSection" class="time-inputs">
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input
+                                        type="checkbox"
+                                        id="checkInCheckbox"
+                                    />
+                                    <label for="checkInCheckbox">Vào</label>
+                                </div>
+                                <input
+                                    type="time"
+                                    id="checkInTime"
+                                    class="form-input"
+                                    disabled
+                                />
+                            </div>
+
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <input
+                                        type="checkbox"
+                                        id="checkOutCheckbox"
+                                    />
+                                    <label for="checkOutCheckbox">Ra</label>
+                                </div>
+                                <input
+                                    type="time"
+                                    id="checkOutTime"
+                                    class="form-input"
+                                    disabled
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- History Tab -->
+                    <div id="historyTab" class="tab-content">
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Thời gian</th>
+                                    <th>Trạng thái</th>
+                                    <th>Hình thức</th>
+                                    <th>Nội dung</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <tr>
+                                    <td colspan="4" class="empty-state">
+                                        Không có kết quả phù hợp
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <div class="modal-footer-left">
+                        <button class="btn btn-danger" id="deleteBtn">
+                            Hủy
+                        </button>
+                    </div>
+                    <div class="modal-footer-right">
+                        <button class="btn btn-secondary" id="skipBtn">
+                            Bỏ qua
+                        </button>
+                        <button class="btn btn-primary" id="saveBtn">
+                            Lưu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Global state
+            let currentDate = new Date();
+            let currentViewType = "day";
+            let currentDisplayMode = "shift";
+            let attendanceData = {};
+            let currentAttendanceId = null;
+            let currentEmployeeId = null;
+
+            // Initialize
+            document.addEventListener("DOMContentLoaded", function () {
+                initializeEventListeners();
+                loadAttendanceData();
+            });
+
+            function initializeEventListeners() {
+                // Date navigation
+                document
+                    .getElementById("prevDate")
+                    .addEventListener("click", navigatePrevious);
+                document
+                    .getElementById("nextDate")
+                    .addEventListener("click", navigateNext);
+
+                // View type change
+                document
+                    .getElementById("viewTypeSelect")
+                    .addEventListener("change", function () {
+                        currentViewType = this.value;
+                        updateDateDisplay();
+                        loadAttendanceData();
+                    });
+
+                // Display mode change
+                document
+                    .getElementById("displayModeSelect")
+                    .addEventListener("change", function () {
+                        currentDisplayMode = this.value;
+
+                        // Re-render with current data
+                        if (currentViewType === "day" && attendanceData) {
+                            renderDailyView(attendanceData);
+                        } else if (
+                            currentViewType === "week" &&
+                            attendanceData
+                        ) {
+                            if (currentDisplayMode === "employee") {
+                                // Convert weekly data for employee view
+                                const dailyData = { attendancesByShift: {} };
+                                if (Array.isArray(attendanceData)) {
+                                    attendanceData.forEach((att) => {
+                                        const shiftKey = att.shiftType;
+                                        if (
+                                            !dailyData.attendancesByShift[
+                                                shiftKey
+                                            ]
+                                        ) {
+                                            dailyData.attendancesByShift[
+                                                shiftKey
+                                            ] = [];
+                                        }
+                                        dailyData.attendancesByShift[
+                                            shiftKey
+                                        ].push(att);
+                                    });
+                                }
+                                renderEmployeeListView(dailyData);
+                            } else {
+                                renderCalendarView();
+                            }
+                        } else if (
+                            currentViewType === "month" &&
+                            attendanceData
+                        ) {
+                            if (currentDisplayMode === "employee") {
+                                // Convert monthly data for employee view
+                                const dailyData = { attendancesByShift: {} };
+                                if (
+                                    typeof attendanceData === "object" &&
+                                    !Array.isArray(attendanceData)
+                                ) {
+                                    Object.values(attendanceData).forEach(
+                                        (attendances) => {
+                                            if (Array.isArray(attendances)) {
+                                                attendances.forEach((att) => {
+                                                    const shiftKey =
+                                                        att.shiftType;
+                                                    if (
+                                                        !dailyData
+                                                            .attendancesByShift[
+                                                            shiftKey
+                                                        ]
+                                                    ) {
+                                                        dailyData.attendancesByShift[
+                                                            shiftKey
+                                                        ] = [];
+                                                    }
+                                                    dailyData.attendancesByShift[
+                                                        shiftKey
+                                                    ].push(att);
+                                                });
+                                            }
+                                        }
+                                    );
+                                }
+                                renderEmployeeListView(dailyData);
+                            } else {
+                                renderCalendarView();
+                            }
+                        }
+
+                        updateDisplayMode();
+                    });
+
+                // Modal controls
+                document
+                    .getElementById("closeModal")
+                    .addEventListener("click", closeModal);
+                document
+                    .getElementById("skipBtn")
+                    .addEventListener("click", closeModal);
+                document
+                    .getElementById("saveBtn")
+                    .addEventListener("click", saveAttendance);
+
+                // Delete button - Xóa attendance
+                document
+                    .getElementById("deleteBtn")
+                    .addEventListener("click", deleteAttendance);
+
+                // Modal tabs
+                document.querySelectorAll(".modal-tab").forEach((tab) => {
+                    tab.addEventListener("click", function () {
+                        switchModalTab(this.dataset.tab);
+                    });
+                });
+
+                // Attendance type radio
+                document
+                    .querySelectorAll('input[name="attendanceType"]')
+                    .forEach((radio) => {
+                        radio.addEventListener("change", updateTimeInputsState);
+                    });
+
+                // Checkbox controls for time inputs
+                document
+                    .getElementById("checkInCheckbox")
+                    .addEventListener("change", function () {
+                        document.getElementById("checkInTime").disabled =
+                            !this.checked;
+                    });
+
+                document
+                    .getElementById("checkOutCheckbox")
+                    .addEventListener("change", function () {
+                        document.getElementById("checkOutTime").disabled =
+                            !this.checked;
+                    });
+
+                // Search
+                document
+                    .getElementById("searchInput")
+                    .addEventListener("input", debounce(handleSearch, 300));
+            }
+
+            function navigatePrevious() {
+                if (currentViewType === "day") {
+                    currentDate.setDate(currentDate.getDate() - 1);
+                } else if (currentViewType === "week") {
+                    currentDate.setDate(currentDate.getDate() - 7);
+                } else if (currentViewType === "month") {
+                    currentDate.setMonth(currentDate.getMonth() - 1);
+                }
+                updateDateDisplay();
+                loadAttendanceData();
+            }
+
+            function navigateNext() {
+                if (currentViewType === "day") {
+                    currentDate.setDate(currentDate.getDate() + 1);
+                } else if (currentViewType === "week") {
+                    currentDate.setDate(currentDate.getDate() + 7);
+                } else if (currentViewType === "month") {
+                    currentDate.setMonth(currentDate.getMonth() + 1);
+                }
+                updateDateDisplay();
+                loadAttendanceData();
+            }
+
+            function updateDateDisplay() {
+                const dateStr = formatDateDisplay(currentDate, currentViewType);
+                document.getElementById("currentDate").textContent = dateStr;
+            }
+
+            function formatDateDisplay(date, viewType) {
+                const days = [
+                    "Chủ nhật",
+                    "Thứ 2",
+                    "Thứ 3",
+                    "Thứ 4",
+                    "Thứ 5",
+                    "Thứ 6",
+                    "Thứ 7",
+                ];
+                const months = [
+                    "01",
+                    "02",
+                    "03",
+                    "04",
+                    "05",
+                    "06",
+                    "07",
+                    "08",
+                    "09",
+                    "10",
+                    "11",
+                    "12",
+                ];
+
+                if (viewType === "day") {
+                    const dayName = days[date.getDay()];
+                    const day = date.getDate();
+                    const month = date.getMonth() + 1;
+                    return `${dayName}, Ngày ${day}/${month}`;
+                } else if (viewType === "week") {
+                    const startOfWeek = new Date(date);
+                    startOfWeek.setDate(date.getDate() - date.getDay() + 1);
+                    const endOfWeek = new Date(startOfWeek);
+                    endOfWeek.setDate(startOfWeek.getDate() + 6);
+                    return `Tuần ${getWeekNumber(date)} - Th. ${
+                        months[date.getMonth()]
+                    } ${date.getFullYear()}`;
+                } else if (viewType === "month") {
+                    return `Tháng ${
+                        months[date.getMonth()]
+                    }, ${date.getFullYear()}`;
+                }
+            }
+
+            function getWeekNumber(date) {
+                const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
+                const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+                return Math.ceil(
+                    (pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7
+                );
+            }
+
+            function updateDisplayMode() {
+                const shiftView = document.getElementById("shiftView");
+                const employeeView = document.getElementById("employeeView");
+                const calendarView = document.getElementById("calendarView");
+
+                // Hide all first
+                shiftView.style.display = "none";
+                employeeView.style.display = "none";
+                calendarView.style.display = "none";
+
+                if (currentDisplayMode === "employee") {
+                    // Xem theo nhân viên: Luôn hiển thị bảng thống kê
+                    employeeView.style.display = "block";
+                } else {
+                    // Xem theo ca: Hiển thị tùy theo khoảng thời gian
+                    if (currentViewType === "day") {
+                        shiftView.style.display = "block";
+                    } else {
+                        calendarView.style.display = "block";
+                        renderCalendarView();
+                    }
+                }
+            }
+
+            function loadAttendanceData() {
+                const dateStr = currentDate.toISOString().split("T")[0];
+
+                if (currentViewType === "day") {
+                    // Try to load attendance data
+                    fetch(`/api/attendance/daily?date=${dateStr}`)
+                        .then((response) => response.json())
+                        .then((data) => {
+                            // Check if we have any attendance data
+                            const hasData =
+                                data.attendancesByShift &&
+                                Object.values(data.attendancesByShift).some(
+                                    (arr) => arr && arr.length > 0
+                                );
+
+                            if (hasData) {
+                                attendanceData = data;
+                                renderDailyView(data);
+                            } else {
+                                // No attendance data, try to generate from work schedules
+                                console.log(
+                                    "No attendance data found, generating from work schedules..."
+                                );
+                                generateAndLoadAttendances(dateStr);
+                            }
+                        })
+                        .catch((error) => {
+                            console.error(
+                                "Error loading attendance data:",
+                                error
+                            );
+                            // Try to generate attendance records
+                            generateAndLoadAttendances(dateStr);
+                        });
+                } else if (currentViewType === "week") {
+                    const startOfWeek = new Date(currentDate);
+                    startOfWeek.setDate(
+                        currentDate.getDate() - currentDate.getDay() + 1
+                    );
+
+                    // Fix: Always generate for all days in week first, then load data
+                    generateWeeklyAttendances(startOfWeek);
+                } else if (currentViewType === "month") {
+                    const year = currentDate.getFullYear();
+                    const month = currentDate.getMonth() + 1;
+
+                    // Fix: Always generate for all days in month first, then load data
+                    generateMonthlyAttendances(year, month);
+                }
+
+                // Update display mode after data is loaded
+                updateDisplayMode();
+            }
+
+            function renderDailyView(data) {
+                if (currentDisplayMode === "shift") {
+                    renderShiftView(data);
+                } else {
+                    renderEmployeeListView(data);
+                }
+                updateDisplayMode();
+            }
+
+            function renderShiftView(data) {
+                const morningContainer =
+                    document.getElementById("morningShift");
+                const afternoonContainer =
+                    document.getElementById("afternoonShift");
+                const eveningContainer =
+                    document.getElementById("eveningShift");
+                const customContainer = document.getElementById("customShift");
+
+                morningContainer.innerHTML = "";
+                afternoonContainer.innerHTML = "";
+                eveningContainer.innerHTML = "";
+                customContainer.innerHTML = "";
+
+                const attendancesByShift = data.attendancesByShift || {};
+
+                renderShiftEmployees(
+                    morningContainer,
+                    attendancesByShift.MORNING || []
+                );
+                renderShiftEmployees(
+                    afternoonContainer,
+                    attendancesByShift.AFTERNOON || []
+                );
+                renderShiftEmployees(
+                    eveningContainer,
+                    attendancesByShift.EVENING || []
+                );
+                renderShiftEmployees(
+                    customContainer,
+                    attendancesByShift.CUSTOM || []
+                );
+            }
+
+            function renderShiftEmployees(container, attendances) {
+                if (attendances.length === 0) {
+                    container.innerHTML =
+                        '<div class="empty-state">Không có nhân viên</div>';
+                    return;
+                }
+
+                attendances.forEach((attendance) => {
+                    const card = createEmployeeCard(attendance);
+                    container.appendChild(card);
+                });
+            }
+
+            function createEmployeeCard(attendance) {
+                const card = document.createElement("div");
+                card.className = "employee-card";
+                card.onclick = () => openAttendanceModal(attendance);
+
+                const checkIn = attendance.actualCheckInTime || "--";
+                const checkOut = attendance.actualCheckOutTime || "--";
+                const statusClass = getStatusClass(attendance.status);
+                const statusText = attendance.statusDisplayName;
+
+                // Calculate working hours based on actual check-in/check-out
+                const workingHours = calculateWorkingHours(
+                    attendance.actualCheckInTime,
+                    attendance.actualCheckOutTime
+                );
+
+                card.innerHTML = `
+                 <div class="employee-name">${attendance.employeeName}</div>
+                 <div class="time-info">${checkIn} -- ${checkOut}</div>
+                 <div class="time-info">${workingHours}</div>
+                 <span class="status-badge ${statusClass}">${statusText}</span>
+             `;
+
+                return card;
+            }
+
+            function renderEmployeeListView(data) {
+                const container = document.getElementById(
+                    "employeeListContainer"
+                );
+                container.innerHTML = "";
+
+                // Group all attendances by employee
+                const employeeMap = new Map();
+
+                Object.values(data.attendancesByShift || {}).forEach(
+                    (attendances) => {
+                        attendances.forEach((att) => {
+                            if (!employeeMap.has(att.employeeId)) {
+                                employeeMap.set(att.employeeId, {
+                                    id: att.employeeId,
+                                    name: att.employeeName,
+                                    code: att.employeeCode,
+                                    attendances: [],
+                                });
+                            }
+                            employeeMap
+                                .get(att.employeeId)
+                                .attendances.push(att);
+                        });
+                    }
+                );
+
+                if (employeeMap.size === 0) {
+                    container.innerHTML =
+                        '<div class="empty-state">Không có dữ liệu chấm công</div>';
+                    return;
+                }
+
+                // Create table
+                let tableHtml = `
+                    <table class="employee-table">
+                        <thead>
+                            <tr>
+                                <th>Nhân viên</th>
+                                <th>Đi làm</th>
+                                <th>Nghỉ làm</th>
+                                <th>Đi muộn</th>
+                                <th>Về sớm</th>
+                                <th>Làm thêm</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                employeeMap.forEach((employee) => {
+                    // Calculate statistics
+                    let workCount = 0;
+                    let onLeaveCount = 0;
+                    let lateCount = 0;
+                    let earlyLeaveCount = 0;
+
+                    let totalWorkMinutes = 0;
+                    let totalLateMinutes = 0;
+                    let totalEarlyLeaveMinutes = 0;
+                    let totalOvertimeMinutes = 0;
+
+                    let hasData = false;
+
+                    employee.attendances.forEach((att) => {
+                        // Mark as having data if there's any attendance record
+                        if (
+                            att.actualCheckInTime ||
+                            att.actualCheckOutTime ||
+                            att.status === "ON_LEAVE"
+                        ) {
+                            hasData = true;
+                        }
+
+                        if (att.status === "ON_LEAVE") {
+                            onLeaveCount++;
+                            return;
+                        }
+
+                        // Count work sessions that have check-in or check-out
+                        if (att.actualCheckInTime || att.actualCheckOutTime) {
+                            workCount++;
+                        }
+
+                        // Calculate working hours
+                        if (att.actualCheckInTime && att.actualCheckOutTime) {
+                            const workMinutes = calculateMinutesBetween(
+                                att.actualCheckInTime,
+                                att.actualCheckOutTime
+                            );
+                            if (workMinutes > 0) {
+                                totalWorkMinutes += workMinutes;
+                            }
+                        }
+
+                        // Calculate late minutes
+                        if (
+                            att.actualCheckInTime &&
+                            att.scheduledStartTime &&
+                            att.actualCheckInTime > att.scheduledStartTime
+                        ) {
+                            lateCount++;
+                            const lateMinutes = calculateMinutesBetween(
+                                att.scheduledStartTime,
+                                att.actualCheckInTime
+                            );
+                            totalLateMinutes += lateMinutes;
+                        }
+
+                        // Calculate early leave minutes
+                        if (
+                            att.actualCheckOutTime &&
+                            att.scheduledEndTime &&
+                            att.actualCheckOutTime < att.scheduledEndTime
+                        ) {
+                            earlyLeaveCount++;
+                            const earlyMinutes = calculateMinutesBetween(
+                                att.actualCheckOutTime,
+                                att.scheduledEndTime
+                            );
+                            totalEarlyLeaveMinutes += earlyMinutes;
+                        }
+
+                        // Calculate overtime minutes
+                        if (
+                            att.actualCheckOutTime &&
+                            att.scheduledEndTime &&
+                            att.actualCheckOutTime > att.scheduledEndTime
+                        ) {
+                            const overtimeMinutes = calculateMinutesBetween(
+                                att.scheduledEndTime,
+                                att.actualCheckOutTime
+                            );
+                            totalOvertimeMinutes += overtimeMinutes;
+                        }
+                    });
+
+                    const statusText = "Nhân viên chưa có dữ liệu chấm công";
+
+                    // Format display
+                    const workDisplay =
+                        hasData && workCount > 0
+                            ? `${workCount} ca<br>${formatHours(
+                                  totalWorkMinutes
+                              )}`
+                            : "";
+
+                    const leaveDisplay = hasData
+                        ? onLeaveCount > 0
+                            ? `${onLeaveCount} ca`
+                            : ""
+                        : statusText;
+
+                    const lateDisplay =
+                        hasData && lateCount > 0
+                            ? `${lateCount} lần<br>${formatHours(
+                                  totalLateMinutes
+                              )}`
+                            : "";
+
+                    const earlyLeaveDisplay =
+                        hasData && earlyLeaveCount > 0
+                            ? `${earlyLeaveCount} lần<br>${formatHours(
+                                  totalEarlyLeaveMinutes
+                              )}`
+                            : "";
+
+                    const overtimeDisplay =
+                        hasData && totalOvertimeMinutes > 0
+                            ? formatHours(totalOvertimeMinutes)
+                            : "";
+
+                    tableHtml += `
+                        <tr>
+                            <td>
+                                <div style="font-weight: 500;">${employee.name}</div>
+                                <div style="color: #666; font-size: 13px;">${employee.code}</div>
+                            </td>
+                            <td style="text-align: center;">${workDisplay}</td>
+                            <td style="text-align: center; color: #999;">${leaveDisplay}</td>
+                            <td style="text-align: center;">${lateDisplay}</td>
+                            <td style="text-align: center;">${earlyLeaveDisplay}</td>
+                            <td style="text-align: center;">${overtimeDisplay}</td>
+                        </tr>
+                    `;
+                });
+
+                tableHtml += `
+                        </tbody>
+                    </table>
+                `;
+
+                container.innerHTML = tableHtml;
+            }
+
+            function renderCalendarView() {
+                const headerRow = document.getElementById("calendarHeader");
+                const tbody = document.getElementById("calendarBody");
+
+                // Calendar view chỉ dùng cho "Xem theo ca"
+                if (currentViewType === "week") {
+                    renderWeekCalendarByShift(headerRow, tbody);
+                } else if (currentViewType === "month") {
+                    renderMonthCalendarByShift(headerRow, tbody);
+                }
+            }
+
+            // Week view - By Shift
+            function renderWeekCalendarByShift(headerRow, tbody) {
+                const startOfWeek = new Date(currentDate);
+                startOfWeek.setDate(
+                    currentDate.getDate() - currentDate.getDay() + 1
+                );
+
+                // Header - Days of week
+                let headerHtml = '<th class="shift-col">Ca làm việc</th>';
+                const dayNames = [
+                    "Thứ 2",
+                    "Thứ 3",
+                    "Thứ 4",
+                    "Thứ 5",
+                    "Thứ 6",
+                    "Thứ 7",
+                    "Chủ nhật",
+                ];
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(startOfWeek);
+                    day.setDate(startOfWeek.getDate() + i);
+                    headerHtml += `<th>${
+                        dayNames[i]
+                    }<br><small>${day.getDate()}/${
+                        day.getMonth() + 1
+                    }</small></th>`;
+                }
+                headerRow.innerHTML = headerHtml;
+
+                // Body - Rows by shift
+                tbody.innerHTML = "";
+
+                const shifts = [
+                    { key: "MORNING", name: "Ca sáng", time: "08:00 - 12:00" },
+                    {
+                        key: "AFTERNOON",
+                        name: "Ca chiều",
+                        time: "13:00 - 17:00",
+                    },
+                    { key: "EVENING", name: "Ca tối", time: "18:00 - 22:00" },
+                    { key: "CUSTOM", name: "Ca tùy chỉnh", time: "Linh hoạt" },
+                ];
+
+                if (
+                    !Array.isArray(attendanceData) ||
+                    attendanceData.length === 0
+                ) {
+                    shifts.forEach((shift) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+                            <td class="shift-col">
+                                <div><strong>${shift.name}</strong></div>
+                                <div style="color: #999; font-size: 12px;">${
+                                    shift.time
+                                }</div>
+                            </td>
+                            ${Array(7)
+                                .fill(
+                                    '<td style="text-align: center; color: #999; font-size: 12px;">Không có dữ liệu</td>'
+                                )
+                                .join("")}
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    return;
+                }
+
+                // Group attendance by date and shift
+                const calendar = {};
+                attendanceData.forEach((att) => {
+                    const attDate = new Date(att.workDate);
+                    const dayIndex = (attDate.getDay() + 6) % 7; // Monday = 0
+
+                    if (!calendar[dayIndex]) {
+                        calendar[dayIndex] = {};
+                    }
+                    if (!calendar[dayIndex][att.shiftType]) {
+                        calendar[dayIndex][att.shiftType] = [];
+                    }
+                    calendar[dayIndex][att.shiftType].push(att);
+                });
+
+                // Render each shift row
+                shifts.forEach((shift) => {
+                    const row = document.createElement("tr");
+                    let rowHtml = `
+                        <td class="shift-col">
+                            <div><strong>${shift.name}</strong></div>
+                            <div style="color: #999; font-size: 12px;">${shift.time}</div>
+                        </td>
+                    `;
+
+                    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+                        const attendances =
+                            calendar[dayIndex]?.[shift.key] || [];
+
+                        if (attendances.length === 0) {
+                            rowHtml +=
+                                '<td style="text-align: center; color: #999; font-size: 12px;">-</td>';
+                        } else {
+                            const attendanceHtml = attendances
+                                .map((att) => {
+                                    const statusClass = getStatusClass(
+                                        att.status
+                                    );
+                                    const attJson = JSON.stringify(att).replace(
+                                        /"/g,
+                                        "&quot;"
+                                    );
+                                    return `<div style="margin: 4px 0; cursor: pointer;" data-attendance='${attJson}'>
+                                    <span class="status-dot ${statusClass}"></span> <span style="font-size: 13px;">${att.employeeName}</span>
+                                </div>`;
+                                })
+                                .join("");
+                            rowHtml += `<td>${attendanceHtml}</td>`;
+                        }
+                    }
+
+                    row.innerHTML = rowHtml;
+                    tbody.appendChild(row);
+
+                    // Add click handlers
+                    row.querySelectorAll("[data-attendance]").forEach((div) => {
+                        div.addEventListener("click", function () {
+                            const att = JSON.parse(
+                                this.getAttribute("data-attendance").replace(
+                                    /&quot;/g,
+                                    '"'
+                                )
+                            );
+                            openAttendanceModal(att);
+                        });
+                    });
+                });
+            }
+
+            // Week view - By Employee
+            function renderWeekCalendarByEmployee(headerRow, tbody) {
+                const startOfWeek = new Date(currentDate);
+                startOfWeek.setDate(
+                    currentDate.getDate() - currentDate.getDay() + 1
+                );
+
+                // Header
+                let headerHtml = '<th class="employee-col">Nhân viên</th>';
+                for (let i = 0; i < 7; i++) {
+                    const day = new Date(startOfWeek);
+                    day.setDate(startOfWeek.getDate() + i);
+                    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+                    headerHtml += `<th>${
+                        dayNames[day.getDay()]
+                    }<br>${day.getDate()}/${day.getMonth() + 1}</th>`;
+                }
+                headerRow.innerHTML = headerHtml;
+
+                // Body
+                tbody.innerHTML =
+                    '<tr><td colspan="8" class="loading">Đang tải dữ liệu...</td></tr>';
+
+                if (
+                    Array.isArray(attendanceData) &&
+                    attendanceData.length > 0
+                ) {
+                    const employeeMap = new Map();
+
+                    attendanceData.forEach((att) => {
+                        if (!employeeMap.has(att.employeeId)) {
+                            employeeMap.set(att.employeeId, {
+                                name: att.employeeName,
+                                code: att.employeeCode,
+                                days: new Array(7).fill(null),
+                            });
+                        }
+
+                        const attDate = new Date(att.workDate);
+                        const dayIndex = (attDate.getDay() + 6) % 7;
+                        employeeMap.get(att.employeeId).days[dayIndex] = att;
+                    });
+
+                    tbody.innerHTML = "";
+                    employeeMap.forEach((employee) => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `<td class="employee-col">${employee.name}<br><small>${employee.code}</small></td>`;
+
+                        employee.days.forEach((att) => {
+                            const td = document.createElement("td");
+                            if (att) {
+                                const statusClass = getStatusClass(att.status);
+                                td.innerHTML = `<span class="status-dot ${statusClass}"></span>`;
+                                td.style.cursor = "pointer";
+                                td.onclick = () => openAttendanceModal(att);
+                            } else {
+                                td.innerHTML = "-";
+                            }
+                            row.appendChild(td);
+                        });
+
+                        tbody.appendChild(row);
+                    });
+                }
+            }
+
+            // Month view - By Shift
+            function renderMonthCalendarByShift(headerRow, tbody) {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Header - Days of month
+                let headerHtml = '<th class="shift-col">Ca làm việc</th>';
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+                    headerHtml += `<th>${
+                        dayNames[date.getDay()]
+                    }<br><small>${day}</small></th>`;
+                }
+                headerRow.innerHTML = headerHtml;
+
+                // Body - Rows by shift
+                tbody.innerHTML = "";
+
+                const shifts = [
+                    { key: "MORNING", name: "Ca sáng", time: "08:00 - 12:00" },
+                    {
+                        key: "AFTERNOON",
+                        name: "Ca chiều",
+                        time: "13:00 - 17:00",
+                    },
+                    { key: "EVENING", name: "Ca tối", time: "18:00 - 22:00" },
+                    { key: "CUSTOM", name: "Ca tùy chỉnh", time: "Linh hoạt" },
+                ];
+
+                // Convert object data (grouped by employee) to flat array if needed
+                let flatAttendances = [];
+                if (
+                    typeof attendanceData === "object" &&
+                    !Array.isArray(attendanceData)
+                ) {
+                    // Data is grouped by employeeId, flatten it
+                    Object.values(attendanceData).forEach((attendances) => {
+                        if (Array.isArray(attendances)) {
+                            flatAttendances =
+                                flatAttendances.concat(attendances);
+                        }
+                    });
+                } else if (Array.isArray(attendanceData)) {
+                    flatAttendances = attendanceData;
+                }
+
+                if (flatAttendances.length === 0) {
+                    shifts.forEach((shift) => {
+                        const row = document.createElement("tr");
+                        let cellHtml = Array(daysInMonth)
+                            .fill(
+                                '<td style="text-align: center; color: #999; font-size: 11px;">-</td>'
+                            )
+                            .join("");
+                        row.innerHTML = `
+                            <td class="shift-col">
+                                <div><strong>${shift.name}</strong></div>
+                                <div style="color: #999; font-size: 12px;">${shift.time}</div>
+                            </td>
+                            ${cellHtml}
+                        `;
+                        tbody.appendChild(row);
+                    });
+                    return;
+                }
+
+                // Group attendance by day and shift
+                const calendar = {};
+                flatAttendances.forEach((att) => {
+                    const attDate = new Date(att.workDate);
+                    const dayOfMonth = attDate.getDate();
+
+                    if (!calendar[dayOfMonth]) {
+                        calendar[dayOfMonth] = {};
+                    }
+                    if (!calendar[dayOfMonth][att.shiftType]) {
+                        calendar[dayOfMonth][att.shiftType] = [];
+                    }
+                    calendar[dayOfMonth][att.shiftType].push(att);
+                });
+
+                // Render each shift row
+                shifts.forEach((shift) => {
+                    const row = document.createElement("tr");
+                    let rowHtml = `
+                        <td class="shift-col">
+                            <div><strong>${shift.name}</strong></div>
+                            <div style="color: #999; font-size: 12px;">${shift.time}</div>
+                        </td>
+                    `;
+
+                    for (let day = 1; day <= daysInMonth; day++) {
+                        const attendances = calendar[day]?.[shift.key] || [];
+
+                        if (attendances.length === 0) {
+                            rowHtml += '<td style="text-align: center;">-</td>';
+                        } else {
+                            // Show status dots for attendances
+                            const dotsHtml = attendances
+                                .map((att) => {
+                                    const statusClass = getStatusClass(
+                                        att.status
+                                    );
+                                    const attJson = JSON.stringify(att).replace(
+                                        /"/g,
+                                        "&quot;"
+                                    );
+                                    return `<span class="status-dot ${statusClass}" style="cursor: pointer; display: inline-block; margin: 2px;" data-attendance='${attJson}' title="${att.employeeName}"></span>`;
+                                })
+                                .join("");
+                            rowHtml += `<td style="text-align: center;">${dotsHtml}</td>`;
+                        }
+                    }
+
+                    row.innerHTML = rowHtml;
+                    tbody.appendChild(row);
+
+                    // Add click handlers
+                    row.querySelectorAll("[data-attendance]").forEach(
+                        (span) => {
+                            span.addEventListener("click", function () {
+                                const att = JSON.parse(
+                                    this.getAttribute(
+                                        "data-attendance"
+                                    ).replace(/&quot;/g, '"')
+                                );
+                                openAttendanceModal(att);
+                            });
+                        }
+                    );
+                });
+            }
+
+            // Month view - By Employee
+            function renderMonthCalendarByEmployee(headerRow, tbody) {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+                const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+                // Header
+                let headerHtml = '<th class="employee-col">Nhân viên</th>';
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month, day);
+                    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
+                    headerHtml += `<th>${
+                        dayNames[date.getDay()]
+                    }<br>${day}</th>`;
+                }
+                headerRow.innerHTML = headerHtml;
+
+                // Body
+                tbody.innerHTML =
+                    '<tr><td colspan="' +
+                    (daysInMonth + 1) +
+                    '" class="loading">Đang tải dữ liệu...</td></tr>';
+
+                if (
+                    typeof attendanceData === "object" &&
+                    !Array.isArray(attendanceData)
+                ) {
+                    tbody.innerHTML = "";
+
+                    Object.entries(attendanceData).forEach(
+                        ([employeeId, attendances]) => {
+                            if (attendances.length === 0) return;
+
+                            const employee = attendances[0];
+                            const row = document.createElement("tr");
+                            row.innerHTML = `<td class="employee-col">${employee.employeeName}<br><small>${employee.employeeCode}</small></td>`;
+
+                            const attendanceMap = new Map();
+                            attendances.forEach((att) => {
+                                const day = new Date(att.workDate).getDate();
+                                if (!attendanceMap.has(day)) {
+                                    attendanceMap.set(day, []);
+                                }
+                                attendanceMap.get(day).push(att);
+                            });
+
+                            for (let day = 1; day <= daysInMonth; day++) {
+                                const td = document.createElement("td");
+                                const dayAttendances = attendanceMap.get(day);
+
+                                if (
+                                    dayAttendances &&
+                                    dayAttendances.length > 0
+                                ) {
+                                    const statusClass = getStatusClass(
+                                        dayAttendances[0].status
+                                    );
+                                    td.innerHTML = `<span class="status-dot ${statusClass}"></span>`;
+                                    td.style.cursor = "pointer";
+                                    td.onclick = () =>
+                                        openAttendanceModal(dayAttendances[0]);
+                                } else {
+                                    td.innerHTML = "-";
+                                }
+
+                                row.appendChild(td);
+                            }
+
+                            tbody.appendChild(row);
+                        }
+                    );
+                }
+            }
+
+            function generateAndLoadAttendances(dateStr) {
+                fetch(`/api/attendance/generate?date=${dateStr}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+                    .then((response) => response.json())
+                    .then((result) => {
+                        console.log("Generated attendance records:", result);
+                        if (result.count > 0) {
+                            // Successfully generated, now reload the data
+                            fetch(`/api/attendance/daily?date=${dateStr}`)
+                                .then((response) => response.json())
+                                .then((data) => {
+                                    attendanceData = data;
+                                    renderDailyView(data);
+                                });
+                        } else {
+                            // No work schedules found for this date
+                            renderEmptyState();
+                        }
+                    })
+                    .catch((error) => {
+                        console.error("Error generating attendances:", error);
+                        renderEmptyState();
+                    });
+            }
+
+            function generateWeeklyAttendances(startOfWeek) {
+                const promises = [];
+
+                // Generate for 7 days
+                for (let i = 0; i < 7; i++) {
+                    const date = new Date(startOfWeek);
+                    date.setDate(startOfWeek.getDate() + i);
+                    const dateStr = date.toISOString().split("T")[0];
+
+                    const promise = fetch(
+                        `/api/attendance/generate?date=${dateStr}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    ).then((response) => response.json());
+
+                    promises.push(promise);
+                }
+
+                Promise.all(promises)
+                    .then((results) => {
+                        const totalCount = results.reduce(
+                            (sum, r) => sum + (r.count || 0),
+                            0
+                        );
+                        console.log(
+                            "Generated weekly attendance records:",
+                            totalCount
+                        );
+
+                        // Reload data
+                        const startDateStr = startOfWeek
+                            .toISOString()
+                            .split("T")[0];
+                        fetch(
+                            `/api/attendance/weekly?startDate=${startDateStr}`
+                        )
+                            .then((response) => response.json())
+                            .then((data) => {
+                                attendanceData = data;
+
+                                // Render based on display mode
+                                if (currentDisplayMode === "employee") {
+                                    // Convert weekly data to daily format for employee view
+                                    const dailyData = {
+                                        attendancesByShift: {},
+                                    };
+                                    if (Array.isArray(data)) {
+                                        data.forEach((att) => {
+                                            const shiftKey = att.shiftType;
+                                            if (
+                                                !dailyData.attendancesByShift[
+                                                    shiftKey
+                                                ]
+                                            ) {
+                                                dailyData.attendancesByShift[
+                                                    shiftKey
+                                                ] = [];
+                                            }
+                                            dailyData.attendancesByShift[
+                                                shiftKey
+                                            ].push(att);
+                                        });
+                                    }
+                                    renderEmployeeListView(dailyData);
+                                } else {
+                                    renderCalendarView();
+                                }
+                            });
+                    })
+                    .catch((error) => {
+                        console.error(
+                            "Error generating weekly attendances:",
+                            error
+                        );
+                        renderCalendarView(); // Try to render anyway
+                    });
+            }
+
+            function generateMonthlyAttendances(year, month) {
+                const daysInMonth = new Date(year, month, 0).getDate();
+                const promises = [];
+
+                // Generate for each day in the month
+                for (let day = 1; day <= daysInMonth; day++) {
+                    const date = new Date(year, month - 1, day);
+                    const dateStr = date.toISOString().split("T")[0];
+
+                    const promise = fetch(
+                        `/api/attendance/generate?date=${dateStr}`,
+                        {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    ).then((response) => response.json());
+
+                    promises.push(promise);
+                }
+
+                Promise.all(promises)
+                    .then((results) => {
+                        const totalCount = results.reduce(
+                            (sum, r) => sum + (r.count || 0),
+                            0
+                        );
+                        console.log(
+                            "Generated monthly attendance records:",
+                            totalCount
+                        );
+
+                        // Reload data
+                        fetch(
+                            `/api/attendance/monthly?year=${year}&month=${month}`
+                        )
+                            .then((response) => response.json())
+                            .then((data) => {
+                                attendanceData = data;
+
+                                // Render based on display mode
+                                if (currentDisplayMode === "employee") {
+                                    // Convert monthly data to daily format for employee view
+                                    const dailyData = {
+                                        attendancesByShift: {},
+                                    };
+                                    if (
+                                        typeof data === "object" &&
+                                        !Array.isArray(data)
+                                    ) {
+                                        // Data is grouped by employeeId
+                                        Object.values(data).forEach(
+                                            (attendances) => {
+                                                if (
+                                                    Array.isArray(attendances)
+                                                ) {
+                                                    attendances.forEach(
+                                                        (att) => {
+                                                            const shiftKey =
+                                                                att.shiftType;
+                                                            if (
+                                                                !dailyData
+                                                                    .attendancesByShift[
+                                                                    shiftKey
+                                                                ]
+                                                            ) {
+                                                                dailyData.attendancesByShift[
+                                                                    shiftKey
+                                                                ] = [];
+                                                            }
+                                                            dailyData.attendancesByShift[
+                                                                shiftKey
+                                                            ].push(att);
+                                                        }
+                                                    );
+                                                }
+                                            }
+                                        );
+                                    }
+                                    renderEmployeeListView(dailyData);
+                                } else {
+                                    renderCalendarView();
+                                }
+                            });
+                    })
+                    .catch((error) => {
+                        console.error(
+                            "Error generating monthly attendances:",
+                            error
+                        );
+                        renderCalendarView(); // Try to render anyway
+                    });
+            }
+
+            function renderEmptyState() {
+                document.getElementById("morningShift").innerHTML =
+                    '<div class="empty-state">Không có lịch làm việc cho ngày này</div>';
+                document.getElementById("afternoonShift").innerHTML =
+                    '<div class="empty-state">Không có lịch làm việc cho ngày này</div>';
+                document.getElementById("eveningShift").innerHTML =
+                    '<div class="empty-state">Không có lịch làm việc cho ngày này</div>';
+            }
+
+            function getStatusClass(status) {
+                const statusMap = {
+                    ON_TIME: "on-time",
+                    LATE_OR_EARLY_LEAVE: "late",
+                    INCOMPLETE: "incomplete",
+                    NOT_CHECKED_IN: "not-checked",
+                    ON_LEAVE: "on-leave",
+                };
+                return statusMap[status] || "not-checked";
+            }
+
+            /**
+             * Calculate working hours from actual check-in/check-out times
+             */
+            function calculateWorkingHours(checkInTime, checkOutTime) {
+                // Both check-in and check-out must be present
+                if (
+                    !checkInTime ||
+                    !checkOutTime ||
+                    checkInTime === "--" ||
+                    checkOutTime === "--"
+                ) {
+                    return "--";
+                }
+
+                try {
+                    // Parse time strings (format: "HH:mm:ss" or "HH:mm")
+                    const [startHour, startMin, startSec = 0] = checkInTime
+                        .split(":")
+                        .map(Number);
+                    const [endHour, endMin, endSec = 0] = checkOutTime
+                        .split(":")
+                        .map(Number);
+
+                    // Calculate total minutes (ignore seconds for simplicity)
+                    const startTotalMin = startHour * 60 + startMin;
+                    const endTotalMin = endHour * 60 + endMin;
+                    const diffMin = endTotalMin - startTotalMin;
+
+                    if (diffMin <= 0) {
+                        return "--";
+                    }
+
+                    // Convert to hours and minutes
+                    const hours = Math.floor(diffMin / 60);
+                    const minutes = diffMin % 60;
+
+                    if (minutes === 0) {
+                        return `${hours} giờ`;
+                    } else {
+                        return `${hours}h${minutes}p`;
+                    }
+                } catch (e) {
+                    console.error("Error calculating working hours:", e);
+                    return "--";
+                }
+            }
+
+            /**
+             * Calculate minutes between two time strings
+             * @param {string} startTime - Start time in format "HH:mm:ss" or "HH:mm"
+             * @param {string} endTime - End time in format "HH:mm:ss" or "HH:mm"
+             * @returns {number} - Minutes between the two times, or 0 if invalid
+             */
+            function calculateMinutesBetween(startTime, endTime) {
+                if (!startTime || !endTime) {
+                    return 0;
+                }
+
+                try {
+                    const [startHour, startMin] = startTime
+                        .split(":")
+                        .map(Number);
+                    const [endHour, endMin] = endTime.split(":").map(Number);
+
+                    const startTotalMin = startHour * 60 + startMin;
+                    const endTotalMin = endHour * 60 + endMin;
+                    const diffMin = endTotalMin - startTotalMin;
+
+                    return diffMin > 0 ? diffMin : 0;
+                } catch (e) {
+                    console.error("Error calculating minutes:", e);
+                    return 0;
+                }
+            }
+
+            /**
+             * Format minutes as hours display
+             * @param {number} totalMinutes - Total minutes
+             * @returns {string} - Formatted string like "3 giờ" or "1.5 giờ"
+             */
+            function formatHours(totalMinutes) {
+                if (!totalMinutes || totalMinutes <= 0) {
+                    return "0 giờ";
+                }
+
+                const hours = Math.floor(totalMinutes / 60);
+                const minutes = totalMinutes % 60;
+
+                if (minutes === 0) {
+                    return `${hours} giờ`;
+                } else if (minutes === 30) {
+                    return `${hours}.5 giờ`;
+                } else {
+                    // Show as "Xh Yp" for non-half-hour increments
+                    return `${hours}h ${minutes}p`;
+                }
+            }
+
+            function openAttendanceModal(attendance) {
+                currentAttendanceId = attendance.id;
+                currentEmployeeId = attendance.employeeId;
+
+                document.getElementById("modalEmployeeName").textContent =
+                    attendance.employeeName;
+                document.getElementById("modalEmployeeCode").textContent =
+                    attendance.employeeCode;
+
+                const statusBadge = document.getElementById("modalStatus");
+                statusBadge.textContent = attendance.statusDisplayName;
+                statusBadge.className =
+                    "status-badge " + getStatusClass(attendance.status);
+
+                document.getElementById("attendanceDate").value =
+                    attendance.workDate;
+                document.getElementById("shiftTypeSelect").value =
+                    attendance.shiftType;
+                document.getElementById("attendanceNotes").value =
+                    attendance.notes || "";
+
+                // Set attendance type
+                if (attendance.leaveType === "APPROVED") {
+                    document.getElementById(
+                        "approvedLeaveRadio"
+                    ).checked = true;
+                } else if (attendance.leaveType === "UNAPPROVED") {
+                    document.getElementById(
+                        "unapprovedLeaveRadio"
+                    ).checked = true;
+                } else {
+                    document.getElementById("workingRadio").checked = true;
+                }
+
+                // Set time inputs
+                if (attendance.actualCheckInTime) {
+                    document.getElementById("checkInCheckbox").checked = true;
+                    document.getElementById("checkInTime").disabled = false;
+                    document.getElementById("checkInTime").value =
+                        attendance.actualCheckInTime;
+                } else {
+                    document.getElementById("checkInCheckbox").checked = false;
+                    document.getElementById("checkInTime").disabled = true;
+                    document.getElementById("checkInTime").value = "";
+                }
+
+                if (attendance.actualCheckOutTime) {
+                    document.getElementById("checkOutCheckbox").checked = true;
+                    document.getElementById("checkOutTime").disabled = false;
+                    document.getElementById("checkOutTime").value =
+                        attendance.actualCheckOutTime;
+                } else {
+                    document.getElementById("checkOutCheckbox").checked = false;
+                    document.getElementById("checkOutTime").disabled = true;
+                    document.getElementById("checkOutTime").value = "";
+                }
+
+                updateTimeInputsState();
+                loadAttendanceHistory(attendance.id);
+
+                document
+                    .getElementById("attendanceModal")
+                    .classList.add("active");
+            }
+
+            function closeModal() {
+                document
+                    .getElementById("attendanceModal")
+                    .classList.remove("active");
+                currentAttendanceId = null;
+                currentEmployeeId = null;
+            }
+
+            /**
+             * Delete attendance record
+             */
+            function deleteAttendance() {
+                if (!currentAttendanceId) {
+                    showToast("Không có bản ghi chấm công để xóa", "error");
+                    return;
+                }
+
+                showConfirm("Bạn có chắc chắn muốn xóa bản ghi chấm công này?", function() {
+                    fetch(`/api/attendance/${currentAttendanceId}`, {
+                        method: "DELETE",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.error) {
+                                showToast(data.error, "error");
+                            } else {
+                                closeModal();
+                                loadAttendanceData();
+                                showToast("Đã xóa bản ghi chấm công!", "success");
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error deleting attendance:", error);
+                            showToast("Có lỗi xảy ra khi xóa chấm công", "error");
+                        });
+                });
+            }
+
+            function switchModalTab(tabName) {
+                document.querySelectorAll(".modal-tab").forEach((tab) => {
+                    tab.classList.remove("active");
+                });
+                document.querySelectorAll(".tab-content").forEach((content) => {
+                    content.classList.remove("active");
+                });
+
+                document
+                    .querySelector(`.modal-tab[data-tab="${tabName}"]`)
+                    .classList.add("active");
+                document
+                    .getElementById(tabName + "Tab")
+                    .classList.add("active");
+            }
+
+            function updateTimeInputsState() {
+                const isWorking =
+                    document.getElementById("workingRadio").checked;
+                document.getElementById("timeInputsSection").style.display =
+                    isWorking ? "grid" : "none";
+            }
+
+            function loadAttendanceHistory(attendanceId) {
+                fetch(`/api/attendance/${attendanceId}/history`)
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const tbody =
+                            document.getElementById("historyTableBody");
+
+                        if (data.length === 0) {
+                            tbody.innerHTML =
+                                '<tr><td colspan="4" class="empty-state">Không có kết quả phù hợp</td></tr>';
+                            return;
+                        }
+
+                        tbody.innerHTML = "";
+                        data.forEach((item) => {
+                            const row = document.createElement("tr");
+                            const dateTime = new Date(
+                                item.createdAt
+                            ).toLocaleString("vi-VN");
+                            row.innerHTML = `
+                            <td>${dateTime}</td>
+                            <td>${item.newStatus}</td>
+                            <td>${item.actionType}</td>
+                            <td>${item.notes || "-"}</td>
+                        `;
+                            tbody.appendChild(row);
+                        });
+                    })
+                    .catch((error) => {
+                        console.error("Error loading history:", error);
+                    });
+            }
+
+            function saveAttendance() {
+                const employeeId = currentEmployeeId;
+                const workDate =
+                    document.getElementById("attendanceDate").value;
+                const shiftType =
+                    document.getElementById("shiftTypeSelect").value;
+                const notes = document.getElementById("attendanceNotes").value;
+
+                let leaveType = "NONE";
+                if (document.getElementById("approvedLeaveRadio").checked) {
+                    leaveType = "APPROVED";
+                } else if (
+                    document.getElementById("unapprovedLeaveRadio").checked
+                ) {
+                    leaveType = "UNAPPROVED";
+                }
+
+                const checkInEnabled =
+                    document.getElementById("checkInCheckbox").checked;
+                const checkOutEnabled =
+                    document.getElementById("checkOutCheckbox").checked;
+
+                const checkInTime = checkInEnabled
+                    ? document.getElementById("checkInTime").value
+                    : null;
+                const checkOutTime = checkOutEnabled
+                    ? document.getElementById("checkOutTime").value
+                    : null;
+
+                // Fix: Nếu đang edit (có currentAttendanceId), sử dụng PUT để update
+                if (currentAttendanceId) {
+                    const updateData = {
+                        leaveType: leaveType,
+                        checkInTime: checkInTime,
+                        checkOutTime: checkOutTime,
+                        notes: notes,
+                        shiftType: shiftType, // Thêm shiftType để có thể đổi ca
+                    };
+
+                    fetch(`/api/attendance/${currentAttendanceId}`, {
+                        method: "PUT",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(updateData),
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.error) {
+                                showToast(data.error, "error");
+                            } else {
+                                closeModal();
+                                loadAttendanceData();
+                                showToast("Đã cập nhật chấm công thành công!", "success");
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error updating attendance:", error);
+                            showToast("Có lỗi xảy ra khi cập nhật chấm công", "error");
+                        });
+                } else {
+                    // Tạo mới attendance
+                    const requestData = {
+                        employeeId: employeeId,
+                        workDate: workDate,
+                        shiftType: shiftType,
+                        leaveType: leaveType,
+                        checkInTime: checkInTime,
+                        checkOutTime: checkOutTime,
+                        notes: notes,
+                    };
+
+                    fetch("/api/attendance", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(requestData),
+                    })
+                        .then((response) => response.json())
+                        .then((data) => {
+                            if (data.error) {
+                                showToast(data.error, "error");
+                            } else {
+                                closeModal();
+                                loadAttendanceData();
+                                showToast("Đã lưu chấm công thành công!", "success");
+                            }
+                        })
+                        .catch((error) => {
+                            console.error("Error saving attendance:", error);
+                            showToast("Có lỗi xảy ra khi lưu chấm công", "error");
+                        });
+                }
+            }
+
+            function handleSearch(event) {
+                const searchTerm = event.target.value.toLowerCase();
+
+                document
+                    .querySelectorAll(".employee-card, .employee-row")
+                    .forEach((element) => {
+                        const text = element.textContent.toLowerCase();
+                        element.style.display = text.includes(searchTerm)
+                            ? ""
+                            : "none";
+                    });
+            }
+
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Initialize date display
+            updateDateDisplay();
+        </script>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">
+            <div class="toast-content">
+                <div class="toast-icon"></div>
+                <div class="toast-message"></div>
+            </div>
+        </div>
+
+        <!-- Confirm Modal -->
+        <div id="confirmModal" class="confirm-modal">
+            <div class="confirm-modal-content">
+                <div class="confirm-modal-header">
+                    <div class="confirm-modal-icon">⚠</div>
+                    <div class="confirm-modal-title">Xác nhận</div>
+                </div>
+                <div class="confirm-modal-body">
+                    <p id="confirmMessage">Bạn có chắc chắn muốn thực hiện hành động này?</p>
+                </div>
+                <div class="confirm-modal-footer">
+                    <button class="btn btn-cancel" onclick="closeConfirmModal()">Hủy</button>
+                    <button class="btn btn-confirm" onclick="executeConfirm()">Xác nhận</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Toast notification function
+            let confirmCallback = null;
+
+            function showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                const toastMessage = toast.querySelector('.toast-message');
+                const toastIcon = toast.querySelector('.toast-icon');
+
+                toastMessage.textContent = message;
+                toast.className = `toast ${type}`;
+
+                // Set icon based on type
+                if (type === 'success') {
+                    toastIcon.textContent = '✓';
+                } else if (type === 'error') {
+                    toastIcon.textContent = '✕';
+                } else if (type === 'warning') {
+                    toastIcon.textContent = '⚠';
+                } else {
+                    toastIcon.textContent = 'ℹ';
+                }
+
+                toast.classList.add('show');
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                }, 3000);
+            }
+
+            // Confirm modal functions
+            function showConfirm(message, callback) {
+                document.getElementById('confirmMessage').textContent = message;
+                confirmCallback = callback;
+                document.getElementById('confirmModal').style.display = 'block';
+            }
+
+            function closeConfirmModal() {
+                document.getElementById('confirmModal').style.display = 'none';
+                confirmCallback = null;
+            }
+
+            function executeConfirm() {
+                if (confirmCallback) {
+                    confirmCallback();
+                }
+                closeConfirmModal();
+            }
+
+            // Close modal when clicking outside
+            window.onclick = function(event) {
+                const confirmModal = document.getElementById('confirmModal');
+                if (event.target == confirmModal) {
+                    closeConfirmModal();
+                }
+            };
+        </script>
+    </body>
+</html>

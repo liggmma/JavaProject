@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta content="width=device-width,initial-scale=1" name="viewport"/>
+    <title>Chi tiết đơn - LuxDine</title>
+
+    <link crossorigin href="https://fonts.gstatic.com" rel="preconnect"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+
+    <style>
+        :root {
+            --color-primary: #0A0A23;
+            --color-secondary: #F97316;
+            --color-bg: #F9FAFB;
+            --color-surface: #FFFFFF;
+            --color-border: #E5E7EB;
+            --color-text: #111827;
+            --color-text-muted: #6B7280;
+            --color-success: #22C55E;
+            --color-warning: #FACC15;
+            --color-error: #EF4444;
+            --radius: 12px;
+            --btn-radius: 8px;
+            --shadow: 0 1px 2px rgba(0, 0, 0, .05);
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --h1-size: 32px;
+            --h1-weight: 700;
+            --h2-size: 24px;
+            --h2-weight: 600;
+            --h3-size: 20px;
+            --h3-weight: 500;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--color-bg);
+            color: var(--color-text);
+            font: 16px/1.5 "Inter", system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        .page {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: var(--space-xl) var(--space-lg);
+        }
+
+        h1 {
+            font-size: var(--h1-size);
+            font-weight: var(--h1-weight);
+            margin: 0 0 var(--space-md);
+        }
+
+        .muted {
+            color: var(--color-text-muted);
+        }
+
+        /* Alerts */
+        .flash {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin: 12px 0;
+        }
+
+        .alert {
+            border-radius: 10px;
+            padding: 12px;
+            border: 1px solid;
+            box-shadow: var(--shadow);
+            font-weight: 500;
+        }
+
+        .alert-success {
+            background: #ECFDF5;
+            color: #065F46;
+            border-color: #A7F3D0;
+        }
+
+        .alert-error {
+            background: #FEF2F2;
+            color: #991B1B;
+            border-color: #FCA5A5;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            height: 40px;
+            padding: 0 16px;
+            border: 1px solid transparent;
+            border-radius: var(--btn-radius);
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:link, .btn:visited {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--color-primary);
+            color: #fff;
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--color-secondary);
+            border-color: var(--color-secondary);
+        }
+
+        .btn-ghost {
+            background: #fff;
+            color: var(--color-text);
+            border-color: var(--color-border);
+        }
+
+        .btn-danger {
+            background: #fff;
+            color: var(--color-error);
+            border: 1px solid var(--color-error);
+        }
+
+        .btn:disabled {
+            opacity: .6;
+            cursor: not-allowed;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            height: 28px;
+            padding: 0 10px;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 999px;
+            border: 1px solid transparent;
+        }
+
+        .status--PENDING {
+            background: #FFFBEB;
+            color: #92400E;
+            border-color: #FDE68A;
+        }
+
+        .status--CONFIRMED {
+            background: #FFF7ED;
+            color: #9A3412;
+            border-color: #FED7AA;
+        }
+
+        .status--IN_PROGRESS {
+            background: #EEF2FF;
+            color: #3730A3;
+            border-color: #C7D2FE;
+        }
+
+        .status--COMPLETED {
+            background: #ECFDF5;
+            color: #065F46;
+            border-color: #A7F3D0;
+        }
+
+        .status--CANCELLED {
+            background: #FEF2F2;
+            color: #991B1B;
+            border-color: #FCA5A5;
+        }
+
+        /* Cards & layout */
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media (min-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .meta {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            font-size: 14px;
+        }
+
+        .sep {
+            height: 1px;
+            background: var(--color-border);
+            margin: 12px 0;
+        }
+
+        /* Table */
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            border-bottom: 1px solid var(--color-border);
+            padding: 10px 8px;
+            text-align: left;
+        }
+
+        .table th {
+            font-size: 13px;
+            color: var(--color-text-muted);
+            font-weight: 600;
+        }
+
+        .td-tight {
+            vertical-align: middle;
+        }
+
+        .mini {
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        .mono {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .qty-input {
+            width: 90px;
+            height: 40px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 0 10px;
+        }
+
+        /* Search add item */
+        .search-wrap {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .search-input {
+            height: 44px;
+            padding: 0 12px;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            background: #fff;
+            outline: none;
+            box-shadow: var(--shadow);
+        }
+
+        .search-input:focus {
+            border-color: var(--color-primary);
+        }
+
+        .search-clear {
+            position: absolute;
+            right: 8px;
+            top: 8px;
+            height: 28px;
+            padding: 0 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .search-clear:hover {
+            background: #f8fafc;
+        }
+
+        .suggest {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 52px;
+            z-index: 20;
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            max-height: 360px;
+            overflow: auto;
+        }
+
+        .suggest-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 10px 12px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .suggest-item:last-child {
+            border-bottom: none;
+        }
+
+        .suggest-item:hover, .suggest-item.active {
+            background: #f9fafb;
+        }
+
+        .suggest-name {
+            font-weight: 600;
+        }
+
+        .suggest-price {
+            font-size: 14px;
+            color: var(--color-text-muted);
+        }
+
+        .selected {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border: 1px dashed var(--color-border);
+            border-radius: 12px;
+            padding: 12px;
+        }
+
+        .selected-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Progress view */
+        .st-legend {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--color-text-muted);
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            margin-right: 6px;
+        }
+
+        .c-queued {
+            background: #E5E7EB;
+        }
+
+        .c-prep {
+            background: #C7D2FE;
+        }
+
+        .c-ready {
+            background: #A7F3D0;
+        }
+
+        .c-served {
+            background: #FDE68A;
+        }
+
+        .distbar {
+            display: flex;
+            gap: 2px;
+            height: 10px;
+            background: #F3F4F6;
+            border: 1px solid var(--color-border);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .distbar > span {
+            display: block;
+            height: 100%;
+        }
+
+        .seg-queued {
+            background: #E5E7EB;
+        }
+
+        .seg-prep {
+            background: #C7D2FE;
+        }
+
+        .seg-ready {
+            background: #A7F3D0;
+        }
+
+        .seg-served {
+            background: #FDE68A;
+        }
+
+        .empty {
+            border: 1px dashed var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            text-align: center;
+            color: var(--color-text-muted);
+            background: linear-gradient(0deg, #fff, #fff), repeating-linear-gradient(45deg, #f9fafb, #f9fafb 10px, #f3f4f6 10px, #f3f4f6 20px);
+        }
+
+        /* Modal */
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal[aria-hidden="false"] {
+            display: flex;
+        }
+
+        .modal__backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+        }
+
+        .modal__dialog {
+            position: relative;
+            width: min(520px, 92vw);
+            background: #fff;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px;
+        }
+
+        .modal__title {
+            margin: 0 0 8px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--color-text);
+        }
+
+        .modal__msg {
+            margin: 0 0 16px;
+            color: var(--color-text);
+        }
+
+        .modal__actions {
+            display: flex;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+    </style>
+
+    <th:block th:replace="~{staff/fragments/staff-header :: staffStyles}"></th:block>
+</head>
+<body>
+<header th:replace="~{staff/fragments/staff-header :: staffHeader}"></header>
+
+<main class="page" th:with="locked=${order.status.name() == 'CANCELLED' or order.status.name() == 'COMPLETED'}">
+    <div class="header">
+        <div class="left">
+            <a class="btn btn-ghost" th:href="@{/staff/orders}">Quay lại</a>
+            <div>
+                <h1>Đơn #<span th:text="${order.id}">123</span></h1>
+                <div class="muted">
+                    Bàn: <b th:text="${order.reservation != null ? order.reservation.table.tableName : '—'}">T1</b>
+                    · Tạo lúc <span
+                        th:text="${#dates.format(order.createdDate, 'dd/MM/yyyy HH:mm')}">01/10/2025 18:30</span>
+                </div>
+            </div>
+        </div>
+        <span class="badge" th:classappend="${' status--' + order.status.name()}">
+            <span th:text="${order.status.name() == 'IN_PROGRESS' ? 'Đang phục vụ' : (order.status.name() == 'COMPLETED' ? 'Hoàn tất' : (order.status.name() == 'CANCELLED' ? 'Đã hủy' : order.status.name()))}">IN_PROGRESS</span>
+        </span>
+    </div>
+
+    <!-- FLASH -->
+    <div aria-live="polite" class="flash">
+        <div class="alert alert-success" th:if="${success}" th:text="${success}"></div>
+        <div class="alert alert-error" th:if="${error}" th:text="${error}"></div>
+    </div>
+
+    <div class="grid-2">
+        <!-- TỔNG QUAN -->
+        <section class="card">
+            <h3 style="margin:0 0 12px">Thông tin đơn</h3>
+            <div class="meta">
+                <div><strong>Trạng thái:</strong>
+                    <span th:text="${order.status.name() == 'IN_PROGRESS' ? 'Đang phục vụ' : (order.status.name() == 'COMPLETED' ? 'Hoàn tất' : (order.status.name() == 'CANCELLED' ? 'Đã hủy' : order.status.name()))}">IN_PROGRESS</span>
+                </div>
+                <div><strong>Bàn:</strong> <span
+                        th:text="${order.reservation != null ? order.reservation.table.tableName : '—'}">T1</span></div>
+                <div><strong>Tạm tính:</strong>
+                    <span class="mono" data-amount th:attr="data-amount=${order.subTotal}">0 VND</span>
+                </div>
+                <div><strong>Phí dịch vụ:</strong>
+                    <span class="mono" data-amount th:attr="data-amount=${order.serviceCharge}">0 VND</span>
+                </div>
+                <div><strong>Thuế:</strong>
+                    <span class="mono" data-amount th:attr="data-amount=${order.tax}">0 VND</span>
+                </div>
+                <div><strong>Giảm giá:</strong>
+                    <span class="mono" data-amount th:attr="data-amount=${order.discountTotal}">0 VND</span>
+                </div>
+            </div>
+            <div class="sep"></div>
+            <div><strong>Ghi chú:</strong> <span
+                    th:text="${order.notes != null && order.notes != '' ? order.notes : '—'}">—</span></div>
+        </section>
+
+        <!-- THÊM MÓN -->
+        <section class="card">
+            <h3 style="margin:0 0 12px">Thêm món</h3>
+
+            <div class="search-wrap">
+                <input autocomplete="off" class="search-input" id="itemSearch" placeholder="Tìm món theo tên…"
+                       th:disabled="${locked}" type="search"/>
+                <button aria-label="Xóa ô tìm kiếm" class="search-clear" id="clearSearch" th:disabled="${locked}"
+                        type="button">Xóa
+                </button>
+
+                <div class="suggest" id="suggestBox" style="display:none">
+                    <div class="suggest-item" data-role="suggest-item"
+                         th:attr="data-id=${mi.id}, data-name=${mi.name}, data-price=${mi.price}"
+                         th:each="mi : ${menuItems}">
+                        <div class="suggest-name" th:text="${mi.name}">Tên món</div>
+                        <div class="suggest-price mono" data-amount th:attr="data-amount=${mi.price}">0 VND</div>
+                    </div>
+                    <div class="suggest-item" id="noSuggest"
+                         style="display:none;cursor:default;justify-content:center;color:var(--color-text-muted);">
+                        Không tìm thấy món phù hợp
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel món đã chọn -->
+            <div class="selected" id="selectedPanel" style="display:none; margin-top:12px">
+                <div class="selected-info">
+                    <div class="suggest-name" id="selName">Tên món</div>
+                    <div class="suggest-price">Giá: <span class="mono" id="selPrice">0 VND</span></div>
+                </div>
+
+                <form method="post" style="display:flex;gap:8px;align-items:center"
+                      th:action="@{|/staff/orders/${order.id}/items|}">
+                    <input id="selItemId" name="itemId" type="hidden"/>
+                    <input class="qty-input" id="selQty" min="1" name="quantity" step="1" th:disabled="${locked}"
+                           type="number" value="1"/>
+                    <button class="btn btn-secondary" th:disabled="${locked}" type="submit">Thêm</button>
+                </form>
+            </div>
+
+            <div class="muted" style="margin-top:8px" th:if="${locked}">
+                Đơn đã <b>[[${order.status.name() == 'COMPLETED' ? 'Hoàn tất' : (order.status.name() == 'CANCELLED' ?
+                'Đã hủy' : order.status.name())}]]</b> — không thể thêm món.
+            </div>
+        </section>
+    </div>
+
+    <div style="height:16px"></div>
+
+    <!-- DANH SÁCH MÓN -->
+    <section class="card">
+        <h3 style="margin:0 0 12px">Danh sách món</h3>
+
+        <div class="empty" th:if="${groupedItems == null or #lists.isEmpty(groupedItems)}">Chưa có món nào trong đơn.
+        </div>
+
+        <div style="overflow:auto" th:if="${groupedItems != null and !#lists.isEmpty(groupedItems)}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th style="width:42px">#</th>
+                    <th>Món</th>
+                    <th style="width:120px">Đơn giá</th>
+                    <th style="width:100px">SL</th>
+                    <th style="width:140px">Thành tiền</th>
+                    <th style="width:300px">Tiến trình</th>
+                    <th style="width:120px">Thao tác</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="gi, idx : ${groupedItems}">
+                    <td th:text="${idx.index + 1}">1</td>
+                    <td><strong th:text="${gi.name}">Tên món</strong></td>
+
+                    <!-- TIỀN: dùng data-amount + JS -->
+                    <td class="mono"><span data-amount th:attr="data-amount=${gi.unitPrice}">0 VND</span></td>
+                    <td class="mono" th:text="${gi.quantity}">0</td>
+                    <td class="mono"><span data-amount th:attr="data-amount=${gi.lineTotal}">0 VND</span></td>
+
+                    <!-- Phân bố tiến trình -->
+                    <td class="td-tight" style="min-width:260px"
+                        th:with="qTotal=${gi.quantity}, qQueued=${gi.qQueued}, qPrep=${gi.qPrep}, qReady=${gi.qReady}, qServed=${gi.qServed}">
+                        <div class="distbar">
+                            <span class="seg-queued"
+                                  th:style="|width: ${qTotal == 0 ? 0 : (100.0 * qQueued / qTotal)}%|"></span>
+                            <span class="seg-prep"
+                                  th:style="|width: ${qTotal == 0 ? 0 : (100.0 * qPrep   / qTotal)}%|"></span>
+                            <span class="seg-ready"
+                                  th:style="|width: ${qTotal == 0 ? 0 : (100.0 * qReady  / qTotal)}%|"></span>
+                            <span class="seg-served"
+                                  th:style="|width: ${qTotal == 0 ? 0 : (100.0 * qServed / qTotal)}%|"></span>
+                        </div>
+                        <div class="st-legend" style="margin-top:6px">
+                            <span><span class="dot c-queued"></span><b th:text="${qQueued}">0</b>/<span
+                                    th:text="${qTotal}">0</span> Đợi</span>
+                            <span><span class="dot c-prep"></span><b th:text="${qPrep}">0</b>/<span th:text="${qTotal}">0</span> Chế biến</span>
+                            <span><span class="dot c-ready"></span><b th:text="${qReady}">0</b>/<span
+                                    th:text="${qTotal}">0</span> Sẵn sàng</span>
+                            <span><span class="dot c-served"></span><b th:text="${qServed}">0</b>/<span
+                                    th:text="${qTotal}">0</span> Đã phục vụ</span>
+                        </div>
+                    </td>
+
+                    <!-- Hủy toàn bộ theo itemId -->
+                    <td>
+                        <form class="js-cancelall-form" method="post" style="display:inline"
+                              th:action="@{|/staff/orders/${order.id}/items/${gi.itemId}/cancelAll|}">
+                            <button class="btn btn-danger js-cancelall-btn"
+                                    th:attr="data-order-id=${order.id}, data-item-id=${gi.itemId}, data-item-name=${gi.name}"
+                                    th:disabled="${locked}" type="button">Hủy tất cả
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</main>
+
+<script>
+    // ===== Định dạng tiền VND =====
+    function formatPriceVND(price) {
+        const n = Number(price);
+        if (isNaN(n)) return '0 VND';
+        return new Intl.NumberFormat('vi-VN').format(Math.round(n)) + ' VND';
+    }
+
+    function applyMoneyFormatting(root = document) {
+        root.querySelectorAll('[data-amount]').forEach(function (el) {
+            const raw = el.getAttribute('data-amount');
+            el.textContent = formatPriceVND(raw);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        applyMoneyFormatting();
+    });
+
+    (function () {
+        const locked = /*[[${order.status.name() == 'CANCELLED' or order.status.name() == 'COMPLETED'}]]*/ false;
+
+        // Tìm và chọn món
+        const $input = document.getElementById('itemSearch');
+        const $clear = document.getElementById('clearSearch');
+        const $box = document.getElementById('suggestBox');
+        const $no = document.getElementById('noSuggest');
+
+        const items = Array.from(document.querySelectorAll('[data-role="suggest-item"]')).map(el => ({
+            el,
+            id: el.getAttribute('data-id'),
+            name: el.getAttribute('data-name') || '',
+            price: parseFloat(el.getAttribute('data-price') || '0')
+        }));
+
+        const $panel = document.getElementById('selectedPanel');
+        const $selId = document.getElementById('selItemId');
+        const $selName = document.getElementById('selName');
+        const $selPrice = document.getElementById('selPrice');
+        const $selQty = document.getElementById('selQty');
+
+        const fold = s => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+        let activeIndex = -1;
+
+        function openBox() {
+            if (!locked) $box.style.display = 'block';
+        }
+
+        function closeBox() {
+            $box.style.display = 'none';
+            activeIndex = -1;
+            items.forEach(i => i.el.classList.remove('active'));
+        }
+
+        function clearSearch() {
+            $input.value = '';
+            filter();
+            closeBox();
+        }
+
+        function filter() {
+            const q = fold($input.value.trim());
+            let visible = 0;
+            items.forEach(i => {
+                const show = !q || fold(i.name).includes(q);
+                i.el.style.display = show ? '' : 'none';
+                if (show) visible++;
+            });
+            $no.style.display = visible ? 'none' : 'flex';
+            if (visible) openBox(); else closeBox();
+            activeIndex = -1;
+            items.forEach(i => i.el.classList.remove('active'));
+        }
+
+        function setActive(idx) {
+            const visible = items.filter(i => i.el.style.display !== 'none');
+            visible.forEach(v => v.el.classList.remove('active'));
+            if (!visible.length) return;
+            if (idx < 0) idx = visible.length - 1;
+            if (idx >= visible.length) idx = 0;
+            activeIndex = idx;
+            visible[idx].el.classList.add('active');
+            visible[idx].el.scrollIntoView({block: 'nearest'});
+        }
+
+        function chooseFromActive() {
+            const visible = items.filter(i => i.el.style.display !== 'none');
+            if (!visible.length) return;
+            const pick = activeIndex >= 0 ? visible[activeIndex] : visible[0];
+            selectItem(pick);
+        }
+
+        function selectItem(it) {
+            if (!it) return;
+            $selId.value = it.id;
+            $selName.textContent = it.name;
+            $selPrice.textContent = formatPriceVND(it.price || 0);
+            $selQty.value = 1;
+            $panel.style.display = 'flex';
+            closeBox();
+            setTimeout(() => $selQty.focus(), 0);
+        }
+
+        if ($input) {
+            $input.addEventListener('input', filter);
+            $input.addEventListener('focus', () => {
+                if ($input.value.trim() !== '') filter();
+            });
+            $input.addEventListener('keydown', (e) => {
+                if ($box.style.display === 'none') return;
+                if (e.key === 'ArrowDown') {
+                    e.preventDefault();
+                    setActive(activeIndex + 1);
+                }
+                if (e.key === 'ArrowUp') {
+                    e.preventDefault();
+                    setActive(activeIndex - 1);
+                }
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    chooseFromActive();
+                }
+                if (e.key === 'Escape') {
+                    closeBox();
+                }
+            });
+        }
+        if ($clear) {
+            $clear.addEventListener('click', clearSearch);
+        }
+        items.forEach(i => i.el.addEventListener('click', () => selectItem(i)));
+
+        document.addEventListener('click', (e) => {
+            if (!$box.contains(e.target) && e.target !== $input) {
+                closeBox();
+            }
+        });
+    })();
+</script>
+
+<!-- Modal xác nhận: Hủy tất cả -->
+<div aria-hidden="true" aria-labelledby="confirmTitle" aria-modal="true" class="modal" id="confirmModal" role="dialog">
+    <div class="modal__backdrop" data-close="true"></div>
+    <div class="modal__dialog" role="document">
+        <h3 class="modal__title" id="confirmTitle">Xác nhận hủy món</h3>
+        <p class="modal__msg" id="confirmMsg">Bạn có chắc muốn hủy toàn bộ món này khỏi đơn?</p>
+        <div class="modal__actions">
+            <button class="btn btn-ghost" id="cancelNo" type="button">Hủy</button>
+            <button class="btn btn-danger" id="cancelYes" type="button">Xác nhận</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        let currentForm = null;
+        let lastFocus = null;
+        const modal = document.getElementById('confirmModal');
+        const msgEl = document.getElementById('confirmMsg');
+        const btnYes = document.getElementById('cancelYes');
+        const btnNo = document.getElementById('cancelNo');
+
+        function openModal(message) {
+            lastFocus = document.activeElement;
+            msgEl.textContent = message || 'Bạn có chắc muốn hủy toàn bộ món này khỏi đơn?';
+            modal.setAttribute('aria-hidden', 'false');
+            btnNo.focus();
+            document.addEventListener('keydown', onKey);
+        }
+
+        function closeModal() {
+            modal.setAttribute('aria-hidden', 'true');
+            document.removeEventListener('keydown', onKey);
+            if (lastFocus) lastFocus.focus();
+            currentForm = null;
+        }
+
+        function onKey(e) {
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                closeModal();
+            }
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                btnYes.click();
+            }
+        }
+
+        // Click backdrop để đóng
+        modal.addEventListener('click', (e) => {
+            if (e.target.dataset.close === 'true') closeModal();
+        });
+
+        // Bắt sự kiện click trên tất cả nút "Hủy tất cả"
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.js-cancelall-btn');
+            if (!btn) return;
+            if (btn.disabled) return; // tôn trọng trạng thái locked
+            e.preventDefault();
+            currentForm = btn.closest('.js-cancelall-form');
+            const itemName = btn.getAttribute('data-item-name') || '';
+            const orderId = btn.getAttribute('data-order-id') || '';
+            const msg = itemName ? `Hủy toàn bộ món "${itemName}" khỏi đơn #${orderId}?` : `Bạn có chắc muốn hủy toàn bộ món này khỏi đơn #${orderId}?`;
+            openModal(msg);
+        });
+
+        btnNo.addEventListener('click', closeModal);
+        btnYes.addEventListener('click', () => {
+            if (currentForm) currentForm.submit();
+            closeModal();
+        });
+    })();
+</script>
+
+</body>
+</html>
