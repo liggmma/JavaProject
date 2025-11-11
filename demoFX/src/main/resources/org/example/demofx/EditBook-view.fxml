@@ -22,7 +22,6 @@
         <Insets top="30" right="30" bottom="30" left="30"/>
     </padding>
 
-    <!-- Tiêu đề -->
     <Text text="Edit Book"
           style="-fx-fill: white;">
         <font>
@@ -30,7 +29,7 @@
         </font>
     </Text>
 
-    <!-- Bố cục form -->
+
     <GridPane hgap="15" vgap="15">
         <padding>
             <Insets top="20" right="20" bottom="20" left="20"/>
@@ -49,7 +48,6 @@
         <ComboBox fx:id="cbGenre" GridPane.rowIndex="4" GridPane.columnIndex="1" promptText="Select genre"/>
     </GridPane>
 
-    <!-- Các nút -->
     <HBox alignment="CENTER" spacing="15">
         <Button text="Save"
                 fx:id="btnSave"

@@ -17,12 +17,12 @@ public class Book {
 
     private String coverImagePath;
 
-    // Một cuốn sách thuộc về một thể loại
+
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "genre_id")
     private Genre genre;
 
-    // ✅ Category không lưu DB, tự tính dựa vào price
+
     @Transient
     private String category;
 

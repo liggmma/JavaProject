@@ -81,7 +81,7 @@ public class HelloController {
         colCover.setCellValueFactory(cellData -> {
             String path = cellData.getValue().getCoverImagePath();
             if (path != null && !path.isEmpty()) {
-                Image img = new Image("file:" + path, 80, 80, true, true); // 80x80
+                Image img = new Image("file:" + path, 80, 80, false, true);
                 ImageView imgView = new ImageView(img);
                 imgView.setFitHeight(80);
                 imgView.setFitWidth(80);
@@ -152,7 +152,7 @@ public class HelloController {
                     return;
                 }
             } catch (NumberFormatException e) {
-                priceErrorLabel.setText("Price must be a positive number!");
+                priceErrorLabel.setText("Price must be a number!");
                 return;
             }
 
@@ -261,7 +261,7 @@ public class HelloController {
             selectedFile = file;
 
             // Hiển thị tạm thời
-            Image image = new Image(file.toURI().toString(), 120, 120, true, true);
+            Image image = new Image(file.toURI().toString(), 120, 120, false, true);
             bookCover.setImage(image);
         }
     }

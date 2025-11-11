@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="1fb6e350-0a26-475b-b651-8c9824626038" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/easycode.ignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part1/untitled/src/main/java/HuuTaiDE190451/example/InsecureLogin.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part1/untitled/src/test/java/InsecureLoginTest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/copilot.data.migration.agent.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/copilot.data.migration.ask.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/copilot.data.migration.ask2agent.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/copilot.data.migration.edit.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/easycode.ignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/misc.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/.idea/modules.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/1.HardcodedCredentialsExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/10.OvercatchingExceptionExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/11.TightCouplingExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/12.ViolationOfEncapsulationExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/13.UnreachableCodeExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/14.IncompleteInterfaceImplementationExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/15.InterfaceNamingInconsistencyExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/2.PathTraversalExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/3.ResourceLeakExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/4.SQLInjectionExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/5.UnimplementedInterfaceExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/6.InterfaceFieldModificationExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/7.MissingOverrideAnnotationExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/8.CatchGenericExceptionExample.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/../Lab4_part2/src/main/java/error_code/9.NullPointerExample.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../UnitTest/src/main/java/HuuTaiDE190451/example/AccountService.java" beforeDir="false" afterPath="$PROJECT_DIR$/../UnitTest/src/main/java/HuuTaiDE190451/example/AccountService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../demoFX/src/main/java/org/example/demofx/HelloController.java" beforeDir="false" afterPath="$PROJECT_DIR$/../demoFX/src/main/java/org/example/demofx/HelloController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../demoFX/src/main/java/org/example/demofx/model/Book.java" beforeDir="false" afterPath="$PROJECT_DIR$/../demoFX/src/main/java/org/example/demofx/model/Book.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../demoFX/src/main/resources/org/example/demofx/EditBook-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/../demoFX/src/main/resources/org/example/demofx/EditBook-view.fxml" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
+  </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "liggmma"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/liggmma/UnitTestLab3.git",
+    "accountId": "d64b5af4-d467-4d0d-9854-2d9a43e41ff6"
+  }
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 6
+}]]></component>
+  <component name="ProjectId" id="34fykRA5EHArSrrRKgvcAC6Xoo5" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "git-widget-placeholder": "master",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "nodejs_package_manager_path": "npm",
+    "onboarding.tips.debug.path": "C:/Users/ASUS/IdeaProjects/HSF302_DE190451/src/main/java/HuuTaiDE190451/example/Main.java",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.2",
+    "settings.editor.selected.configurable": "com.batch.coding.tool.settings.CodeAssistSettingsConfigurable",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-bf35d07a577b-intellij.indexing.shared.core-IU-252.25557.131" />
+        <option value="bundled-js-predefined-d6986cc7102b-b598e85cdad2-JavaScript-IU-252.25557.131" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="1fb6e350-0a26-475b-b651-8c9824626038" name="Changes" comment="" />
+      <created>1761619065800</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1761619065800</updated>
+      <workItem from="1761619067108" duration="289000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/HuuTaiDE190451/example/Main.java</url>
+          <line>13</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>

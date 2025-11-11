@@ -21,7 +21,7 @@ public class AccountService {
      * @return true nếu hợp lệ, false nếu có lỗi.
      */
     public boolean registerAccount(String username, String password, String email) {
-        lastErrorMessage = ""; // reset trước mỗi lần gọi
+        lastErrorMessage = "";
 
         if (username == null || password == null || email == null) {
             lastErrorMessage = "Thiếu thông tin bắt buộc (username, password hoặc email).";

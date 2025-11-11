@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SonarLintProjectSettings">
+    <option name="fileExclusions">
+      <list>
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/1.HardcodedCredentialsExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/1.HardcodedCredentialsExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/15.InterfaceNamingInconsistencyExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/2.PathTraversalExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/3.ResourceLeakExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/4.SQLInjectionExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/5.UnimplementedInterfaceExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/6.InterfaceFieldModificationExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/7.MissingOverrideAnnotationExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/8.CatchGenericExceptionExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/9.NullPointerExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/10.OvercatchingExceptionExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/11.TightCouplingExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/12.ViolationOfEncapsulationExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/13.UnreachableCodeExample.java" />
+        <option value="FILE:untitled/src/main/java/HuuTaiDE190451/example/ErrorCodes/14.IncompleteInterfaceImplementationExample.java" />
+      </list>
+    </option>
+  </component>
+</project>
