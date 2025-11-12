@@ -1,0 +1,5 @@
+id,name,description,price,categoryId,imageUrl,visibility,isAvailable
+1,Pho Bo Updated,Better beef noodle soup,6.5,1,pho2.jpg,PUBLIC,true
+2,Banh Mi Updated,Better baguette,3.5,2,banhmi2.png,PRIVATE,false
+3,Tra Da Updated,Colder iced tea,1.2,null,null,null,null
+

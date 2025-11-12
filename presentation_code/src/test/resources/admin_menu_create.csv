@@ -1,0 +1,6 @@
+name,description,price,slug,imageUrl,visibility,available,categoryId
+Pho Bo,Vietnamese beef noodle soup,5.5,null,pho.jpg,null,null,null
+Banh Mi,Saigon baguette,3.0,banh-mi,banhmi.png,PUBLIC,true,2
+Tra Da,Iced tea,1.0,null,null,PRIVATE,false,1
+Cafe Sua Da,Vietnamese iced milk coffee,2.5,null,null,null,null,1
+

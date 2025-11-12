@@ -1,0 +1,8 @@
+itemName,price,category,visibility,description,expectedResult
+Phở bò,65000,Món chính,PUBLIC,Món phở truyền thống Việt Nam,PASS
+,30000,Đồ uống,PUBLIC,Món thiếu tên,FAIL
+Bánh flan,abc,Tráng miệng,PUBLIC,Giá sai định dạng,FAIL
+Nem rán,-40000,Khai vị,PUBLIC,Giá âm,FAIL
+Cơm chiên,40000,,PUBLIC,Thiếu danh mục,FAIL
+Sinh tố bơ,30000,Đồ uống,HIDDENN,Mục hiển thị sai,FAIL
+Phở gà,0,Món chính,PUBLIC,Giá bằng 0,FAIL
